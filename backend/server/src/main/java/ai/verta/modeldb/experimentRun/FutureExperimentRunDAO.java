@@ -184,13 +184,7 @@ public class FutureExperimentRunDAO {
             datasetHandler,
             artifactStoreDAO,
             config);
-    predicatesHandler =
-        new PredicatesHandler(
-            executor,
-            "experiment_run",
-            "experiment_run",
-            uacApisUtil,
-            config.isPermissionV2Enabled());
+    predicatesHandler = new PredicatesHandler("experiment_run", "experiment_run", uacApisUtil);
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
@@ -217,9 +211,7 @@ public class FutureExperimentRunDAO {
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
             executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
-    codeVersionFromBlobHandler =
-        new CodeVersionFromBlobHandler(
-            executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
+    codeVersionFromBlobHandler = new CodeVersionFromBlobHandler();
   }
 
   public InternalFuture<ExperimentRun> deleteObservations(DeleteObservations request) {

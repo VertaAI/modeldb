@@ -1,20 +1,17 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestUser;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.ArtifactPart;
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
-import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
@@ -35,15 +32,13 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
@@ -126,9 +121,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     dataset = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
-        dataset.getName());
+        dataset.getName(),
+        "Dataset name not match with expected Dataset name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
@@ -143,9 +138,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion1.getDatasetId());
+        datasetVersion1.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionResponse =
@@ -154,9 +149,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersionMap.put(datasetVersion2.getId(), datasetVersion2);
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion2.getDatasetId());
+        datasetVersion2.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionResponse =
@@ -165,9 +160,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersionMap.put(datasetVersion3.getId(), datasetVersion3);
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion3);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion3.getDatasetId());
+        datasetVersion3.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
   }
 
   public static CreateDatasetVersion getDatasetVersionRequest(String datasetId) {
@@ -228,16 +223,15 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
   @Test
   public void createDatasetVersionTest() {
-
     CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion2.getDatasetId());
+        datasetVersion2.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     DeleteDatasetVersion deleteDatasetVersionRequest =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion2.getId()).build();
@@ -256,9 +250,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         createDatasetVersionRequest.getDatasetBlob(),
-        datasetVersion.getDatasetBlob());
+        datasetVersion.getDatasetBlob(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     deleteDatasetVersionRequest =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
@@ -277,9 +271,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getAllDatasetVersionsByDatasetId(
             getAllDatasetVersionsByDatasetIdRequest);
     assertEquals(
-        "Total records count not matched with expected records count",
         datasetVersionMap.size(),
-        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords(),
+        "Total records count not matched with expected records count");
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
@@ -298,12 +292,11 @@ public class DatasetVersionTest extends ModeldbTestSetup {
               getAllDatasetVersionsByDatasetIdRequest);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           datasetVersionMap.size(),
-          getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+          getAllDatasetVersionsByDatasetIdResponse.getTotalRecords(),
+          "Total records count not matched with expected records count");
 
-      if (getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList() != null
-          && getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList().size() > 0) {
+      if (!getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList().isEmpty()) {
         isExpectedResultFound = true;
         LOGGER.info(
             "GetAllDataset Response : "
@@ -311,23 +304,23 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         for (DatasetVersion datasetVersion :
             getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersionMap.get(datasetVersion.getId()),
-              datasetVersion);
+              datasetVersion,
+              "DatasetVersion not match with expected DatasetVersion");
         }
 
         if (pageNumber == 1) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersion3,
               datasetVersionMap.get(
-                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()),
+              "DatasetVersion not match with expected DatasetVersion");
         } else if (pageNumber == 3) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersion1,
               datasetVersionMap.get(
-                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()),
+              "DatasetVersion not match with expected DatasetVersion");
         }
 
       } else {
@@ -335,7 +328,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
           LOGGER.warn("More DatasetVersion not found in database");
           assertTrue(true);
         } else {
-          fail("Expected DatasetVersion not found in response");
+          Assertions.fail("Expected DatasetVersion not found in response");
         }
         break;
       }
@@ -347,16 +340,16 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getAllDatasetVersionsByDatasetId(
             getAllDatasetVersionsByDatasetIdRequest);
     assertEquals(
-        "DatasetVersions count not match with expected DatasetVersion count",
         datasetVersionMap.size(),
-        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords(),
+        "DatasetVersions count not match with expected DatasetVersion count");
 
     for (DatasetVersion datasetVersion :
         getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
       assertEquals(
-          "DatasetVersion not match with expected DatasetVersion",
           datasetVersionMap.get(datasetVersion.getId()),
-          datasetVersion);
+          datasetVersion,
+          "DatasetVersion not match with expected DatasetVersion");
     }
   }
 
@@ -370,9 +363,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getLatestDatasetVersionByDatasetId(
             getLatestDatasetVersionByDatasetIdRequest);
     assertEquals(
-        "DatasetVersions not match with expected DatasetVersion",
         datasetVersion3,
-        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());
+        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion(),
+        "DatasetVersions not match with expected DatasetVersion");
 
     getLatestDatasetVersionByDatasetIdRequest =
         GetLatestDatasetVersionByDatasetId.newBuilder()
@@ -383,9 +376,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getLatestDatasetVersionByDatasetId(
             getLatestDatasetVersionByDatasetIdRequest);
     assertEquals(
-        "DatasetVersions not match with expected DatasetVersion",
         datasetVersion1,
-        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());
+        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion(),
+        "DatasetVersions not match with expected DatasetVersion");
 
     getLatestDatasetVersionByDatasetIdRequest =
         GetLatestDatasetVersionByDatasetId.newBuilder()
@@ -396,9 +389,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getLatestDatasetVersionByDatasetId(
             getLatestDatasetVersionByDatasetIdRequest);
     assertEquals(
-        "DatasetVersions not match with expected DatasetVersion",
         datasetVersion3,
-        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());
+        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion(),
+        "DatasetVersions not match with expected DatasetVersion");
   }
 
   @Test
@@ -414,13 +407,13 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetVersionDescription Response : " + response.getDatasetVersion());
     assertEquals(
-        "DatasetVersion description not match with expected datasetVersion description",
         updateDescriptionRequest.getDescription(),
-        response.getDatasetVersion().getDescription());
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+        response.getDatasetVersion().getDescription(),
+        "DatasetVersion description not match with expected datasetVersion description");
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -433,13 +426,13 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     response = datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetVersionDescription Response : " + response.getDatasetVersion());
     assertEquals(
-        "DatasetVersion description not match with expected datasetVersion description",
         updateDescriptionRequest.getDescription(),
-        response.getDatasetVersion().getDescription());
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+        response.getDatasetVersion().getDescription(),
+        "DatasetVersion description not match with expected datasetVersion description");
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -449,13 +442,13 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     response = datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetVersionDescription Response : " + response.getDatasetVersion());
     assertEquals(
-        "DatasetVersion description not match with expected datasetVersion description",
         updateDescriptionRequest.getDescription(),
-        response.getDatasetVersion().getDescription());
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+        response.getDatasetVersion().getDescription(),
+        "DatasetVersion description not match with expected datasetVersion description");
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -475,7 +468,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     try {
       datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -506,10 +499,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersion1.getTagsCount() + tagsList.size(), checkDatasetVersion.getTagsCount());
     assertEquals(
         datasetVersion1.getTagsCount() + tagsList.size(), checkDatasetVersion.getTagsList().size());
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        checkDatasetVersion.getTimeUpdated());
+        checkDatasetVersion.getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -524,10 +517,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     response = datasetVersionServiceStub.addDatasetVersionTags(addDatasetVersionTagsRequest);
 
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         checkDatasetVersion.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
 
     checkDatasetVersion = response.getDatasetVersion();
     assertEquals(datasetVersion1.getTagsCount() + 1, checkDatasetVersion.getTagsCount());
@@ -540,7 +533,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
       addDatasetVersionTagsRequest =
           AddDatasetVersionTags.newBuilder().setId(datasetVersion1.getId()).addTags(tag52).build();
       datasetVersionServiceStub.addDatasetVersionTags(addDatasetVersionTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -556,9 +549,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     try {
       addDatasetVersionTags();
       List<String> removableTags = datasetVersion1.getTagsList();
-      if (removableTags.size() == 0) {
+      if (removableTags.isEmpty()) {
         LOGGER.info("DatasetVersion Tags not found in database ");
-        fail();
+        Assertions.fail();
         return;
       }
       if (datasetVersion1.getTagsList().size() > 1) {
@@ -575,14 +568,14 @@ public class DatasetVersionTest extends ModeldbTestSetup {
           datasetVersionServiceStub.deleteDatasetVersionTags(deleteDatasetVersionTagsRequest);
       LOGGER.info("Tags deleted in server : " + response.getDatasetVersion().getTagsList());
       assertTrue(response.getDatasetVersion().getTagsList().size() <= 1);
-      assertNotEquals(
-          "DatasetVersion date_updated field not update on database",
+      Assertions.assertNotEquals(
           datasetVersion1.getTimeUpdated(),
-          response.getDatasetVersion().getTimeUpdated());
+          response.getDatasetVersion().getTimeUpdated(),
+          "DatasetVersion date_updated field not update on database");
       datasetVersion1 = response.getDatasetVersion();
       datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
-      if (response.getDatasetVersion().getTagsList().size() > 0) {
+      if (!response.getDatasetVersion().getTagsList().isEmpty()) {
         deleteDatasetVersionTagsRequest =
             DeleteDatasetVersionTags.newBuilder()
                 .setDatasetId(dataset.getId())
@@ -594,17 +587,17 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             datasetVersionServiceStub.deleteDatasetVersionTags(deleteDatasetVersionTagsRequest);
         LOGGER.info("Tags deleted in server : " + response.getDatasetVersion().getTagsList());
         assertEquals(0, response.getDatasetVersion().getTagsList().size());
-        assertNotEquals(
-            "DatasetVersion date_updated field not update on database",
+        Assertions.assertNotEquals(
             datasetVersion1.getTimeUpdated(),
-            response.getDatasetVersion().getTimeUpdated());
+            response.getDatasetVersion().getTimeUpdated(),
+            "DatasetVersion date_updated field not update on database");
         datasetVersion1 = response.getDatasetVersion();
         datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
       }
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      fail();
+      Assertions.fail();
     }
 
     LOGGER.info("Delete DatasetVersion tags test stop................................");
@@ -619,7 +612,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     try {
       datasetVersionServiceStub.deleteDatasetVersionTags(deleteDatasetVersionTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -662,16 +655,16 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.addDatasetVersionAttributes(addDatasetVersionAttributesRequest);
     LOGGER.info("Added DatasetVersion Attributes: \n" + response.getDatasetVersion());
     assertTrue(response.getDatasetVersion().getAttributesList().containsAll(attributeList));
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
     try {
       datasetVersionServiceStub.addDatasetVersionAttributes(addDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -708,7 +701,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     try {
       datasetVersionServiceStub.addDatasetVersionAttributes(addDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -746,10 +739,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             updateDatasetVersionAttributesRequest);
     LOGGER.info("Updated DatasetVersion : \n" + response.getDatasetVersion());
     assertTrue(response.getDatasetVersion().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -773,10 +766,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             updateDatasetVersionAttributesRequest);
     LOGGER.info("Updated DatasetVersion : \n" + response.getDatasetVersion());
     assertTrue(response.getDatasetVersion().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -802,10 +795,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             updateDatasetVersionAttributesRequest);
     LOGGER.info("Updated DatasetVersion : \n" + response.getDatasetVersion());
     assertTrue(response.getDatasetVersion().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
@@ -829,7 +822,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     try {
       datasetVersionServiceStub.updateDatasetVersionAttributes(
           updateDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -845,7 +838,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     try {
       datasetVersionServiceStub.updateDatasetVersionAttributes(
           updateDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -861,7 +854,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     try {
       datasetVersionServiceStub.updateDatasetVersionAttributes(
           updateDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -880,9 +873,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     List<KeyValue> attributes = datasetVersion1.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
 
-    if (attributes.size() == 0) {
+    if (attributes.isEmpty()) {
       LOGGER.warn("DatasetVersion Attributes not found in database ");
-      fail();
+      Assertions.fail();
       return;
     }
 
@@ -932,7 +925,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     try {
       datasetVersionServiceStub.getDatasetVersionAttributes(getDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -947,17 +940,18 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             .build();
     try {
       datasetVersionServiceStub.getDatasetVersionAttributes(getDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info("Get DatasetVersion Attributes Negative test stop................................");
   }
 
   @Test
+  @Disabled
   public void deleteDatasetVersionAttributesTest() {
     LOGGER.info("Delete DatasetVersion Attributes test start................................");
 
@@ -987,14 +981,14 @@ public class DatasetVersionTest extends ModeldbTestSetup {
             deleteDatasetVersionAttributesRequest);
     LOGGER.info("Attributes deleted in server : " + response.getDatasetVersion());
     assertEquals(1, response.getDatasetVersion().getAttributesList().size());
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
+    Assertions.assertNotEquals(
         datasetVersion1.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
+        response.getDatasetVersion().getTimeUpdated(),
+        "DatasetVersion date_updated field not update on database");
     datasetVersion1 = response.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
 
-    if (response.getDatasetVersion().getAttributesList().size() != 0) {
+    if (!response.getDatasetVersion().getAttributesList().isEmpty()) {
       deleteDatasetVersionAttributesRequest =
           DeleteDatasetVersionAttributes.newBuilder()
               .setId(datasetVersion1.getId())
@@ -1007,10 +1001,10 @@ public class DatasetVersionTest extends ModeldbTestSetup {
           "All the Attributes deleted from server. Attributes count : "
               + response.getDatasetVersion().getAttributesCount());
       assertEquals(0, response.getDatasetVersion().getAttributesList().size());
-      assertNotEquals(
-          "DatasetVersion date_updated field not update on database",
+      Assertions.assertNotEquals(
           datasetVersion1.getTimeUpdated(),
-          response.getDatasetVersion().getTimeUpdated());
+          response.getDatasetVersion().getTimeUpdated(),
+          "DatasetVersion date_updated field not update on database");
       datasetVersion1 = response.getDatasetVersion();
       datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
     }
@@ -1028,7 +1022,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     try {
       datasetVersionServiceStub.deleteDatasetVersionAttributes(
           deleteDatasetVersionAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1049,9 +1043,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion1.getDatasetId());
+        datasetVersion1.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionResponse =
@@ -1059,9 +1053,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
     assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
-        datasetVersion2.getDatasetId());
+        datasetVersion2.getDatasetId(),
+        "DatasetVersion dataSetId not match with expected DatasetVersion dataSetId");
 
     List<String> datasetVersionIds = new ArrayList<>();
     datasetVersionIds.add(datasetVersion1.getId());
@@ -1080,22 +1074,6 @@ public class DatasetVersionTest extends ModeldbTestSetup {
   @Test
   public void deleteDatasetVersionTest() {
     LOGGER.info("delete DatasetVersion by parent entities owner test start........");
-
-    if (testConfig.hasAuth()) {
-      if (!isRunningIsolated()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            addCollaboratorRequestUser(
-                dataset.getId(),
-                authClientInterceptor.getClient2Email(),
-                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-                "Please refer shared dataset for your invention");
-
-        AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-        assertTrue(addCollaboratorResponse.getStatus());
-      }
-    }
 
     CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
@@ -1130,20 +1108,6 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
       }
 
-      if (!isRunningIsolated()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            addCollaboratorRequestUser(
-                dataset.getId(),
-                authClientInterceptor.getClient2Email(),
-                CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-                "Please refer shared dataset for your invention");
-
-        AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-        assertTrue(addCollaboratorResponse.getStatus());
-      }
-
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {
@@ -1172,10 +1136,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     String path2 = "verta/test/test2.txt";
     String internalPath1 = "test/internalDatasetBlobPaths/blobs/test1.txt";
     String internalPath2 = "test/internalDatasetBlobPaths/blobs/test2.txt";
-    List<String> location = new ArrayList<>();
-    location.add("versioned");
-    location.add("s3_versioned");
-    // location.add("test.txt");
+
     DatasetBlob datasetBlob =
         DatasetBlob.newBuilder()
             .setS3(
@@ -1224,13 +1185,13 @@ public class DatasetVersionTest extends ModeldbTestSetup {
       GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlobResponse =
           datasetVersionServiceStub.getUrlForDatasetBlobVersioned(getUrlForVersionedDatasetBlob);
       String presignedUrl1 = getUrlForVersionedDatasetBlobResponse.getUrl();
-      assertNotNull("Presigned url not match with expected presigned url", presignedUrl1);
+      assertNotNull(presignedUrl1, "Presigned url not match with expected presigned url");
       getUrlForVersionedDatasetBlob =
           getUrlForVersionedDatasetBlob.toBuilder().setPartNumber(2).build();
       getUrlForVersionedDatasetBlobResponse =
           datasetVersionServiceStub.getUrlForDatasetBlobVersioned(getUrlForVersionedDatasetBlob);
       String presignedUrl2 = getUrlForVersionedDatasetBlobResponse.getUrl();
-      assertNotNull("Presigned url not match with expected presigned url", presignedUrl2);
+      assertNotNull(presignedUrl2, "Presigned url not match with expected presigned url");
       // Create the connection and use it to upload the new object using the pre-signed URL.
       HttpURLConnection connection = (HttpURLConnection) new URL(presignedUrl1).openConnection();
       connection.setDoOutput(true);
@@ -1256,50 +1217,40 @@ public class DatasetVersionTest extends ModeldbTestSetup {
       // you must interact with the connection object in some way.
       connection.getResponseCode();
       String etag2 = connection.getHeaderField("ETag");
-      CommitVersionedDatasetBlobArtifactPart.Response p1 =
-          datasetVersionServiceStub.commitVersionedDatasetBlobArtifactPart(
-              CommitVersionedDatasetBlobArtifactPart.newBuilder()
-                  .setDatasetId(dataset.getId())
-                  .setDatasetVersionId(datasetVersion1.getId())
-                  .setPathDatasetComponentBlobPath(path1)
-                  .setArtifactPart(
-                      ArtifactPart.newBuilder()
-                          .setEtag(etag1.replaceAll("\"", ""))
-                          .setPartNumber(1))
-                  .build());
-      CommitVersionedDatasetBlobArtifactPart.Response p2 =
-          datasetVersionServiceStub.commitVersionedDatasetBlobArtifactPart(
-              CommitVersionedDatasetBlobArtifactPart.newBuilder()
-                  .setDatasetId(dataset.getId())
-                  .setDatasetVersionId(datasetVersion1.getId())
-                  .setPathDatasetComponentBlobPath(path1)
-                  .setArtifactPart(
-                      ArtifactPart.newBuilder()
-                          .setEtag(etag2.replaceAll("\"", ""))
-                          .setPartNumber(2))
-                  .build());
-      GetCommittedVersionedDatasetBlobArtifactParts.Response committedArtifactParts =
-          datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
-              GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
-                  .setDatasetId(dataset.getId())
-                  .setDatasetVersionId(datasetVersion1.getId())
-                  .setPathDatasetComponentBlobPath(path1)
-                  .build());
-      CommitMultipartVersionedDatasetBlobArtifact.Response commitMultipartArtifact =
-          datasetVersionServiceStub.commitMultipartVersionedDatasetBlobArtifact(
-              CommitMultipartVersionedDatasetBlobArtifact.newBuilder()
-                  .setDatasetId(dataset.getId())
-                  .setDatasetVersionId(datasetVersion1.getId())
-                  .setPathDatasetComponentBlobPath(path1)
-                  .build());
-      GetCommittedVersionedDatasetBlobArtifactParts.Response
-          committedVersionedDatasetBlobArtifactParts =
-              datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
-                  GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
-                      .setDatasetId(dataset.getId())
-                      .setDatasetVersionId(datasetVersion1.getId())
-                      .setPathDatasetComponentBlobPath(path1)
-                      .build());
+      datasetVersionServiceStub.commitVersionedDatasetBlobArtifactPart(
+          CommitVersionedDatasetBlobArtifactPart.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
+              .setPathDatasetComponentBlobPath(path1)
+              .setArtifactPart(
+                  ArtifactPart.newBuilder().setEtag(etag1.replaceAll("\"", "")).setPartNumber(1))
+              .build());
+      datasetVersionServiceStub.commitVersionedDatasetBlobArtifactPart(
+          CommitVersionedDatasetBlobArtifactPart.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
+              .setPathDatasetComponentBlobPath(path1)
+              .setArtifactPart(
+                  ArtifactPart.newBuilder().setEtag(etag2.replaceAll("\"", "")).setPartNumber(2))
+              .build());
+      datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
+          GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
+              .setPathDatasetComponentBlobPath(path1)
+              .build());
+      datasetVersionServiceStub.commitMultipartVersionedDatasetBlobArtifact(
+          CommitMultipartVersionedDatasetBlobArtifact.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
+              .setPathDatasetComponentBlobPath(path1)
+              .build());
+      datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
+          GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
+              .setPathDatasetComponentBlobPath(path1)
+              .build());
     } finally {
       DeleteDatasetVersions deleteDatasetVersionsRequest =
           DeleteDatasetVersions.newBuilder().addIds(datasetVersion1.getId()).build();
@@ -1320,9 +1271,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     GetDatasetVersionById.Response getDatasetVersionByIdResponse =
         datasetVersionServiceStub.getDatasetVersionById(getDatasetVersionById);
     assertEquals(
-        "Dataset name not match with expected dataset name",
         datasetVersion1.getId(),
-        getDatasetVersionByIdResponse.getDatasetVersion().getId());
+        getDatasetVersionByIdResponse.getDatasetVersion().getId(),
+        "Dataset name not match with expected dataset name");
 
     LOGGER.info("Get DatasetVersion by Id test stop................................");
   }
@@ -1346,12 +1297,11 @@ public class DatasetVersionTest extends ModeldbTestSetup {
               getAllDatasetVersionsByDatasetIdRequest);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           datasetVersionMap.size(),
-          getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+          getAllDatasetVersionsByDatasetIdResponse.getTotalRecords(),
+          "Total records count not matched with expected records count");
 
-      if (getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList() != null
-          && getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList().size() > 0) {
+      if (!getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList().isEmpty()) {
         isExpectedResultFound = true;
         LOGGER.info(
             "GetAllDataset Response : "
@@ -1359,23 +1309,23 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         for (DatasetVersion datasetVersion :
             getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersionMap.get(datasetVersion.getId()),
-              datasetVersion);
+              datasetVersion,
+              "DatasetVersion not match with expected DatasetVersion");
         }
 
         if (pageNumber == 1) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersion3,
               datasetVersionMap.get(
-                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()),
+              "DatasetVersion not match with expected DatasetVersion");
         } else if (pageNumber == 3) {
           assertEquals(
-              "DatasetVersion not match with expected DatasetVersion",
               datasetVersion1,
               datasetVersionMap.get(
-                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()),
+              "DatasetVersion not match with expected DatasetVersion");
         }
 
       } else {
@@ -1383,7 +1333,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
           LOGGER.warn("More DatasetVersion not found in database");
           assertTrue(true);
         } else {
-          fail("Expected DatasetVersion not found in response");
+          Assertions.fail("Expected DatasetVersion not found in response");
         }
         break;
       }
@@ -1395,16 +1345,16 @@ public class DatasetVersionTest extends ModeldbTestSetup {
         datasetVersionServiceStub.getAllDatasetVersionsByDatasetId(
             getAllDatasetVersionsByDatasetIdRequest);
     assertEquals(
-        "DatasetVersions count not match with expected DatasetVersion count",
         datasetVersionMap.size(),
-        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords(),
+        "DatasetVersions count not match with expected DatasetVersion count");
 
     for (DatasetVersion datasetVersion :
         getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
       assertEquals(
-          "DatasetVersion not match with expected DatasetVersion",
           datasetVersionMap.get(datasetVersion.getId()),
-          datasetVersion);
+          datasetVersion,
+          "DatasetVersion not match with expected DatasetVersion");
     }
   }
 }

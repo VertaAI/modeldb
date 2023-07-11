@@ -145,9 +145,7 @@ public class FutureProjectDAO {
     artifactHandler =
         new ArtifactHandler(
             jdbi, entityName, codeVersionHandler, datasetHandler, artifactStoreDAO, mdbConfig);
-    predicatesHandler =
-        new PredicatesHandler(
-            executor, "project", "p", uacApisUtil, mdbConfig.isPermissionV2Enabled());
+    predicatesHandler = new PredicatesHandler("project", "p", uacApisUtil);
     sortingHandler = new SortingHandler("project");
     createProjectHandler =
         new CreateProjectHandler(executor, jdbi, attributeHandler, tagsHandler, artifactHandler);
@@ -453,31 +451,12 @@ public class FutureProjectDAO {
         .thenCompose(
             userInfo -> {
               Future<List<GetResourcesResponseItem>> resourcesFuture;
-              if (isPermissionV2) {
-                resourcesFuture =
-                    uacApisUtil.getResourceItemsForWorkspace(
-                        Optional.of(request.getWorkspaceName()),
-                        Optional.of(request.getProjectIdsList()),
-                        Optional.empty(),
-                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-              } else {
-                if (request.getWorkspaceName().isEmpty()
-                    || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
-                  resourcesFuture =
-                      uacApisUtil.getResourceItemsForLoginUserWorkspace(
-                          Optional.of(request.getWorkspaceName()),
-                          null,
-                          Optional.of(request.getProjectIdsList()),
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-                } else {
-                  resourcesFuture =
-                      uacApisUtil.getResourceItemsForWorkspace(
-                          Optional.of(request.getWorkspaceName()),
-                          Optional.of(request.getProjectIdsList()),
-                          Optional.empty(),
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-                }
-              }
+              resourcesFuture =
+                  uacApisUtil.getResourceItemsForWorkspace(
+                      Optional.of(request.getWorkspaceName()),
+                      Optional.of(request.getProjectIdsList()),
+                      Optional.empty(),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
               return resourcesFuture
                   .toInternalFuture()
@@ -499,16 +478,16 @@ public class FutureProjectDAO {
                               FindProjects.Response.newBuilder().build());
                         }
 
-                        final InternalFuture<QueryFilterContext> futureLocalContext =
+                        InternalFuture<QueryFilterContext> futureLocalContext =
                             getFutureLocalContext();
 
                         // futurePredicatesContext
-                        final var futurePredicatesContext =
+                        var futurePredicatesContext =
                             predicatesHandler.processPredicates(
                                 request.getPredicatesList(), executor);
 
                         // futureSortingContext
-                        final var futureSortingContext =
+                        var futureSortingContext =
                             sortingHandler.processSort(
                                 request.getSortKey(), request.getAscending());
 
@@ -516,7 +495,7 @@ public class FutureProjectDAO {
                             getFutureProjectIdsContext(
                                 request, accessibleResourceIdsWithCollaborator);
 
-                        final var futureProjects =
+                        var futureProjects =
                             InternalFuture.sequence(
                                     Arrays.asList(
                                         futureLocalContext,
@@ -675,6 +654,13 @@ public class FutureProjectDAO {
                       },
                       executor);
             },
+            executor)
+        .whenComplete(
+            (response, throwable) -> {
+              if (throwable != null) {
+                LOGGER.error("Failed to search", throwable);
+              }
+            },
             executor);
   }
 
@@ -786,17 +772,14 @@ public class FutureProjectDAO {
           true);
     }
 
-    return InternalFuture.supplyAsync(
-        () -> {
-          final var localQueryContext = new QueryFilterContext();
-          localQueryContext.getConditions().add(" p.id IN (<projectIds>) ");
-          localQueryContext
-              .getBinds()
-              .add(q -> q.bindList("projectIds", accessibleResourceIdsWithCollaborator));
-
-          return localQueryContext;
-        },
-        executor);
+    var localQueryContext = new QueryFilterContext();
+    if (!accessibleResourceIdsWithCollaborator.isEmpty()) {
+      localQueryContext.getConditions().add(" p.id IN (<projectIds>) ");
+      localQueryContext
+          .getBinds()
+          .add(q -> q.bindList("projectIds", accessibleResourceIdsWithCollaborator));
+    }
+    return InternalFuture.completedInternalFuture(localQueryContext);
   }
 
   private InternalFuture<Workspace> getWorkspaceByWorkspaceName(String workspaceName) {

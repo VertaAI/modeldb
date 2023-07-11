@@ -2,7 +2,8 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -33,28 +34,10 @@ import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.uac.Action;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.GroupServiceGrpc;
-import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.RemoveGroupUsers;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceTypeV2;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -74,16 +57,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
@@ -95,7 +75,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   private Project project;
   private Project project2;
   private Project project3;
-  private Map<String, Project> projectMap = new HashMap<>();
+  private final Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
   private Experiment experiment;
@@ -200,9 +180,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     projectMap.put(project.getId(), project);
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected Project name",
         createProjectRequest.getName(),
-        project.getName());
+        project.getName(),
+        "Project name not match with expected Project name");
 
     // Create project2
     createProjectRequest = ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -211,9 +191,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     projectMap.put(project2.getId(), project2);
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected project name",
         createProjectRequest.getName(),
-        project2.getName());
+        project2.getName(),
+        "Project name not match with expected project name");
 
     // Create project3
     createProjectRequest = ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -222,9 +202,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     projectMap.put(project3.getId(), project3);
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected project name",
         createProjectRequest.getName(),
-        project3.getName());
+        project3.getName(),
+        "Project name not match with expected project name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(projectMap, testUser1);
@@ -274,9 +254,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name not match with expected Experiment name",
         createExperimentRequest.getName(),
-        experiment.getName());
+        experiment.getName(),
+        "Experiment name not match with expected Experiment name");
 
     // Create two experiment of above project
     createExperimentRequest =
@@ -286,9 +266,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experiment2 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name not match with expected Experiment name",
         createExperimentRequest.getName(),
-        experiment2.getName());
+        experiment2.getName(),
+        "Experiment name not match with expected Experiment name");
   }
 
   private void createExperimentRunEntities() {
@@ -322,9 +302,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunMap.put(experimentRun.getId(), experimentRun);
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        experimentRun.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
     checkValidArtifactPath(
         experimentRun.getId(), "ExperimentRunEntity", experimentRun.getArtifactsList());
 
@@ -358,9 +338,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunMap.put(experimentRun2.getId(), experimentRun2);
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun2.getName());
+        experimentRun2.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
     checkValidArtifactPath(
         experimentRun2.getId(), "ExperimentRunEntity", experimentRun2.getArtifactsList());
   }
@@ -598,7 +578,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -615,7 +595,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().setProjectId("xyz").build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       checkEqualsAssert(e);
     }
@@ -633,7 +613,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setExperimentId("xyz")
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -649,7 +629,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .addTags(tag52)
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -660,7 +640,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().clearTags().addTags("").build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -672,7 +652,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           "Experiment of Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset";
       createExperimentRunRequest = createExperimentRunRequest.toBuilder().setName(name).build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -690,7 +670,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.createExperimentRun(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.info("CreateExperimentRun Response : \n" + status.getDescription());
@@ -710,20 +690,15 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunsInProject.Response experimentRunResponse =
         experimentRunServiceStub.getExperimentRunsInProject(getExperimentRunRequest);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRun count",
         experimentRunMap.size(),
-        experimentRunResponse.getExperimentRunsList().size());
+        experimentRunResponse.getExperimentRunsList().size(),
+        "ExperimentRuns count not match with expected experimentRun count");
 
-    if (experimentRunResponse.getExperimentRunsList() != null) {
-      for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
-        assertEquals(
-            "ExperimentRun not match with expected experimentRun",
-            experimentRunMap.get(experimentRun1.getId()).getId(),
-            experimentRun1.getId());
-      }
-    } else {
-      LOGGER.warn("More ExperimentRun not found in database");
-      assertTrue(true);
+    for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
+      assertEquals(
+          experimentRunMap.get(experimentRun1.getId()).getId(),
+          experimentRun1.getId(),
+          "ExperimentRun not match with expected experimentRun");
     }
 
     LOGGER.info("Get ExperimentRun from Project test stop................................");
@@ -750,25 +725,24 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           experimentRunServiceStub.getExperimentRunsInProject(getExperimentRunRequest);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           2,
-          experimentRunResponse.getTotalRecords());
+          experimentRunResponse.getTotalRecords(),
+          "Total records count not matched with expected records count");
 
-      if (experimentRunResponse.getExperimentRunsList() != null
-          && experimentRunResponse.getExperimentRunsList().size() > 0) {
+      if (!experimentRunResponse.getExperimentRunsList().isEmpty()) {
         isExpectedResultFound = true;
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
-              "ExperimentRun not match with expected experimentRun",
               experimentRunMap.get(experimentRun.getId()).getId(),
-              experimentRun.getId());
+              experimentRun.getId(),
+              "ExperimentRun not match with expected experimentRun");
         }
       } else {
         if (isExpectedResultFound) {
           LOGGER.warn("More ExperimentRun not found in database");
           assertTrue(true);
         } else {
-          fail("Expected experimentRun not found in response");
+          Assertions.fail("Expected experimentRun not found in response");
         }
         break;
       }
@@ -786,17 +760,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunsInProject.Response experimentRunResponse =
         experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
     assertEquals(
-        "Total records count not matched with expected records count",
         2,
-        experimentRunResponse.getTotalRecords());
+        experimentRunResponse.getTotalRecords(),
+        "Total records count not matched with expected records count");
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRuns count",
         1,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRuns count");
     assertEquals(
-        "ExperimentRun not match with expected experimentRun",
         experimentRun2.getId(),
-        experimentRunResponse.getExperimentRuns(0).getId());
+        experimentRunResponse.getExperimentRuns(0).getId(),
+        "ExperimentRun not match with expected experimentRun");
 
     getExperiment =
         GetExperimentRunsInProject.newBuilder()
@@ -809,13 +783,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     experimentRunResponse = experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRuns count",
         1,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRuns count");
     assertEquals(
-        "ExperimentRun not match with expected experimentRun",
         experimentRun.getId(),
-        experimentRunResponse.getExperimentRuns(0).getId());
+        experimentRunResponse.getExperimentRuns(0).getId(),
+        "ExperimentRun not match with expected experimentRun");
 
     getExperiment =
         GetExperimentRunsInProject.newBuilder()
@@ -828,7 +802,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -847,7 +821,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunsInProject getExperiment = GetExperimentRunsInProject.newBuilder().build();
     try {
       experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -857,7 +831,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     getExperiment = GetExperimentRunsInProject.newBuilder().setProjectId("sdfdsfsd").build();
     GetExperimentRunsInProject.Response response =
         experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
-    assertEquals("Expected response not found", 0, response.getExperimentRunsCount());
+    assertEquals(0, response.getExperimentRunsCount(), "Expected response not found");
 
     LOGGER.info(
         "Get ExperimentRun from Project Negative test stop................................");
@@ -873,20 +847,15 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunsInExperiment.Response experimentRunResponse =
         experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRun count",
         experimentRunMap.size(),
-        experimentRunResponse.getExperimentRunsList().size());
+        experimentRunResponse.getExperimentRunsList().size(),
+        "ExperimentRuns count not match with expected experimentRun count");
 
-    if (experimentRunResponse.getExperimentRunsList() != null) {
-      for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
-        assertEquals(
-            "ExperimentRun not match with expected experimentRun",
-            experimentRunMap.get(experimentRun1.getId()).getId(),
-            experimentRun1.getId());
-      }
-    } else {
-      LOGGER.warn("More ExperimentRun not found in database");
-      assertTrue(true);
+    for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
+      assertEquals(
+          experimentRunMap.get(experimentRun1.getId()).getId(),
+          experimentRun1.getId(),
+          "ExperimentRun not match with expected experimentRun");
     }
 
     LOGGER.info("Get ExperimentRun from Experiment test stop................................");
@@ -912,17 +881,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       GetExperimentRunsInExperiment.Response experimentRunResponse =
           experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
       assertEquals(
-          "Total records count not matched with expected records count",
           2,
-          experimentRunResponse.getTotalRecords());
+          experimentRunResponse.getTotalRecords(),
+          "Total records count not matched with expected records count");
 
       if (!experimentRunResponse.getExperimentRunsList().isEmpty()) {
         isExpectedResultFound = true;
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
-              "ExperimentRun not match with expected experimentRun",
               experimentRunMap.get(experimentRun.getId()).getId(),
-              experimentRun.getId());
+              experimentRun.getId(),
+              "ExperimentRun not match with expected experimentRun");
         }
       } else {
         if (isExpectedResultFound) {
@@ -930,7 +899,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           assertTrue(true);
           break;
         } else {
-          fail("Expected experimentRun not found in response");
+          Assertions.fail("Expected experimentRun not found in response");
         }
       }
     }
@@ -947,17 +916,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunsInExperiment.Response experimentRunResponse =
         experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
-        "Total records count not matched with expected records count",
         2,
-        experimentRunResponse.getTotalRecords());
+        experimentRunResponse.getTotalRecords(),
+        "Total records count not matched with expected records count");
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRuns count",
         1,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRuns count");
     assertEquals(
-        "ExperimentRun not match with expected experimentRun",
         experimentRun2.getId(),
-        experimentRunResponse.getExperimentRuns(0).getId());
+        experimentRunResponse.getExperimentRuns(0).getId(),
+        "ExperimentRun not match with expected experimentRun");
 
     getExperimentRunsInExperiment =
         GetExperimentRunsInExperiment.newBuilder()
@@ -971,17 +940,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunResponse =
         experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRuns count",
         1,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRuns count");
     assertEquals(
-        "ExperimentRun not match with expected experimentRun",
         experimentRun.getId(),
-        experimentRunResponse.getExperimentRuns(0).getId());
+        experimentRunResponse.getExperimentRuns(0).getId(),
+        "ExperimentRun not match with expected experimentRun");
     assertEquals(
-        "Total records count not matched with expected records count",
         2,
-        experimentRunResponse.getTotalRecords());
+        experimentRunResponse.getTotalRecords(),
+        "Total records count not matched with expected records count");
 
     getExperimentRunsInExperiment =
         GetExperimentRunsInExperiment.newBuilder()
@@ -994,7 +963,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1014,7 +983,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         GetExperimentRunsInExperiment.newBuilder().build();
     try {
       experimentRunServiceStub.getExperimentRunsInExperiment(getExperiment);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1024,7 +993,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     getExperiment = GetExperimentRunsInExperiment.newBuilder().setExperimentId("sdfdsfsd").build();
     try {
       experimentRunServiceStub.getExperimentRunsInExperiment(getExperiment);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1046,9 +1015,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("getExperimentRunById Response : \n" + response.getExperimentRun());
     assertEquals(
-        "ExperimentRun not match with expected experimentRun",
         experimentRun.getId(),
-        response.getExperimentRun().getId());
+        response.getExperimentRun().getId(),
+        "ExperimentRun not match with expected experimentRun");
 
     LOGGER.info("Get ExperimentRunById test stop................................");
   }
@@ -1061,7 +1030,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunById(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1072,7 +1041,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunById(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1097,9 +1066,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("getExperimentRunByName Response : \n" + response.getExperimentRun());
     assertEquals(
-        "ExperimentRun name not match with expected experimentRun name ",
         experimentRun.getName(),
-        response.getExperimentRun().getName());
+        response.getExperimentRun().getName(),
+        "ExperimentRun name not match with expected experimentRun name ");
 
     LOGGER.info("Get ExperimentRunByName test stop................................");
   }
@@ -1112,7 +1081,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunByName(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1120,82 +1089,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     }
 
     LOGGER.info("Get ExperimentRunByName Negative test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: updateExperimentRunName endpoint")
-  public void d_updateExperimentRunNameOrDescription() {
-    LOGGER.info(
-        "Update ExperimentRun Name & Description test start................................");
-
-    UpdateExperimentRunName request =
-        UpdateExperimentRunName.newBuilder()
-            .setId(experimentRun.getId())
-            .setName("ExperimentRun Name updated " + Calendar.getInstance().getTimeInMillis())
-            .build();
-
-    experimentRunServiceStub.updateExperimentRunName(request);
-
-    UpdateExperimentRunDescription request2 =
-        UpdateExperimentRunDescription.newBuilder()
-            .setId(experimentRun.getId())
-            .setDescription(
-                "this is a ExperimentRun description updated "
-                    + Calendar.getInstance().getTimeInMillis())
-            .build();
-
-    UpdateExperimentRunDescription.Response response2 =
-        experimentRunServiceStub.updateExperimentRunDescription(request2);
-    assertEquals(
-        "ExperimentRun Description do not match with expected experimentRun name",
-        request2.getDescription(),
-        response2.getExperimentRun().getDescription());
-
-    assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
-        experimentRun.getDateUpdated(),
-        response2.getExperimentRun().getDateUpdated());
-    experimentRun = response2.getExperimentRun();
-    experimentRunMap.put(experimentRun.getId(), experimentRun);
-
-    try {
-      String name =
-          "Experiment of Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset Human Activity Recognition using Smartphone Dataset";
-      request = request.toBuilder().setName(name).build();
-      experimentRunServiceStub.updateExperimentRunName(request);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    LOGGER.info(
-        "Update ExperimentRun Name & Description test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: updateExperimentRunName endpoint")
-  public void d_updateExperimentRunNameOrDescriptionNegativeTest() {
-    LOGGER.info("Update ExperimentRun Name & Description Negative test start.......");
-
-    UpdateExperimentRunDescription request =
-        UpdateExperimentRunDescription.newBuilder()
-            .setDescription(
-                "this is a ExperimentRun description updated "
-                    + Calendar.getInstance().getTimeInMillis())
-            .build();
-
-    try {
-      experimentRunServiceStub.updateExperimentRunDescription(request);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    LOGGER.info("Update ExperimentRun Name & Description Negative test stop.......");
   }
 
   @Test
@@ -1216,9 +1109,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRun.getTagsCount() + tags.size(), aertResponse.getExperimentRun().getTagsCount());
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        aertResponse.getExperimentRun().getDateUpdated());
+        aertResponse.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = aertResponse.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -1239,7 +1132,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
       request = request.toBuilder().addTags(tag52).build();
       experimentRunServiceStub.addExperimentRunTags(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1261,7 +1154,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.addExperimentRunTags(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1285,14 +1178,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.addExperimentRunTag(request);
     LOGGER.info("AddExperimentRunTag Response : \n" + aertResponse.getExperimentRun());
     assertEquals(
-        "ExperimentRun tags not match with expected experimentRun tags",
         experimentRun.getTagsCount() + 1,
-        aertResponse.getExperimentRun().getTagsCount());
+        aertResponse.getExperimentRun().getTagsCount(),
+        "ExperimentRun tags not match with expected experimentRun tags");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        aertResponse.getExperimentRun().getDateUpdated());
+        aertResponse.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = aertResponse.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -1300,7 +1193,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
       request = request.toBuilder().setTag(tag52).build();
       experimentRunServiceStub.addExperimentRunTag(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1318,7 +1211,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.addExperimentRunTag(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1337,9 +1230,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetTags.Response response = experimentRunServiceStub.getExperimentRunTags(request);
     LOGGER.info("GetExperimentRunTags Response : \n" + response.getTagsList());
     assertEquals(
-        "ExperimentRun tags not match with expected experimentRun tags",
         experimentRun.getTagsList(),
-        response.getTagsList());
+        response.getTagsList(),
+        "ExperimentRun tags not match with expected experimentRun tags");
 
     LOGGER.info("Get ExperimentRun tags test stop................................");
   }
@@ -1351,7 +1244,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetTags request = GetTags.newBuilder().build();
     try {
       experimentRunServiceStub.getExperimentRunTags(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1384,13 +1277,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getTagsList().size() <= 1);
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
-    if (response.getExperimentRun().getTagsList().size() > 0) {
+    if (!response.getExperimentRun().getTagsList().isEmpty()) {
       request =
           DeleteExperimentRunTags.newBuilder()
               .setId(experimentRun.getId())
@@ -1416,7 +1309,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.deleteExperimentRunTags(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1440,12 +1333,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     DeleteExperimentRunTag.Response response =
         experimentRunServiceStub.deleteExperimentRunTag(request);
     LOGGER.info("DeleteExperimentRunTag Response : \n" + response.getExperimentRun().getTagsList());
-    assertFalse(response.getExperimentRun().getTagsList().contains(experimentRun.getTags(0)));
+    Assertions.assertFalse(
+        response.getExperimentRun().getTagsList().contains(experimentRun.getTags(0)));
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -1453,7 +1347,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   /**
-   * This test tests comparision predicates on numeric Key Values (Hyperparameters in this case) It
+   * This test tests comparison predicates on numeric Key Values (Hyperparameters in this case) It
    * creates a project with two Experiments , each with two experiment runs. E1 ER1 hyperparameter.C
    * = 0.0001 E1 ER2 no hyperparameters E2 ER1 hyperparameter.C = 0.0001 E2 ER1 hyperparameter.C =
    * 1E-6
@@ -1488,15 +1382,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunMap.put(experimentRun12.getId(), experimentRun12);
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun12.getName());
+          experimentRun12.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       // experiment2 of above project
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-      hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
       createExperimentRunResponse =
@@ -1505,9 +1398,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunMap.put(experimentRun21.getId(), experimentRun21);
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun21.getName());
+          experimentRun21.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
@@ -1521,9 +1414,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunMap.put(experimentRun22.getId(), experimentRun22);
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun22.getName());
+          experimentRun22.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       Value hyperparameterFilter = Value.newBuilder().setNumberValue(0.0001).build();
       KeyValueQuery CGTE0_0001 =
@@ -1546,18 +1439,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           2,
-          response.getTotalRecords());
+          response.getTotalRecords(),
+          "Total records count not matched with expected records count");
       assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
           2,
-          response.getExperimentRunsCount());
+          response.getExperimentRunsCount(),
+          "ExperimentRun count not match with expected experimentRun count");
       for (ExperimentRun exprRun : response.getExperimentRunsList()) {
         for (KeyValue kv : exprRun.getHyperparametersList()) {
-          if (kv.getKey() == "C") {
-            assertEquals(
-                "Value should be GTE 0.0001 " + kv, true, kv.getValue().getNumberValue() > 0.0001);
+          if (kv.getKey().equals("C")) {
+            assertThat(kv.getValue().getNumberValue()).isGreaterThanOrEqualTo(0.0001);
           }
         }
       }
@@ -1615,9 +1507,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getObservationsList().contains(observation));
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -1647,7 +1539,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logObservation(logObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1662,7 +1554,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logObservation(logObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1724,13 +1616,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("LogObservation Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun observations not match with expected ExperimentRun observation",
-        response.getExperimentRun().getObservationsList().containsAll(observations));
+        response.getExperimentRun().getObservationsList().containsAll(observations),
+        "ExperimentRun observations not match with expected ExperimentRun observation");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -1748,14 +1640,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         "Duplicate LogObservation Response : \n"
             + response.getExperimentRun().getObservationsList());
     assertEquals(
-        "Existing observations count not match with expected observations count",
         experimentRun.getObservationsList().size() + experimentRun.getObservationsList().size(),
-        response.getExperimentRun().getObservationsList().size());
+        response.getExperimentRun().getObservationsList().size(),
+        "Existing observations count not match with expected observations count");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -1803,7 +1695,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logObservations(logObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1818,7 +1710,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logObservations(logObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1847,14 +1739,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     for (Observation observation : response.getObservationsList()) {
       if (observation.hasAttribute()) {
         assertEquals(
-            "ExperimentRun observations not match with expected observations ",
             "Google developer Observation artifact",
-            observation.getAttribute().getKey());
+            observation.getAttribute().getKey(),
+            "ExperimentRun observations not match with expected observations ");
       } else if (observation.hasArtifact()) {
         assertEquals(
-            "ExperimentRun observations not match with expected observations ",
             "Google developer Observation artifact",
-            observation.getArtifact().getKey());
+            observation.getArtifact().getKey(),
+            "ExperimentRun observations not match with expected observations ");
       }
     }
 
@@ -1874,7 +1766,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getObservations(getObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1889,7 +1781,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getObservations(getObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1936,15 +1828,15 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 0 Response: {}", response);
     assertEquals(
-        "there should be exactly one observation",
         1,
-        response.getExperimentRun().getObservationsCount());
+        response.getExperimentRun().getObservationsCount(),
+        "there should be exactly one observation");
     Observation responseObservation = response.getExperimentRun().getObservations(0);
     assertEquals(
-        "observation epoch should be 0",
         0,
         responseObservation.getEpochNumber().getNumberValue(),
-        0.0);
+        0.0,
+        "observation epoch should be 0");
 
     // observation with epoch should set the value passed
     observation =
@@ -1971,13 +1863,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 123 Response: {}", response);
     assertEquals(
-        "there should be two observations", 2, response.getExperimentRun().getObservationsCount());
+        2, response.getExperimentRun().getObservationsCount(), "there should be two observations");
     // Observations are sorted by auto incr id so the observation of interest is on index 1
     responseObservation = response.getExperimentRun().getObservations(1);
     assertEquals(
-        "observation epoch should be 123",
         123,
-        (long) responseObservation.getEpochNumber().getNumberValue());
+        (long) responseObservation.getEpochNumber().getNumberValue(),
+        "observation epoch should be 123");
 
     // Subsequent call to log observation without epoch should set value to old max +1
     observation =
@@ -2003,15 +1895,15 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 123 + 1 Response: {}", response);
     assertEquals(
-        "there should be three observations",
         3,
-        response.getExperimentRun().getObservationsCount());
+        response.getExperimentRun().getObservationsCount(),
+        "there should be three observations");
     // Observations are sorted by auto incr id so the observation of interest is on index 2
     responseObservation = response.getExperimentRun().getObservations(2);
     assertEquals(
-        "observation epoch should be 123 + 1",
         124,
-        (long) responseObservation.getEpochNumber().getNumberValue());
+        (long) responseObservation.getEpochNumber().getNumberValue(),
+        "observation epoch should be 123 + 1");
 
     // call to log observation with epoch but o not a different key should set value to 0
     observation =
@@ -2037,13 +1929,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 0 again Response: {}", response);
     assertEquals(
-        "there should be four observations", 4, response.getExperimentRun().getObservationsCount());
+        4, response.getExperimentRun().getObservationsCount(), "there should be four observations");
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(3);
     assertEquals(
-        "observation epoch should be 0",
         0,
-        (long) responseObservation.getEpochNumber().getNumberValue());
+        (long) responseObservation.getEpochNumber().getNumberValue(),
+        "observation epoch should be 0");
 
     // same epoch_number, same key stores duplicate
     observation =
@@ -2069,18 +1961,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
-        "there should be five observations", 5, response.getExperimentRun().getObservationsCount());
+        5, response.getExperimentRun().getObservationsCount(), "there should be five observations");
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(1);
     Observation responseObservation2 = response.getExperimentRun().getObservations(3);
     assertEquals(
-        "observations have same key",
         responseObservation.getAttribute().getKey(),
-        responseObservation2.getAttribute().getKey());
+        responseObservation2.getAttribute().getKey(),
+        "observations have same key");
     assertEquals(
-        "observations have same epoch number",
         responseObservation.getEpochNumber(),
-        responseObservation2.getEpochNumber());
+        responseObservation2.getEpochNumber(),
+        "observations have same epoch number");
 
     // call to log observation with non numeric epoch throws error
     observation =
@@ -2103,7 +1995,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logObservation(logObservationRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2138,13 +2030,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogMetric Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun metric not match with expected experimentRun metric",
-        response.getExperimentRun().getMetricsList().contains(keyValue));
+        response.getExperimentRun().getMetricsList().contains(keyValue),
+        "ExperimentRun metric not match with expected experimentRun metric");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -2168,7 +2060,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetric(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2179,7 +2071,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetric(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2194,7 +2086,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetric(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2242,13 +2134,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogMetrics Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun metrics not match with expected experimentRun metrics",
-        response.getExperimentRun().getMetricsList().containsAll(keyValues));
+        response.getExperimentRun().getMetricsList().containsAll(keyValues),
+        "ExperimentRun metrics not match with expected experimentRun metrics");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -2287,7 +2179,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetrics(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2298,11 +2190,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetrics(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     logMetricRequest =
@@ -2313,7 +2205,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logMetrics(logMetricRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2334,9 +2226,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetMetrics.Response response = experimentRunServiceStub.getMetrics(getMetricsRequest);
     LOGGER.info("GetMetrics Response : " + response.getMetricsCount());
     assertEquals(
-        "ExperimentRun metrics not match with expected experimentRun metrics",
         experimentRun.getMetricsList(),
-        response.getMetricsList());
+        response.getMetricsList(),
+        "ExperimentRun metrics not match with expected experimentRun metrics");
 
     LOGGER.info("Get Metrics from ExperimentRun tags test stop................................");
   }
@@ -2350,7 +2242,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getMetrics(getMetricsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2361,11 +2253,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getMetrics(getMetricsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -2852,7 +2744,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logDatasets(logDatasetRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2863,7 +2755,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logDatasets(logDatasetRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2878,7 +2770,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logDatasets(logDatasetRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2898,9 +2790,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetDatasets.Response response = experimentRunServiceStub.getDatasets(getDatasetsRequest);
     LOGGER.info("GetDatasets Response : " + response.getDatasetsCount());
     assertEquals(
-        "Experiment datasets not match with expected datasets",
         experimentRun.getDatasetsList().stream().map(Artifact::getKey).collect(Collectors.toList()),
-        response.getDatasetsList().stream().map(Artifact::getKey).collect(Collectors.toList()));
+        response.getDatasetsList().stream().map(Artifact::getKey).collect(Collectors.toList()),
+        "Experiment datasets not match with expected datasets");
 
     LOGGER.info("Get Datasets from ExperimentRun tags test stop................................");
   }
@@ -2914,7 +2806,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getDatasets(getDatasetsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2925,11 +2817,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getDatasets(getDatasetsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -2959,9 +2851,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogArtifact Response : " + response.getExperimentRun().getArtifactsCount());
     assertEquals(
-        "Experiment artifact count not match with expected artifact count",
         experimentRun.getArtifactsCount() + 1,
-        response.getExperimentRun().getArtifactsCount());
+        response.getExperimentRun().getArtifactsCount(),
+        "Experiment artifact count not match with expected artifact count");
 
     checkValidArtifactPath(
         response.getExperimentRun().getId(),
@@ -2969,9 +2861,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response.getExperimentRun().getArtifactsList());
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -2992,9 +2884,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
 
       assertEquals(
-          "ExperimentRun artifact path not match with expected artifact path",
           path,
-          responseArtifact.getPath());
+          responseArtifact.getPath(),
+          "ExperimentRun artifact path not match with expected artifact path");
     }
   }
 
@@ -3013,7 +2905,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LogArtifact logArtifactRequest = LogArtifact.newBuilder().setArtifact(artifact).build();
     try {
       experimentRunServiceStub.logArtifact(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3023,7 +2915,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     logArtifactRequest = LogArtifact.newBuilder().setId("asda").setArtifact(artifact).build();
     try {
       experimentRunServiceStub.logArtifact(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3037,7 +2929,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     try {
       experimentRunServiceStub.logArtifact(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3079,14 +2971,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogArtifact Response : \n" + response.getExperimentRun());
     assertEquals(
-        "ExperimentRun artifacts not match with expected artifacts",
         (experimentRun.getArtifactsCount() + artifacts.size()),
-        response.getExperimentRun().getArtifactsList().size());
+        response.getExperimentRun().getArtifactsList().size(),
+        "ExperimentRun artifacts not match with expected artifacts");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -3118,7 +3010,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LogArtifacts logArtifactRequest = LogArtifacts.newBuilder().addAllArtifacts(artifacts).build();
     try {
       experimentRunServiceStub.logArtifacts(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3128,7 +3020,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     logArtifactRequest = LogArtifacts.newBuilder().setId("asda").addAllArtifacts(artifacts).build();
     try {
       experimentRunServiceStub.logArtifacts(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3142,7 +3034,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     try {
       experimentRunServiceStub.logArtifacts(logArtifactRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3165,9 +3057,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("GetArtifacts Response : " + response.getArtifactsCount());
     assertEquals(
-        "ExperimentRun artifacts not matched with expected artifacts",
         experimentRun.getArtifactsList(),
-        response.getArtifactsList());
+        response.getArtifactsList(),
+        "ExperimentRun artifacts not matched with expected artifacts");
 
     LOGGER.info("Get Artifacts from ExperimentRun tags test stop................................");
   }
@@ -3181,7 +3073,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getArtifacts(getArtifactsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3192,7 +3084,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getArtifacts(getArtifactsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3229,13 +3121,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogHyperparameter Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun hyperparameter not match with expected hyperparameter",
-        response.getExperimentRun().getHyperparametersList().contains(hyperparameter));
+        response.getExperimentRun().getHyperparametersList().contains(hyperparameter),
+        "ExperimentRun hyperparameter not match with expected hyperparameter");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
@@ -3261,7 +3153,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameter(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3273,11 +3165,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameter(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     logHyperparameterRequest =
@@ -3288,7 +3180,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameter(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3336,13 +3228,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogHyperparameters Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun hyperparameters not match with expected hyperparameters",
-        response.getExperimentRun().getHyperparametersList().containsAll(hyperparameters));
+        response.getExperimentRun().getHyperparametersList().containsAll(hyperparameters),
+        "ExperimentRun hyperparameters not match with expected hyperparameters");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -3380,7 +3272,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameters(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3395,7 +3287,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameters(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3410,7 +3302,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logHyperparameters(logHyperparameterRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3433,9 +3325,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("GetHyperparameters Response : " + response.getHyperparametersCount());
     assertEquals(
-        "ExperimentRun Hyperparameters not match with expected hyperparameters",
         experimentRun.getHyperparametersList(),
-        response.getHyperparametersList());
+        response.getHyperparametersList(),
+        "ExperimentRun Hyperparameters not match with expected hyperparameters");
 
     LOGGER.info("Get Hyperparameters from ExperimentRun tags test stop......");
   }
@@ -3448,7 +3340,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getHyperparameters(getHyperparametersRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3459,11 +3351,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getHyperparameters(getHyperparametersRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -3494,13 +3386,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogAttribute Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun attribute not match with expected attribute",
-        response.getExperimentRun().getAttributesList().contains(attribute));
+        response.getExperimentRun().getAttributesList().contains(attribute),
+        "ExperimentRun attribute not match with expected attribute");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -3526,7 +3418,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttribute(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3537,11 +3429,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttribute(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     logAttributeRequest =
@@ -3552,7 +3444,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttribute(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3601,13 +3493,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogAttributes Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun attributes not match with expected attributes",
-        response.getExperimentRun().getAttributesList().containsAll(attributes));
+        response.getExperimentRun().getAttributesList().containsAll(attributes),
+        "ExperimentRun attributes not match with expected attributes");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -3645,7 +3537,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttributes(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3657,7 +3549,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttributes(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3672,7 +3564,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.logAttributes(logAttributeRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3720,13 +3612,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("AddExperimentRunAttributes Response : \n" + response.getExperimentRun());
     assertTrue(
-        "ExperimentRun attributes not match with expected attributes",
-        response.getExperimentRun().getAttributesList().containsAll(attributeList));
+        response.getExperimentRun().getAttributesList().containsAll(attributeList),
+        "ExperimentRun attributes not match with expected attributes");
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -3743,7 +3635,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.addExperimentRunAttributes(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3754,7 +3646,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         AddExperimentRunAttributes.newBuilder().build();
     try {
       experimentRunServiceStub.addExperimentRunAttributes(addAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3772,9 +3664,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     List<KeyValue> attributes = experimentRun.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
 
-    if (attributes.size() == 0) {
+    if (attributes.isEmpty()) {
       LOGGER.warn("Experiment Attributes not found in database ");
-      fail();
+      Assertions.fail();
       return;
     }
 
@@ -3798,8 +3690,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LOGGER.info("GetAttributes Response : " + response.getAttributesCount());
     for (KeyValue attributeKeyValue : response.getAttributesList()) {
       assertTrue(
-          "Experiment attribute not match with expected attribute",
-          keys.contains(attributeKeyValue.getKey()));
+          keys.contains(attributeKeyValue.getKey()),
+          "Experiment attribute not match with expected attribute");
     }
 
     getAttributesRequest =
@@ -3822,7 +3714,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunAttributes(getAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3833,7 +3725,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.getExperimentRunAttributes(getAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3876,13 +3768,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getAttributesList().size() <= 1);
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
-    if (response.getExperimentRun().getAttributesList().size() != 0) {
+    if (!response.getExperimentRun().getAttributesList().isEmpty()) {
       request =
           DeleteExperimentRunAttributes.newBuilder()
               .setId(experimentRun.getId())
@@ -3898,9 +3790,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       assertEquals(0, response.getExperimentRun().getAttributesList().size());
 
       assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
       experimentRun = response.getExperimentRun();
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
@@ -3917,7 +3809,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.deleteExperimentRunAttributes(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3946,764 +3838,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Disabled("UNIMPLEMENTED: sortExperimentRuns endpoint")
-  public void t_sortExperimentRunsTest() {
-    LOGGER.info("SortExperimentRuns test start................................");
-
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      KeyValue metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.012).build())
-              .build();
-      KeyValue metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.99).build())
-              .build();
-      KeyValue hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(9).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun11 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun11.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun11.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(7).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun12 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun12.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun12.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(4.55).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun21 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun21.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun21.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(1.00).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(2.545).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun22 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun22.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun22.getName());
-
-      SortExperimentRuns sortExperimentRuns =
-          SortExperimentRuns.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("metrics.accuracy")
-              .setAscending(true)
-              .build();
-
-      SortExperimentRuns.Response response =
-          experimentRunServiceStub.sortExperimentRuns(sortExperimentRuns);
-      LOGGER.info("SortExperimentRuns Response : " + response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
-          4,
-          response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun22,
-          response.getExperimentRunsList().get(0));
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun11,
-          response.getExperimentRunsList().get(3));
-
-      try {
-        sortExperimentRuns =
-            SortExperimentRuns.newBuilder()
-                .addAllExperimentRunIds(experimentRunIds)
-                .setSortKey("observations.attribute.attr_1")
-                .setAscending(true)
-                .build();
-
-        experimentRunServiceStub.sortExperimentRuns(sortExperimentRuns);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
-
-      sortExperimentRuns =
-          SortExperimentRuns.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("metrics.accuracy")
-              .setAscending(true)
-              .setIdsOnly(true)
-              .build();
-
-      response = experimentRunServiceStub.sortExperimentRuns(sortExperimentRuns);
-      LOGGER.info("SortExperimentRuns Response : " + response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
-          4,
-          response.getExperimentRunsCount());
-
-      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-        ExperimentRun experimentRun = response.getExperimentRunsList().get(index);
-        if (index == 0) {
-          assertNotEquals(
-              "ExperimentRun not match with expected experimentRun",
-              experimentRun22,
-              experimentRun);
-          assertEquals(
-              "ExperimentRun Id not match with expected experimentRun Id",
-              experimentRun22.getId(),
-              experimentRun.getId());
-        } else if (index == 1) {
-          assertNotEquals(
-              "ExperimentRun not match with expected experimentRun",
-              experimentRun12,
-              experimentRun);
-          assertEquals(
-              "ExperimentRun Id not match with expected experimentRun Id",
-              experimentRun12.getId(),
-              experimentRun.getId());
-        } else if (index == 2) {
-          assertNotEquals(
-              "ExperimentRun not match with expected experimentRun",
-              experimentRun21,
-              experimentRun);
-          assertEquals(
-              "ExperimentRun Id not match with expected experimentRun Id",
-              experimentRun21.getId(),
-              experimentRun.getId());
-        } else if (index == 3) {
-          assertNotEquals(
-              "ExperimentRun not match with expected experimentRun",
-              experimentRun11,
-              experimentRun);
-          assertEquals(
-              "ExperimentRun Id not match with expected experimentRun Id",
-              experimentRun11.getId(),
-              experimentRun.getId());
-        }
-      }
-    } finally {
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-    }
-
-    LOGGER.info("SortExperimentRuns test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: sortExperimentRuns endpoint")
-  public void t_sortExperimentRunsNegativeTest() {
-    LOGGER.info("SortExperimentRuns Negative test start................................");
-
-    SortExperimentRuns sortExperimentRuns =
-        SortExperimentRuns.newBuilder().setSortKey("end_time").setIdsOnly(true).build();
-
-    try {
-      experimentRunServiceStub.sortExperimentRuns(sortExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    try {
-      List<String> experimentRunIds = new ArrayList<>();
-      experimentRunIds.add("abc");
-      experimentRunIds.add("xyz");
-      sortExperimentRuns =
-          SortExperimentRuns.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("end_time")
-              .build();
-
-      experimentRunServiceStub.sortExperimentRuns(sortExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException exc) {
-      Status status = Status.fromThrowable(exc);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    }
-
-    LOGGER.info("SortExperimentRuns Negative test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: getTopExperimentRuns endpoint")
-  public void u_getTopExperimentRunsTest() {
-    LOGGER.info("TopExperimentRuns test start................................");
-
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      KeyValue metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.012).build())
-              .build();
-      KeyValue metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.99).build())
-              .build();
-      KeyValue hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(9).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setCodeVersion("1")
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun11 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun11.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun11.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(7).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setCodeVersion("2")
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun12 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun12.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun12.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(4.55).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setCodeVersion("3")
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun21 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun21.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun21.getName());
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(1.00).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(2.545).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setCodeVersion("4")
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun22 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun22.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun22.getName());
-
-      TopExperimentRunsSelector topExperimentRunsSelector =
-          TopExperimentRunsSelector.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("metrics.accuracy")
-              .setTopK(3)
-              .setAscending(true)
-              .build();
-
-      TopExperimentRunsSelector.Response response =
-          experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      LOGGER.info("TopExperimentRunsSelector Response : " + response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
-          3,
-          response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun22,
-          response.getExperimentRunsList().get(0));
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun21,
-          response.getExperimentRunsList().get(2));
-
-      topExperimentRunsSelector =
-          TopExperimentRunsSelector.newBuilder()
-              .setExperimentId(experiment.getId())
-              .setSortKey("hyperparameters.tuning")
-              .setTopK(20000)
-              .setAscending(true)
-              .setIdsOnly(true)
-              .build();
-
-      response = experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      LOGGER.info("TopExperimentRunsSelector Response : " + response.getExperimentRunsCount());
-
-      List<ExperimentRun> responseExperimentRuns = new ArrayList<>();
-      for (ExperimentRun resExperimentRun : response.getExperimentRunsList()) {
-        if (experimentRunIds.contains(resExperimentRun.getId())) {
-          responseExperimentRuns.add(resExperimentRun);
-        }
-      }
-
-      assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
-          2,
-          responseExperimentRuns.size());
-      assertNotEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun12,
-          responseExperimentRuns.get(0));
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun12.getId(),
-          responseExperimentRuns.get(0).getId());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun11.getId(),
-          responseExperimentRuns.get(1).getId());
-
-      topExperimentRunsSelector =
-          TopExperimentRunsSelector.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("code_version")
-              .setTopK(3)
-              .setIdsOnly(true)
-              .build();
-
-      response = experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      responseExperimentRuns = new ArrayList<>();
-      for (ExperimentRun resExperimentRun : response.getExperimentRunsList()) {
-        if (experimentRunIds.contains(resExperimentRun.getId())) {
-          responseExperimentRuns.add(resExperimentRun);
-        }
-      }
-      LOGGER.info("TopExperimentRunsSelector Response : " + response.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
-          3,
-          responseExperimentRuns.size());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun22.getId(),
-          responseExperimentRuns.get(0).getId());
-      assertNotEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun12,
-          responseExperimentRuns.get(2));
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          experimentRun12.getId(),
-          responseExperimentRuns.get(2).getId());
-    } finally {
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-    }
-
-    LOGGER.info("TopExperimentRuns test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: getTopExperimentRuns endpoint")
-  public void u_getTopExperimentRunsNegativeTest() {
-    LOGGER.info("TopExperimentRuns Negative test start................................");
-
-    TopExperimentRunsSelector topExperimentRunsSelector =
-        TopExperimentRunsSelector.newBuilder().setTopK(4).setAscending(true).build();
-
-    try {
-      topExperimentRunsSelector =
-          TopExperimentRunsSelector.newBuilder()
-              .setProjectId("12321")
-              .setSortKey("endTime")
-              .build();
-      experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      checkEqualsAssert(ex);
-    }
-
-    try {
-      List<String> experimentRunIds = new ArrayList<>();
-      experimentRunIds.add("abc");
-      experimentRunIds.add("xyz");
-      topExperimentRunsSelector =
-          TopExperimentRunsSelector.newBuilder()
-              .addAllExperimentRunIds(experimentRunIds)
-              .setSortKey("end_time")
-              .setTopK(3)
-              .build();
-
-      experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      fail();
-    } catch (StatusRuntimeException exce) {
-      Status status = Status.fromThrowable(exce);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    }
-
-    LOGGER.info("TopExperimentRuns Negative test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: logJobId endpoint")
-  public void v_logJobIdTest() {
-    LOGGER.info(" Log Job Id in ExperimentRun test start................................");
-
-    String jobId = "xyz";
-    LogJobId logJobIdRequest =
-        LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
-
-    experimentRunServiceStub.logJobId(logJobIdRequest);
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogJobId Response : \n" + response.getExperimentRun());
-    assertEquals(
-        "Job Id not match with expected job Id", jobId, response.getExperimentRun().getJobId());
-
-    assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
-        experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
-
-    LOGGER.info("Log Job Id in ExperimentRun test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: logJobId endpoint")
-  public void v_logJobIdNegativeTest() {
-    LOGGER.info(" Log Job Id in ExperimentRun Negative test start................................");
-
-    String jobId = "xyz";
-    LogJobId logJobIdRequest = LogJobId.newBuilder().setJobId(jobId).build();
-
-    try {
-
-      experimentRunServiceStub.logJobId(logJobIdRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    try {
-      logJobIdRequest = LogJobId.newBuilder().setId("abc").build();
-      experimentRunServiceStub.logJobId(logJobIdRequest);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    LOGGER.info("Log Job Id in ExperimentRun Negative test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: logJobId endpoint")
-  public void w_getJobIdTest() {
-    LOGGER.info(" Get Job Id in ExperimentRun test start................................");
-
-    String jobId = "xyz";
-    LogJobId logJobIdRequest =
-        LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
-
-    experimentRunServiceStub.logJobId(logJobIdRequest);
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response getExpRunResponse =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogJobId Response : \n" + getExpRunResponse.getExperimentRun());
-    assertEquals(
-        "Job Id not match with expected job Id",
-        jobId,
-        getExpRunResponse.getExperimentRun().getJobId());
-
-    GetJobId getJobIdRequest = GetJobId.newBuilder().setId(experimentRun.getId()).build();
-
-    GetJobId.Response response = experimentRunServiceStub.getJobId(getJobIdRequest);
-
-    LOGGER.info("GetJobId Response : \n" + response.getJobId());
-    assertEquals("Job Id not match with expected job Id", "xyz", response.getJobId());
-
-    LOGGER.info("Get Job Id in ExperimentRun test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: logJobId endpoint")
-  public void w_getJobIdNegativeTest() {
-    LOGGER.info(" Get Job Id in ExperimentRun Negative test start................................");
-
-    GetJobId getJobIdRequest = GetJobId.newBuilder().build();
-
-    try {
-      experimentRunServiceStub.getJobId(getJobIdRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    getJobIdRequest = GetJobId.newBuilder().setId("dssdds").build();
-
-    try {
-      experimentRunServiceStub.getJobId(getJobIdRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(
-          Status.NOT_FOUND.getCode().equals(status.getCode())
-              || Status.UNAUTHENTICATED.getCode().equals(status.getCode()));
-    }
-
-    LOGGER.info("Get Job Id in ExperimentRun Negative test stop................................");
-  }
-
-  /*@Test
-  public void x_getURLForArtifact() {
-    LOGGER.info("Get Url for Artifact test start................................");
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt11");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_zys");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_zys");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    Artifact artifact = experimentRun.getArtifacts(0);
-
-    GetUrlForArtifact getUrlForArtifact =
-        GetUrlForArtifact.newBuilder()
-            .setId(experiment.getId())
-            .setKey(artifact.getKey())
-            .setMethod("put")
-            .build();
-    GetUrlForArtifact.Response getUrlForArtifactResponse =
-        experimentRunServiceStub.getUrlForArtifact(getUrlForArtifact);
-    String url = getUrlForArtifactResponse.getUrl();
-    assertEquals("Artifact Url not match with expected artifact Url", url, url);
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Get Url for Artifact test stop................................");
-  }*/
-
-  @Test
   public void z_deleteExperimentRunTest() {
     LOGGER.info("Delete ExperimentRun test start................................");
 
@@ -4714,9 +3848,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        experimentRun.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
 
     DeleteExperimentRun deleteExperimentRun =
         DeleteExperimentRun.newBuilder().setId(experimentRun.getId()).build();
@@ -4735,7 +3869,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.deleteExperimentRun(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -4746,11 +3880,11 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       experimentRunServiceStub.deleteExperimentRun(request);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info("Delete ExperimentRun Negative test stop................................");
@@ -4773,9 +3907,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunIds.add(experimentRun.getId());
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun.getName());
+          experimentRun.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       // Children experimentRun 1
       createExperimentRunRequest =
@@ -4792,9 +3926,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunIds.add(childrenExperimentRun1.getId());
       LOGGER.info("ExperimentRun1 created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          childrenExperimentRun1.getName());
+          childrenExperimentRun1.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       // Children experimentRun 2
       createExperimentRunRequest =
@@ -4811,9 +3945,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunIds.add(childrenExperimentRun2.getId());
       LOGGER.info("ExperimentRun1 created successfully");
       assertEquals(
-          "ExperimentRun2 name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          childrenExperimentRun2.getName());
+          childrenExperimentRun2.getName(),
+          "ExperimentRun2 name not match with expected ExperimentRun name");
 
     } finally {
       for (String runId : experimentRunIds) {
@@ -4826,301 +3960,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     }
 
     LOGGER.info("Create Parent Children ExperimentRun test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: getChildrenExperimentRuns endpoint")
-  public void getChildExperimentRunWithPaginationTest() {
-    LOGGER.info(
-        "Get Children ExperimentRun using pagination test start................................");
-
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      // Create parent experimentRun
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(),
-              experiment.getId(),
-              "ExperimentRun-parent-1-" + new Date().getTime());
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun parentExperimentRun = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(parentExperimentRun.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          parentExperimentRun.getName());
-
-      Map<String, ExperimentRun> childrenExperimentRunMap = new HashMap<>();
-
-      // Children experimentRun 1
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(),
-              experiment.getId(),
-              "ExperimentRun-children-1-" + new Date().getTime());
-      // Add Parent Id to children
-      KeyValue metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      KeyValue metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.31).build())
-              .build();
-      KeyValue hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(7).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setParentId(parentExperimentRun.getId())
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .setDateCreated(123456)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun childrenExperimentRun1 = createExperimentRunResponse.getExperimentRun();
-      childrenExperimentRunMap.put(childrenExperimentRun1.getId(), childrenExperimentRun1);
-      experimentRunIds.add(childrenExperimentRun1.getId());
-      LOGGER.info("ExperimentRun1 created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          childrenExperimentRun1.getName());
-
-      // Children experimentRun 2
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(),
-              experiment.getId(),
-              "ExperimentRun-children-2-" + new Date().getTime());
-      // Add Parent Id to children
-      metric1 =
-          KeyValue.newBuilder()
-              .setKey("loss")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      metric2 =
-          KeyValue.newBuilder()
-              .setKey("accuracy")
-              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-              .build();
-      hyperparameter1 =
-          KeyValue.newBuilder()
-              .setKey("tuning")
-              .setValue(Value.newBuilder().setNumberValue(4.55).build())
-              .build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setParentId(parentExperimentRun.getId())
-              .addMetrics(metric1)
-              .addMetrics(metric2)
-              .addHyperparameters(hyperparameter1)
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun childrenExperimentRun2 = createExperimentRunResponse.getExperimentRun();
-      childrenExperimentRunMap.put(childrenExperimentRun2.getId(), childrenExperimentRun2);
-      experimentRunIds.add(childrenExperimentRun2.getId());
-      LOGGER.info("ExperimentRun1 created successfully");
-      assertEquals(
-          "ExperimentRun2 name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          childrenExperimentRun2.getName());
-
-      int pageLimit = 1;
-      boolean isExpectedResultFound = false;
-      for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
-        GetChildrenExperimentRuns getChildrenExperimentRunsRequest =
-            GetChildrenExperimentRuns.newBuilder()
-                .setExperimentRunId(parentExperimentRun.getId())
-                .setPageNumber(pageNumber)
-                .setPageLimit(pageLimit)
-                .setAscending(true)
-                .setSortKey(ModelDBConstants.NAME)
-                .build();
-
-        GetChildrenExperimentRuns.Response experimentRunResponse =
-            experimentRunServiceStub.getChildrenExperimentRuns(getChildrenExperimentRunsRequest);
-        assertEquals(
-            "Total records count not matched with expected records count",
-            2,
-            experimentRunResponse.getTotalRecords());
-
-        if (experimentRunResponse.getExperimentRunsList() != null) {
-          isExpectedResultFound = true;
-          for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
-            assertEquals(
-                "ExperimentRun not match with expected experimentRun",
-                childrenExperimentRunMap.get(experimentRun.getId()),
-                experimentRun);
-          }
-        } else {
-          if (isExpectedResultFound) {
-            LOGGER.warn("More ExperimentRun not found in database");
-            assertTrue(true);
-          } else {
-            fail("Expected experimentRun not found in response");
-          }
-        }
-      }
-
-      GetChildrenExperimentRuns getChildrenExperimentRunRequest =
-          GetChildrenExperimentRuns.newBuilder()
-              .setExperimentRunId(parentExperimentRun.getId())
-              .setPageNumber(1)
-              .setPageLimit(1)
-              .setAscending(false)
-              .setSortKey("metrics.loss")
-              .build();
-
-      GetChildrenExperimentRuns.Response experimentRunResponse =
-          experimentRunServiceStub.getChildrenExperimentRuns(getChildrenExperimentRunRequest);
-      assertEquals(
-          "Total records count not matched with expected records count",
-          2,
-          experimentRunResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRuns count not match with expected experimentRuns count",
-          1,
-          experimentRunResponse.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          childrenExperimentRun2,
-          experimentRunResponse.getExperimentRuns(0));
-
-      getChildrenExperimentRunRequest =
-          GetChildrenExperimentRuns.newBuilder()
-              .setExperimentRunId(parentExperimentRun.getId())
-              .setPageNumber(1)
-              .setPageLimit(1)
-              .setAscending(true)
-              .setSortKey("")
-              .build();
-
-      experimentRunResponse =
-          experimentRunServiceStub.getChildrenExperimentRuns(getChildrenExperimentRunRequest);
-      assertEquals(
-          "ExperimentRuns count not match with expected experimentRuns count",
-          1,
-          experimentRunResponse.getExperimentRunsCount());
-      assertEquals(
-          "ExperimentRun not match with expected experimentRun",
-          childrenExperimentRun1,
-          experimentRunResponse.getExperimentRuns(0));
-      assertEquals(
-          "Total records count not matched with expected records count",
-          2,
-          experimentRunResponse.getTotalRecords());
-
-      getChildrenExperimentRunRequest =
-          GetChildrenExperimentRuns.newBuilder()
-              .setExperimentRunId(parentExperimentRun.getId())
-              .setPageNumber(1)
-              .setPageLimit(1)
-              .setAscending(true)
-              .setSortKey("observations.attribute.attr_1")
-              .build();
-
-      try {
-        experimentRunServiceStub.getChildrenExperimentRuns(getChildrenExperimentRunRequest);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
-    } finally {
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-    }
-
-    LOGGER.info(
-        "Get Children ExperimentRun using pagination test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: setParentExperimentRunId endpoint")
-  public void setParentIdOnChildExperimentRunTest() {
-    LOGGER.info(
-        "Set Parent ID on Children ExperimentRun test start................................");
-
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(),
-              experiment.getId(),
-              "ExperimentRun-parent-1-" + new Date().getTime());
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun.getId());
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun.getName());
-
-      // Children experimentRun 1
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(),
-              experiment.getId(),
-              "ExperimentRun-children-1-" + new Date().getTime());
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun childrenExperimentRun1 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(childrenExperimentRun1.getId());
-      LOGGER.info("ExperimentRun1 created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          childrenExperimentRun1.getName());
-
-      SetParentExperimentRunId setParentExperimentRunIdRequest =
-          SetParentExperimentRunId.newBuilder()
-              .setExperimentRunId(childrenExperimentRun1.getId())
-              .setParentId(experimentRun.getId())
-              .build();
-      experimentRunServiceStub.setParentExperimentRunId(setParentExperimentRunIdRequest);
-
-      GetExperimentRunById getExperimentRunById =
-          GetExperimentRunById.newBuilder().setId(childrenExperimentRun1.getId()).build();
-      GetExperimentRunById.Response response =
-          experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          childrenExperimentRun1.getName(),
-          response.getExperimentRun().getName());
-      assertEquals(
-          "ExperimentRun parent ID not match with expected ExperimentRun parent ID",
-          experimentRun.getId(),
-          response.getExperimentRun().getParentId());
-    } finally {
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-    }
-    LOGGER.info(
-        "Set Parent ID on Children ExperimentRun test stop................................");
   }
 
   @Test
@@ -5154,30 +3993,30 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertNotEquals(
-        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
-        codeVersion);
+        codeVersion,
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion");
 
     var validPrefix =
         testConfig.getArtifactStoreConfig().getPathPrefixWithSeparator() + "CodeVersionEntity";
     assertTrue(
-        "ExperimentRun artifact path not match with expected artifact path",
-        codeVersion.getCodeArchive().getPath().startsWith(validPrefix));
+        codeVersion.getCodeArchive().getPath().startsWith(validPrefix),
+        "ExperimentRun artifact path not match with expected artifact path");
 
     assertTrue(
-        "ExperimentRun artifact path not match with expected artifact path",
-        codeVersion.getCodeArchive().getPath().contains("fake-"));
+        codeVersion.getCodeArchive().getPath().contains("fake-"),
+        "ExperimentRun artifact path not match with expected artifact path");
 
     assertTrue(
-        "ExperimentRun artifact path not match with expected artifact path",
         codeVersion
             .getCodeArchive()
             .getPath()
-            .endsWith("." + codeVersion.getCodeArchive().getFilenameExtension()));
+            .endsWith("." + codeVersion.getCodeArchive().getFilenameExtension()),
+        "ExperimentRun artifact path not match with expected artifact path");
 
     try {
       experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -5207,9 +4046,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertNotEquals(
-        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
-        codeVersion);
+        codeVersion,
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion");
 
     logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -5231,9 +4070,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertEquals(
-        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
-        codeVersion);
+        codeVersion,
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -5271,18 +4110,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertNotEquals(
-        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
-        codeVersion);
+        codeVersion,
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion");
 
     GetExperimentRunCodeVersion getExperimentRunCodeVersionRequest =
         GetExperimentRunCodeVersion.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunCodeVersion.Response getExperimentRunCodeVersionResponse =
         experimentRunServiceStub.getExperimentRunCodeVersion(getExperimentRunCodeVersionRequest);
     assertEquals(
-        "ExperimentRun codeVersion not match with expected experimentRun codeVersion",
         codeVersion,
-        getExperimentRunCodeVersionResponse.getCodeVersion());
+        getExperimentRunCodeVersionResponse.getCodeVersion(),
+        "ExperimentRun codeVersion not match with expected experimentRun codeVersion");
 
     LOGGER.info("Get ExperimentRun code version test stop................................");
   }
@@ -5295,7 +4134,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     List<Artifact> artifacts = experimentRun.getArtifactsList();
     LOGGER.info("Artifacts size : " + artifacts.size());
     if (artifacts.isEmpty()) {
-      fail("Artifacts not found");
+      Assertions.fail("Artifacts not found");
     }
 
     DeleteArtifact request =
@@ -5313,12 +4152,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LOGGER.info(
         "DeleteExperimentRunArtifacts Response : \n"
             + response.getExperimentRun().getArtifactsList());
-    assertFalse(response.getExperimentRun().getArtifactsList().contains(artifacts.get(0)));
+    Assertions.assertFalse(
+        response.getExperimentRun().getArtifactsList().contains(artifacts.get(0)));
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
 
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
@@ -5339,9 +4179,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     Experiment experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name not match with expected Experiment name",
         createExperimentRequest.getName(),
-        experiment.getName());
+        experiment.getName(),
+        "Experiment name not match with expected Experiment name");
 
     List<String> experimentRunIds = new ArrayList<>();
     for (int count = 0; count < 5; count++) {
@@ -5356,9 +4196,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunIds.add(experimentRun.getId());
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun.getName());
+          experimentRun.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
     }
 
     DeleteExperimentRuns deleteExperimentRuns =
@@ -5373,9 +4213,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     FindExperimentRuns.Response experimentRunResponse =
         experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRun count",
         0,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRun count");
 
     LOGGER.info("Batch Delete ExperimentRun test stop................................");
   }
@@ -5438,7 +4278,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
       try {
         experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
-        fail();
+        Assertions.fail();
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
@@ -5501,9 +4341,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     FindExperimentRuns.Response experimentRunResponse =
         experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
-        "ExperimentRuns count not match with expected experimentRun count",
         0,
-        experimentRunResponse.getExperimentRunsCount());
+        experimentRunResponse.getExperimentRunsCount(),
+        "ExperimentRuns count not match with expected experimentRun count");
 
     LOGGER.info(
         "Delete ExperimentRun by parent entities owner test stop................................");
@@ -5562,22 +4402,22 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        experimentRun.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
     assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.getVersionedInputs(),
-        experimentRun.getVersionedInputs());
+        experimentRun.getVersionedInputs(),
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response getExperimentRunByIdRes =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.getVersionedInputs(),
-        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs());
+        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs(),
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -5592,7 +4432,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     DeleteRepositoryRequest.Response deleteResult =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Versioning ExperimentRun test stop................................");
   }
@@ -5628,7 +4468,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     try {
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     } catch (StatusRuntimeException e) {
-      Assert.assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
+      assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
     }
 
     try {
@@ -5643,9 +4483,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
-      Assert.assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
+      assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
     }
 
     try {
@@ -5660,9 +4500,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
-      Assert.assertEquals(Status.Code.INVALID_ARGUMENT, e.getStatus().getCode());
+      assertEquals(Status.Code.INVALID_ARGUMENT, e.getStatus().getCode());
     }
 
     DeleteRepositoryRequest deleteRepository =
@@ -5671,7 +4511,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     DeleteRepositoryRequest.Response deleteResult =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Versioning ExperimentRun negative test stop................................");
   }
@@ -5754,7 +4594,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       try {
         experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
-        fail();
+        Assertions.fail();
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
@@ -5766,9 +4606,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
       Response response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           logVersionedInput.getVersionedInputs(),
-          response.getExperimentRun().getVersionedInputs());
+          response.getExperimentRun().getVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
       locationMap.put(
           "location-1",
@@ -5787,18 +4627,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           logVersionedInput.getVersionedInputs(),
-          response.getExperimentRun().getVersionedInputs());
+          response.getExperimentRun().getVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
       GetVersionedInput getVersionedInput =
           GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
       GetVersionedInput.Response getVersionedInputResponse =
           experimentRunServiceStub.getVersionedInputs(getVersionedInput);
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           logVersionedInput.getVersionedInputs(),
-          getVersionedInputResponse.getVersionedInputs());
+          getVersionedInputResponse.getVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
@@ -5814,12 +4654,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
         if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertTrue(
-              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty(),
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
         } else {
-          assertFalse(
-              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+          Assertions.assertFalse(
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty(),
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
         }
       }
     } finally {
@@ -5837,444 +4677,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
     }
 
     LOGGER.info("Log and Get Versioning ExperimentRun test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: listCommitExperimentRuns endpoint")
-  public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
-    LOGGER.info("Fetch ExperimentRun for commit test start................................");
-
-    String repoName = "Repo-" + new Date().getTime();
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, repoName);
-
-    String testUser1UserName = null;
-    if (testConfig.hasAuth()) {
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-      // Get the user info by vertaId form the AuthService
-      UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
-      testUser1UserName = testUser1.getVertaInfo().getUsername();
-    }
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    Commit commit =
-        Commit.newBuilder()
-            .setMessage("this is the test commit message")
-            .setDateCreated(111)
-            .addParentShas(getBranchResponse.getCommit().getCommitSha())
-            .build();
-    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
-    Location location2 =
-        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
-    Location location3 =
-        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
-    CreateCommitRequest createCommitRequest =
-        CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setCommit(commit)
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addAllLocation(location1.getLocationList())
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
-                    .addAllLocation(location2.getLocationList())
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addAllLocation(location3.getLocationList())
-                    .build())
-            .build();
-    CreateCommitRequest.Response commitResponse =
-        versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
-
-    if (testConfig.hasAuth()) {
-      AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorUtils.addCollaboratorRequestProject(
-              project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("\n Collaborator1 added in project successfully \n");
-
-      addCollaboratorRequest =
-          CollaboratorUtils.addCollaboratorRequestUser(
-              String.valueOf(repoId),
-              authClientInterceptor.getClient2Email(),
-              CollaboratorType.READ_WRITE,
-              "This is a repo collaborator description");
-      collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
-      LOGGER.info("\n Collaborator1 added in repository successfully \n");
-    }
-
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
-      Map<String, Location> locationMap = new HashMap<>();
-      locationMap.put("location-1", location1);
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-              .setVersionedInputs(
-                  VersioningEntry.newBuilder()
-                      .setRepositoryId(repoId)
-                      .setCommit(commitResponse.getCommit().getCommitSha())
-                      .putAllKeyLocationMap(locationMap)
-                      .build())
-              .build();
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun1.getId());
-      LOGGER.info("ExperimentRun1 created successfully");
-
-      locationMap.put("location-2", location2);
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-              .setName("ExperimentRun-2-" + new Date().getTime())
-              .setVersionedInputs(
-                  VersioningEntry.newBuilder()
-                      .setRepositoryId(repoId)
-                      .setCommit(commitResponse.getCommit().getCommitSha())
-                      .putAllKeyLocationMap(locationMap)
-                      .build())
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      experimentRunIds.add(createExperimentRunResponse.getExperimentRun().getId());
-      LOGGER.info("ExperimentRun2 created successfully");
-
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-              .setName("ExperimentRun-3-" + new Date().getTime())
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun3.getId());
-      LOGGER.info("ExperimentRun3 created successfully");
-
-      ListCommitExperimentRunsRequest listCommitExperimentRunsRequest =
-          ListCommitExperimentRunsRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commit.getCommitSha())
-              .build();
-      ListCommitExperimentRunsRequest.Response listCommitExperimentRunsResponse =
-          experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          3,
-          listCommitExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun1,
-          listCommitExperimentRunsResponse.getRuns(0));
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun3.getId(),
-          listCommitExperimentRunsResponse.getRuns(2).getId());
-
-      listCommitExperimentRunsRequest =
-          ListCommitExperimentRunsRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commit.getCommitSha())
-              .setPagination(Pagination.newBuilder().setPageNumber(1).setPageLimit(1).build())
-              .build();
-      listCommitExperimentRunsResponse =
-          experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          3,
-          listCommitExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun1,
-          listCommitExperimentRunsResponse.getRuns(0));
-
-      listCommitExperimentRunsRequest =
-          ListCommitExperimentRunsRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commit.getCommitSha())
-              .setPagination(Pagination.newBuilder().setPageNumber(3).setPageLimit(1).build())
-              .build();
-      listCommitExperimentRunsResponse =
-          experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          3,
-          listCommitExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun3.getId(),
-          listCommitExperimentRunsResponse.getRuns(0).getId());
-
-      RepositoryIdentification repositoryIdentification;
-      if (testUser1UserName != null) {
-        repositoryIdentification =
-            RepositoryIdentification.newBuilder()
-                .setNamedId(
-                    RepositoryNamedIdentification.newBuilder()
-                        .setName(repoName)
-                        .setWorkspaceName(testUser1UserName)
-                        .build())
-                .build();
-      } else {
-        repositoryIdentification = RepositoryIdentification.newBuilder().setRepoId(repoId).build();
-      }
-      listCommitExperimentRunsRequest =
-          ListCommitExperimentRunsRequest.newBuilder()
-              .setRepositoryId(repositoryIdentification)
-              .setCommitSha(commit.getCommitSha())
-              .build();
-      listCommitExperimentRunsResponse =
-          experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          3,
-          listCommitExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun1,
-          listCommitExperimentRunsResponse.getRuns(0));
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun3.getId(),
-          listCommitExperimentRunsResponse.getRuns(2).getId());
-
-      DeleteCommitRequest deleteCommitRequest =
-          DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commitResponse.getCommit().getCommitSha())
-              .build();
-      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-    } finally {
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
-    }
-
-    LOGGER.info("Fetch ExperimentRun for commit test stop................................");
-  }
-
-  @Test
-  @Disabled("UNIMPLEMENTED: listBlobExperimentRuns endpoint")
-  public void ListBlobExperimentRunsRequestTest()
-      throws ModelDBException, NoSuchAlgorithmException {
-    LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
-
-    long repoId =
-        RepositoryTest.createRepository(
-            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
-    List<String> experimentRunIds = new ArrayList<>();
-    try {
-      GetBranchRequest getBranchRequest =
-          GetBranchRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setBranch(ModelDBConstants.MASTER_BRANCH)
-              .build();
-      GetBranchRequest.Response getBranchResponse =
-          versioningServiceBlockingStub.getBranch(getBranchRequest);
-      Commit commit =
-          Commit.newBuilder()
-              .setMessage("this is the test commit message")
-              .setDateCreated(111)
-              .addParentShas(getBranchResponse.getCommit().getCommitSha())
-              .build();
-
-      Location location1 =
-          Location.newBuilder().addLocation("dataset").addLocation("train").build();
-      Location location2 =
-          Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
-      Location location3 =
-          Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
-
-      CreateCommitRequest createCommitRequest =
-          CreateCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommit(commit)
-              .addBlobs(
-                  BlobExpanded.newBuilder()
-                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                      .addAllLocation(location1.getLocationList())
-                      .build())
-              .addBlobs(
-                  BlobExpanded.newBuilder()
-                      .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
-                      .addAllLocation(location2.getLocationList())
-                      .build())
-              .addBlobs(
-                  BlobExpanded.newBuilder()
-                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                      .addAllLocation(location3.getLocationList())
-                      .build())
-              .build();
-      CreateCommitRequest.Response commitResponse =
-          versioningServiceBlockingStub.createCommit(createCommitRequest);
-      commit = commitResponse.getCommit();
-
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
-      Map<String, Location> locationMap = new HashMap<>();
-      locationMap.put("location-2", location1);
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setVersionedInputs(
-                  VersioningEntry.newBuilder()
-                      .setRepositoryId(repoId)
-                      .setCommit(commitResponse.getCommit().getCommitSha())
-                      .putAllKeyLocationMap(locationMap)
-                      .build())
-              .build();
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun1.getId());
-      LOGGER.info("ExperimentRun1 created successfully");
-
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-              .setName("ExperimentRun-2")
-              .setVersionedInputs(
-                  createExperimentRunRequest.getVersionedInputs().toBuilder()
-                      .putKeyLocationMap("XYZ", location2)
-                      .build())
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun2.getId());
-      LOGGER.info("ExperimentRun2 created successfully");
-
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-              .setName("ExperimentRun-3")
-              .setVersionedInputs(
-                  createExperimentRunRequest.getVersionedInputs().toBuilder()
-                      .putKeyLocationMap("PQR", location3)
-                      .build())
-              .build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-      experimentRunIds.add(experimentRun3.getId());
-      LOGGER.info("ExperimentRun3 created successfully");
-
-      ListBlobExperimentRunsRequest listBlobExperimentRunsRequest =
-          ListBlobExperimentRunsRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commit.getCommitSha())
-              .addAllLocation(location1.getLocationList())
-              .build();
-      ListBlobExperimentRunsRequest.Response listBlobExperimentRunsResponse =
-          experimentRunServiceStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          3,
-          listBlobExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun1,
-          listBlobExperimentRunsResponse.getRuns(0));
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun3.getId(),
-          listBlobExperimentRunsResponse.getRuns(2).getId());
-
-      listBlobExperimentRunsRequest =
-          ListBlobExperimentRunsRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commit.getCommitSha())
-              .addAllLocation(location2.getLocationList())
-              .build();
-      listBlobExperimentRunsResponse =
-          experimentRunServiceStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
-      assertEquals(
-          "ExperimentRun total records not match with expected ExperimentRun total records",
-          2,
-          listBlobExperimentRunsResponse.getTotalRecords());
-      assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
-          experimentRun3.getId(),
-          listBlobExperimentRunsResponse.getRuns(1).getId());
-
-      Location location4 = Location.newBuilder().addLocation("test-2").build();
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder()
-              .setName("ExperimentRun-4")
-              .setVersionedInputs(
-                  createExperimentRunRequest.getVersionedInputs().toBuilder()
-                      .putKeyLocationMap("PQR", location4)
-                      .build())
-              .build();
-      try {
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
-
-      DeleteCommitRequest deleteCommitRequest =
-          DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-              .setCommitSha(commitResponse.getCommit().getCommitSha())
-              .build();
-      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-    } finally {
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
-
-      for (String runId : experimentRunIds) {
-        DeleteExperimentRun deleteExperimentRun =
-            DeleteExperimentRun.newBuilder().setId(runId).build();
-        DeleteExperimentRun.Response deleteExperimentRunResponse =
-            experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-        assertTrue(deleteExperimentRunResponse.getStatus());
-      }
-    }
-
-    LOGGER.info("Fetch ExperimentRun blob for commit test stop................................");
   }
 
   @Test
@@ -6327,26 +4733,26 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        experimentRun.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
     assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.getVersionedInputs(),
-        experimentRun.getVersionedInputs());
+        experimentRun.getVersionedInputs(),
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response getExperimentRunByIdRes =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.getVersionedInputs(),
-        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs());
+        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs(),
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
     assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         0,
-        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs().getKeyLocationMapCount());
+        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs().getKeyLocationMapCount(),
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -6361,7 +4767,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     DeleteRepositoryRequest.Response deleteResult =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    assertTrue(deleteResult.getStatus());
 
     LOGGER.info(
         "Versioning without Locations ExperimentRun test stop................................");
@@ -6385,12 +4791,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       experimentRunIds.add(experimentRun.getId());
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun.getName());
-      assertFalse(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-          createExperimentRunRequest.hasVersionedInputs());
+          experimentRun.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
+      Assertions.assertFalse(
+          createExperimentRunRequest.hasVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -6435,22 +4841,22 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       GetExperimentRunById.Response response =
           experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           logVersionedInput.getVersionedInputs(),
-          response.getExperimentRun().getVersionedInputs());
+          response.getExperimentRun().getVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
 
       GetVersionedInput getVersionedInput =
           GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
       GetVersionedInput.Response getVersionedInputResponse =
           experimentRunServiceStub.getVersionedInputs(getVersionedInput);
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           logVersionedInput.getVersionedInputs(),
-          getVersionedInputResponse.getVersionedInputs());
+          getVersionedInputResponse.getVersionedInputs(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
       assertEquals(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
           0,
-          getVersionedInputResponse.getVersionedInputs().getKeyLocationMapCount());
+          getVersionedInputResponse.getVersionedInputs().getKeyLocationMapCount(),
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput");
     } finally {
       for (String runId : experimentRunIds) {
         DeleteExperimentRun deleteExperimentRun =
@@ -6466,7 +4872,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
     }
 
     LOGGER.info(
@@ -6538,7 +4944,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
+    commitResponse.getCommit();
 
     List<String> experimentRunIds = new ArrayList<>();
     try {
@@ -6638,27 +5044,27 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           2,
-          response.getTotalRecords());
+          response.getTotalRecords(),
+          "Total records count not matched with expected records count");
       assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
           2,
-          response.getExperimentRunsCount());
+          response.getExperimentRunsCount(),
+          "ExperimentRun count not match with expected experimentRun count");
       assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
           experimentRunConfig2.getId(),
-          response.getExperimentRuns(0).getId());
+          response.getExperimentRuns(0).getId(),
+          "ExperimentRun count not match with expected experimentRun count");
       for (ExperimentRun exprRun : response.getExperimentRunsList()) {
         for (KeyValue kv : exprRun.getHyperparametersList()) {
           if (kv.getKey().equals("train")) {
-            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+            assertTrue(kv.getValue().getNumberValue() > 0.0001, "Value should be GTE 0.0001 " + kv);
           }
         }
       }
 
-      AddCollaboratorRequest addCollaboratorRequest = null;
-      AddCollaboratorRequest.Response addCollaboratorResponse = null;
+      AddCollaboratorRequest addCollaboratorRequest;
+      AddCollaboratorRequest.Response addCollaboratorResponse;
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
           when(uac.getUACService().getCurrentUser(any()))
@@ -6751,23 +5157,23 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
         response = experimentRunServiceStubClient2.findExperimentRuns(findExperimentRuns);
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             2,
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
         if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
-              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
-              response.getExperimentRuns(0).getHyperparametersCount());
+              response.getExperimentRuns(0).getHyperparametersCount(),
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count");
         } else {
           assertEquals(
-              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
-              response.getExperimentRuns(0).getHyperparametersCount());
+              response.getExperimentRuns(0).getHyperparametersCount(),
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count");
         }
 
         if (isRunningIsolated()) {
@@ -6839,23 +5245,23 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
         response = experimentRunServiceStubClient2.findExperimentRuns(findExperimentRuns);
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             2,
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
         if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
-              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
-              response.getExperimentRuns(0).getHyperparametersCount());
+              response.getExperimentRuns(0).getHyperparametersCount(),
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count");
         } else {
           assertEquals(
-              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
-              response.getExperimentRuns(0).getHyperparametersCount());
+              response.getExperimentRuns(0).getHyperparametersCount(),
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count");
         }
       }
     } finally {
@@ -6882,7 +5288,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
 
       for (String runId : experimentRunIds) {
         DeleteExperimentRun deleteExperimentRun =
@@ -6952,7 +5358,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
+    commitResponse.getCommit();
 
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put("location-1", location1);
@@ -7055,31 +5461,31 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             2,
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             experimentRunConfig2.getId(),
-            response.getExperimentRuns(0).getId());
+            response.getExperimentRuns(0).getId(),
+            "ExperimentRun count not match with expected experimentRun count");
 
         for (int index = 0; index < response.getExperimentRunsCount(); index++) {
           ExperimentRun exprRun = response.getExperimentRuns(index);
           for (KeyValue kv : exprRun.getHyperparametersList()) {
             if (kv.getKey().equals("C")) {
               assertTrue(
-                  "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+                  kv.getValue().getNumberValue() >= 0.0001, "Value should be GTE 0.0001 " + kv);
             } else if (kv.getKey().equals("train")) {
               if (index == 0) {
                 assertEquals(
-                    "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+                    5.0F, kv.getValue().getNumberValue(), 0.0, "Value should be GTE 1 " + kv);
               } else {
                 assertEquals(
-                    "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+                    3.0F, kv.getValue().getNumberValue(), 0.0, "Value should be GTE 1 " + kv);
               }
             }
           }
@@ -7097,31 +5503,31 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             2,
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             experimentRunConfig1.getId(),
-            response.getExperimentRuns(0).getId());
+            response.getExperimentRuns(0).getId(),
+            "ExperimentRun count not match with expected experimentRun count");
 
         for (int index = 0; index < response.getExperimentRunsCount(); index++) {
           ExperimentRun exprRun = response.getExperimentRuns(index);
           for (KeyValue kv : exprRun.getHyperparametersList()) {
             if (kv.getKey().equals("C")) {
               assertTrue(
-                  "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+                  kv.getValue().getNumberValue() >= 0.0001, "Value should be GTE 0.0001 " + kv);
             } else if (kv.getKey().equals("train")) {
               if (index == 0) {
                 assertEquals(
-                    "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+                    3.0F, kv.getValue().getNumberValue(), 0.0, "Value should be GTE 1 " + kv);
               } else {
                 assertEquals(
-                    "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+                    5.0F, kv.getValue().getNumberValue(), 0.0, "Value should be GTE 1 " + kv);
               }
             }
           }
@@ -7141,21 +5547,21 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             1,
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             experimentRunConfig2.getId(),
-            response.getExperimentRuns(0).getId());
+            response.getExperimentRuns(0).getId(),
+            "ExperimentRun count not match with expected experimentRun count");
         for (ExperimentRun exprRun : response.getExperimentRunsList()) {
           for (KeyValue kv : exprRun.getHyperparametersList()) {
             if (kv.getKey().equals("train")) {
-              assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+              assertTrue(kv.getValue().getNumberValue() > 1, "Value should be GTE 1 " + kv);
             }
           }
         }
@@ -7180,16 +5586,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
 
         for (int index = 0; index < response.getExperimentRunsCount(); index++) {
           ExperimentRun exprRun = response.getExperimentRuns(index);
           for (KeyValue kv : exprRun.getHyperparametersList()) {
             if (kv.getKey().equals("C")) {
               assertTrue(
-                  "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+                  kv.getValue().getNumberValue() > 0.0001, "Value should be GTE 0.0001 " + kv);
             }
           }
         }
@@ -7215,16 +5621,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             2,
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
 
         for (int index = 0; index < response.getExperimentRunsCount(); index++) {
           ExperimentRun exprRun = response.getExperimentRuns(index);
           for (KeyValue kv : exprRun.getHyperparametersList()) {
             if (kv.getKey().equals("C")) {
               assertTrue(
-                  "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+                  kv.getValue().getNumberValue() > 0.0001, "Value should be GTE 0.0001 " + kv);
             }
           }
         }
@@ -7250,13 +5656,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
-            "Total records count not matched with expected records count",
             3 + experimentRunMap.size(),
-            response.getTotalRecords());
+            response.getTotalRecords(),
+            "Total records count not matched with expected records count");
         assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
             3 + experimentRunMap.size(),
-            response.getExperimentRunsCount());
+            response.getExperimentRunsCount(),
+            "ExperimentRun count not match with expected experimentRun count");
 
         // FIX ME: Fix findExperimentRun with string value predicate
         /*hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
@@ -7295,7 +5701,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 .build();
         DeleteRepositoryRequest.Response deleteResult =
             versioningServiceBlockingStub.deleteRepository(deleteRepository);
-        Assert.assertTrue(deleteResult.getStatus());
+        assertTrue(deleteResult.getStatus());
       }
     } finally {
       for (String runId : experimentRunIds) {
@@ -7372,7 +5778,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
+    commitResponse.getCommit();
 
     List<String> experimentRunIds = new ArrayList<>();
     try {
@@ -7492,47 +5898,47 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           4 + experimentRunMap.size(),
-          response.getTotalRecords());
+          response.getTotalRecords(),
+          "Total records count not matched with expected records count");
       assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
           4 + experimentRunMap.size(),
-          response.getExperimentRunsCount());
+          response.getExperimentRunsCount(),
+          "ExperimentRun count not match with expected experimentRun count");
       for (ExperimentRun exprRun : response.getExperimentRunsList()) {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
           if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
-            assertFalse(
-                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            Assertions.assertFalse(
+                exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
           } else {
             assertTrue(
-                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-            assertFalse(
-                "Expected code config not found in map",
+                exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
+            Assertions.assertFalse(
                 exprRun
                     .getCodeVersionFromBlobOrThrow(locationKey)
                     .getGitSnapshot()
                     .getFilepathsList()
-                    .isEmpty());
+                    .isEmpty(),
+                "Expected code config not found in map");
           }
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
           if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
-            assertFalse(
-                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            Assertions.assertFalse(
+                exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
           } else {
             assertTrue(
-                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+                exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
             assertTrue(
-                "Expected code config not found in map",
                 exprRun
                     .getCodeVersionFromBlobOrThrow(locationKey)
                     .getGitSnapshot()
                     .getFilepathsList()
-                    .isEmpty());
+                    .isEmpty(),
+                "Expected code config not found in map");
           }
         }
       }
@@ -7544,16 +5950,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
       if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
-        assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+        Assertions.assertFalse(
+            exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
       } else {
-        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-        assertFalse(
-            "Expected code config not found in map",
+        assertTrue(exprRun.containsCodeVersionFromBlob(locationKey), "Code blob should not empty");
+        Assertions.assertFalse(
             exprRun
                 .getCodeVersionFromBlobOrThrow(locationKey)
                 .getGitSnapshot()
                 .getFilepathsList()
-                .isEmpty());
+                .isEmpty(),
+            "Expected code config not found in map");
       }
     } finally {
       if (isRunningIsolated()) {
@@ -7571,7 +5978,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
 
       for (String runId : experimentRunIds) {
         DeleteExperimentRun deleteExperimentRun =
@@ -7644,7 +6051,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       CreateCommitRequest.Response commitResponse =
           versioningServiceBlockingStub.createCommit(createCommitRequest);
-      commit = commitResponse.getCommit();
+      commitResponse.getCommit();
 
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-1", location1);
@@ -7754,8 +6161,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setSortKey("hyperparameters.train")
               .build();
 
-      FindExperimentRuns.Response response =
-          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       keyValueQuery =
           KeyValueQuery.newBuilder()
@@ -7773,7 +6179,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setSortKey("hyperparameters.train")
               .build();
 
-      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       keyValueQuery =
           KeyValueQuery.newBuilder()
@@ -7791,7 +6197,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setSortKey("hyperparameters.train")
               .build();
 
-      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       KeyValueQuery oldKeyValueQuery =
           KeyValueQuery.newBuilder()
@@ -7810,7 +6216,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setSortKey("hyperparameters.C")
               .build();
 
-      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
       oldKeyValueQuery =
@@ -7830,23 +6236,24 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setSortKey("hyperparameters.C")
               .build();
 
-      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           2,
-          response.getTotalRecords());
+          response.getTotalRecords(),
+          "Total records count not matched with expected records count");
 
       for (int index = 0; index < response.getExperimentRunsCount(); index++) {
         ExperimentRun exprRun = response.getExperimentRuns(index);
         for (KeyValue kv : exprRun.getHyperparametersList()) {
           if (kv.getKey().equals("C")) {
             assertTrue(
-                "Value should be GTE 0.0001 " + kv,
                 (kv.getValue().getKindCase() == KindCase.STRING_VALUE
                         ? Double.parseDouble(kv.getValue().getStringValue())
                         : kv.getValue().getNumberValue())
-                    > 0.0001);
+                    > 0.0001,
+                "Value should be GTE 0.0001 " + kv);
           }
         }
       }
@@ -7857,7 +6264,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
 
       for (String runId : experimentRunIds) {
         DeleteExperimentRun deleteExperimentRun =
@@ -7898,9 +6305,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunMap.put(experimentRun12.getId(), experimentRun12);
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun12.getName());
+        experimentRun12.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
 
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
@@ -7914,9 +6321,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunMap.put(experimentRun21.getId(), experimentRun21);
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun21.getName());
+        experimentRun21.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
 
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
@@ -7930,9 +6337,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRunMap.put(experimentRun22.getId(), experimentRun22);
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun22.getName());
+        experimentRun22.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
 
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
@@ -7947,9 +6354,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     datasetList.add(dataset1);
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset1.getName());
+        dataset1.getName(),
+        "Dataset name not match with expected dataset name");
 
     createDatasetRequest =
         DatasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data_1.csv");
@@ -7962,9 +6369,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     datasetList.add(dataset2);
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset2.getName());
+        dataset2.getName(),
+        "Dataset name not match with expected dataset name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllDatasets(
@@ -8074,9 +6481,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       for (Artifact datasetArtifact :
           getExperimentRunByIdResponse.getExperimentRun().getDatasetsList()) {
         assertEquals(
-            "Experiment datasets not match with expected datasets",
             artifactMap.get(datasetArtifact.getKey()).getKey(),
-            datasetArtifact.getKey());
+            datasetArtifact.getKey(),
+            "Experiment datasets not match with expected datasets");
       }
       experimentRun11 = getExperimentRunByIdResponse.getExperimentRun();
 
@@ -8090,17 +6497,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               getExperimentRunsByDatasetVersionId);
 
       assertEquals(
-          "Total records count not matched with expected records count",
           1,
-          response.getTotalRecords());
+          response.getTotalRecords(),
+          "Total records count not matched with expected records count");
       assertEquals(
-          "ExperimentRun count not match with expected experimentRun count",
           1,
-          response.getExperimentRunsCount());
+          response.getExperimentRunsCount(),
+          "ExperimentRun count not match with expected experimentRun count");
       assertEquals(
-          "ExperimentRun not match with expected experimentRun",
           experimentRun11,
-          response.getExperimentRuns(0));
+          response.getExperimentRuns(0),
+          "ExperimentRun not match with expected experimentRun");
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
@@ -8110,7 +6517,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
-        } else if (testConfig.isPermissionV2Enabled()) {
+        } else {
           if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             createAndGetRole(
                 authServiceChannelServiceUser,
@@ -8118,6 +6525,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 Optional.of(roleIdUser1),
                 Set.of(ResourceTypeV2.PROJECT));
           }
+
           var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
           groupStub.addUsers(
               AddGroupUsers.newBuilder()
@@ -8125,43 +6533,21 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                   .setGroupId(groupIdUser1)
                   .setOrgId(organizationId)
                   .build());
-        } else {
-          AddCollaboratorRequest addCollaboratorRequest =
-              addCollaboratorRequestProjectInterceptor(
-                  project, CollaboratorType.READ_ONLY, authClientInterceptor);
-
-          AddCollaboratorRequest.Response addCollaboratorResponse =
-              collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-          LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
-          assertTrue(addCollaboratorResponse.getStatus());
         }
-
         response =
             experimentRunServiceStubClient2.getExperimentRunsByDatasetVersionId(
                 getExperimentRunsByDatasetVersionId);
 
-        assertEquals(
-            "Total records count not matched with expected records count",
-            1,
-            response.getTotalRecords());
-        assertEquals(
-            "ExperimentRun count not match with expected experimentRun count",
-            1,
-            response.getExperimentRunsCount());
+        assertEquals(1, response.getTotalRecords());
+        assertEquals(1, response.getExperimentRunsCount());
         if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
-          assertEquals(
-              "ExperimentRun not match with expected experimentRun",
-              0,
-              response.getExperimentRuns(0).getDatasetsCount());
+          assertEquals(0, response.getExperimentRuns(0).getDatasetsCount());
         } else {
-          assertEquals(
-              "ExperimentRun not match with expected experimentRun",
-              2,
-              response.getExperimentRuns(0).getDatasetsCount());
+          assertEquals(2, response.getExperimentRuns(0).getDatasetsCount());
         }
       }
     } finally {
-      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+      if (!isRunningIsolated()) {
         createAndGetRole(
             authServiceChannelServiceUser,
             organizationId,
@@ -8211,7 +6597,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         assertTrue(deleteExperimentRunResponse.getStatus());
       }
 
-      if (!isRunningIsolated() && testConfig.isPermissionV2Enabled()) {
+      if (!isRunningIsolated()) {
         var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
         groupStub.removeUsers(
             RemoveGroupUsers.newBuilder()
@@ -8257,13 +6643,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getHyperparametersList().size() <= 1);
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
-    if (response.getExperimentRun().getHyperparametersList().size() != 0) {
+    if (!response.getExperimentRun().getHyperparametersList().isEmpty()) {
       request =
           DeleteHyperparameters.newBuilder()
               .setId(experimentRun.getId())
@@ -8279,9 +6665,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       assertEquals(0, response.getExperimentRun().getHyperparametersList().size());
 
       assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
       experimentRun = response.getExperimentRun();
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
@@ -8317,13 +6703,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getMetricsList().size() <= 1);
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
-    if (response.getExperimentRun().getMetricsList().size() != 0) {
+    if (!response.getExperimentRun().getMetricsList().isEmpty()) {
       request = DeleteMetrics.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
 
       experimentRunServiceStub.deleteMetrics(request);
@@ -8335,9 +6721,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       assertEquals(0, response.getExperimentRun().getMetricsList().size());
 
       assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
       experimentRun = response.getExperimentRun();
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
@@ -8381,13 +6767,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     assertTrue(response.getExperimentRun().getObservationsList().size() <= 1);
 
     assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        response.getExperimentRun().getDateUpdated(),
+        "ExperimentRun date_updated field not update on database");
     experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
-    if (response.getExperimentRun().getObservationsList().size() != 0) {
+    if (!response.getExperimentRun().getObservationsList().isEmpty()) {
       request =
           DeleteObservations.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
 
@@ -8400,9 +6786,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       assertEquals(0, response.getExperimentRun().getObservationsList().size());
 
       assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
       experimentRun = response.getExperimentRun();
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
@@ -8414,7 +6800,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Clone experimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
     long repoId =
         RepositoryTest.createRepository(
             versioningServiceBlockingStub, "Repo-" + new Date().getTime());
@@ -8466,18 +6851,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .build();
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
+    commitResponse.getCommit();
 
     // Create project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
     LOGGER.info("Project1 created successfully");
 
     createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     LOGGER.info("Project2 created successfully");
@@ -8546,9 +6931,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       CloneExperimentRun.Response cloneResponse =
           experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
       assertNotEquals(
-          "Clone run id should not be match with source run id",
           srcExperimentRun.getId(),
-          cloneResponse.getRun().getId());
+          cloneResponse.getRun().getId(),
+          "Clone run id should not be match with source run id");
       srcExperimentRun =
           srcExperimentRun.toBuilder()
               .setId(cloneResponse.getRun().getId())
@@ -8559,9 +6944,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setEndTime(cloneResponse.getRun().getEndTime())
               .build();
       assertEquals(
-          "Clone experimentRun can not match with expected experimentRun",
           srcExperimentRun.getId(),
-          cloneResponse.getRun().getId());
+          cloneResponse.getRun().getId(),
+          "Clone experimentRun can not match with expected experimentRun");
 
       cloneExperimentRun =
           CloneExperimentRun.newBuilder()
@@ -8571,9 +6956,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       cloneResponse = experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
       assertNotEquals(
-          "Clone run id should not be match with source run id",
           srcExperimentRun.getId(),
-          cloneResponse.getRun().getId());
+          cloneResponse.getRun().getId(),
+          "Clone run id should not be match with source run id");
       srcExperimentRun =
           srcExperimentRun.toBuilder()
               .setId(cloneResponse.getRun().getId())
@@ -8586,9 +6971,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setEndTime(cloneResponse.getRun().getEndTime())
               .build();
       assertEquals(
-          "Clone experimentRun can not match with expected experimentRun",
           srcExperimentRun.getId(),
-          cloneResponse.getRun().getId());
+          cloneResponse.getRun().getId(),
+          "Clone experimentRun can not match with expected experimentRun");
 
       try {
         cloneExperimentRun =
@@ -8597,7 +6982,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 .setDestExperimentId("XYZ")
                 .build();
         experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
-        fail();
+        Assertions.fail();
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
@@ -8611,7 +6996,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .build();
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      assertTrue(deleteResult.getStatus());
 
       if (isRunningIsolated()) {
         when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
@@ -8640,7 +7025,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         metadataServiceBlockingStub.generateRandomName(
             GenerateRandomNameRequest.newBuilder().build());
     LOGGER.info("Random name: {}", response.getName());
-    assertFalse("Random name should not be empty", response.getName().isEmpty());
+    Assertions.assertFalse(response.getName().isEmpty(), "Random name should not be empty");
     LOGGER.info("Random name generation test stop................................");
   }
 
@@ -8680,13 +7065,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     GetExperimentRunById.Response getExperimentRunByIdResponse =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
-        "environment not match with expected environment",
         request.getEnvironment(),
-        getExperimentRunByIdResponse.getExperimentRun().getEnvironment());
+        getExperimentRunByIdResponse.getExperimentRun().getEnvironment(),
+        "environment not match with expected environment");
 
     try {
       experimentRunServiceStub.logEnvironment(request.toBuilder().clearId().build());
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
