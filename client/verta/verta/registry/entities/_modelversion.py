@@ -804,7 +804,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         }
         if output is not None:
             schema["output"] = output
-        self.log_artifact(key="model_schema.json", artifact=schema)
+
+        # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
+        with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+            temp_filename = temp_file.name
+            with open(temp_filename, 'w') as file:
+                json.dump(schema, file)
+            self.log_artifact(key="model_schema.json", artifact=temp_filename, overwrite=True)
 
     def get_schema(self) -> Dict[str, dict]:
         """
@@ -825,7 +831,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         schema = self.get_artifact("model_schema.json")
-        return schema
+        return json.load(schema)
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
