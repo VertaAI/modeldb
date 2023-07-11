@@ -778,14 +778,20 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         The output schema is optional.
 
-        To validate a prediction's input and output against these schemas, use the @validate_schema decorator.
+        To validate a prediction's input and output against these schemas, use the
+        :func:`~verta.registry.validate_schema` decorator.
 
         Parameters
         ----------
         input : dict
-            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
+            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
         output : dict
             Output schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
+
+
+        References
+        ----------
+        .. [#] https://docs.pydantic.dev/1.10/usage/schema/
 
         """
         if not isinstance(input, dict):
