@@ -114,9 +114,13 @@ class _DeployableEntity(_ModelDBEntity):
 
         """
         if not isinstance(input, dict):
-            raise TypeError(f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?")
+            raise TypeError(
+                f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?"
+            )
         if output is not None and not isinstance(output, dict):
-            raise TypeError(f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?")
+            raise TypeError(
+                f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?"
+            )
 
         schema = {
             "input": input,
@@ -125,11 +129,13 @@ class _DeployableEntity(_ModelDBEntity):
             schema["output"] = output
 
         # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
-        with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w") as temp_file:
             temp_filename = temp_file.name
-            with open(temp_filename, 'w') as file:
+            with open(temp_filename, "w") as file:
                 json.dump(schema, file)
-            self.log_artifact(key="model_schema_json", artifact=temp_filename, overwrite=True)
+            self.log_artifact(
+                key="model_schema_json", artifact=temp_filename, overwrite=True
+            )
 
     def get_schema(self) -> Dict[str, dict]:
         """
