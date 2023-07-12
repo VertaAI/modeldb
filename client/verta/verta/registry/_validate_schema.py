@@ -16,7 +16,7 @@ def validate_schema(f):
 
     Validation is done with the ``jsonschema`` library [#]_. If no schema has been provided via
     :meth:`RegisteredModelVersion.set_schema() <verta.registry.entities.RegisteredModelVersion.set_schema>`,
-     an exception is raised.
+    an exception is raised.
 
     Note that an input schema is required but output is not. If the output schema was not set, then the output will
     not be validated.
