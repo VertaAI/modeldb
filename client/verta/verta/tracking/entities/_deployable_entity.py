@@ -129,7 +129,7 @@ class _DeployableEntity(_ModelDBEntity):
             temp_filename = temp_file.name
             with open(temp_filename, 'w') as file:
                 json.dump(schema, file)
-            self.log_artifact(key="model_schema.json", artifact=temp_filename, overwrite=True)
+            self.log_artifact(key="model_schema_json", artifact=temp_filename, overwrite=True)
 
     def get_schema(self) -> Dict[str, dict]:
         """
@@ -149,7 +149,7 @@ class _DeployableEntity(_ModelDBEntity):
             Input and output json schemas.
 
         """
-        schema = self.get_artifact("model_schema.json")
+        schema = self.get_artifact("model_schema_json")
         return json.load(schema)
 
     @abc.abstractmethod
