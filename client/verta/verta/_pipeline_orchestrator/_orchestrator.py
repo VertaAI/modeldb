@@ -29,10 +29,10 @@ class _OrchestratorBase(abc.ABC):
         self._outputs: Dict[str, Any] = dict()
 
     @staticmethod
-    def _get_steps_input_names(
+    def _get_predecessors_mapping(
         pipeline_spec: Dict[str, Any],
     ) -> Dict[str, List[str]]:
-        """Get the names of steps' inputs from a pipeline specification.
+        """Get the names of steps' predecessors from a pipeline specification.
 
         Parameters
         ----------
@@ -42,7 +42,7 @@ class _OrchestratorBase(abc.ABC):
         Returns
         -------
         dict of str to list of str
-            Mapping between step names and their inputs' names.
+            Mapping from step names to their predecessors' names.
 
         """
         return {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
@@ -61,7 +61,7 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._get_steps_input_names(self._pipeline_spec))
+        dag = TopologicalSorter(self._get_predecessors_mapping(self._pipeline_spec))
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
@@ -83,19 +83,19 @@ class _OrchestratorBase(abc.ABC):
         Returns
         -------
         ValueError
-            If `name` has no input steps.
+            If `name` has no predecessors.
         RuntimeError
-            If `name`'s input steps are not in ``self._outputs``.
+            If `name`'s predecessors are not in ``self._outputs``.
 
         """
         predecessors: Set[str] = self._step_handlers[name].predecessors
         if not predecessors:
             raise ValueError(
-                f"unexpected error: step {name} has no input steps",
+                f"unexpected error: step {name} has no predecessors",
             )
         if not predecessors <= self._outputs.keys():
             raise RuntimeError(
-                f"unexpected error: step {name}'s input steps' outputs not found",
+                f"unexpected error: step {name}'s predecessors' outputs not found",
             )
 
         # TODO: figure out how we actually want to collect upstream outputs
@@ -252,13 +252,13 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
-        step_inputs = cls._get_steps_input_names(pipeline_spec)
+        predecessors_mapping = cls._get_predecessors_mapping(pipeline_spec)
 
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
             step_handlers[step["name"]] = ModelObjectStepHandler(
                 name=step["name"],
-                predecessors=step_inputs.get(step["name"], []),
+                predecessors=predecessors_mapping.get(step["name"], []),
                 model=ModelObjectStepHandler._init_model(
                     conn, step["model_version_id"]
                 ),
