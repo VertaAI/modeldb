@@ -140,6 +140,7 @@ class _DeployableEntity(_ModelDBEntity):
             os.fsync(temp_file.fileno())  # flush OS buffer
             temp_file.seek(0)
 
+            # pylint: disable=no-member
             self.log_artifact(  # pylint: disable=no-member
                 key="model_schema", artifact=temp_file.name, overwrite=True
             )
