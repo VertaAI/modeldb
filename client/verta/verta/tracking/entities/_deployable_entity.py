@@ -13,7 +13,7 @@ import tarfile
 import tempfile
 import warnings
 import zipfile
-from typing import Dict
+from typing import Dict, Optional
 
 import requests
 
@@ -90,9 +90,9 @@ class _DeployableEntity(_ModelDBEntity):
     def _get_artifact(self, key):
         raise NotImplementedError
 
-    def set_schema(self, input: dict, output: dict = None) -> None:
+    def log_schema(self, input: dict, output: Optional[dict] = None) -> None:
         """
-        Sets the input and output schemas of this Deployable Entity. Schemas are stored as
+        Sets the input and output schemas of this deployable entity. Schemas are stored as
         model artifacts.
 
         The output schema is optional.
@@ -103,9 +103,9 @@ class _DeployableEntity(_ModelDBEntity):
         Parameters
         ----------
         input : dict
-            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
-        output : dict
-            Output schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
+            Input schema as an OpenAPI-compatible JSON dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
+        output : dict, optional
+            Output schema as an OpenAPI-compatible JSON dict. Easiest to create using pydantic.BaseModel.schema().
 
 
         References
@@ -133,26 +133,27 @@ class _DeployableEntity(_ModelDBEntity):
             temp_filename = temp_file.name
             with open(temp_filename, "w") as file:
                 json.dump(schema, file)
-            self.log_artifact(
+            self.log_artifact(  # pylint: disable=no-member
                 key="model_schema_json", artifact=temp_filename, overwrite=True
             )
 
     def get_schema(self) -> Dict[str, dict]:
         """
-        Gets the input and output json schemas of this Deployable Entity, in the format:
+        Gets the input and output JSON schemas of this deployable entity, in the format:
 
         .. code-block:: python
-        {
-            "input": <input schema>,
-            "output": <output schema>
-        }
+
+            {
+                "input": <input schema>,
+                "output": <output schema>
+            }
 
         If no output schema was provided, output will not be included in the returned dict.
 
         Returns
         -------
         Dict[str, dict]
-            Input and output json schemas.
+            Input and output JSON schemas.
 
         """
         schema = self.get_artifact("model_schema_json")

@@ -683,31 +683,31 @@ class TestOverwrite:
         ).read() == six.ensure_binary(new_setup_script)
 
 
-class TestSetSchema:
-    def test_set_schema(self, deployable_entity):
+class TestLogSchema:
+    def test_log_schema(self, deployable_entity):
         input_schema = InputClass.schema()
         output_schema = OutputClass.schema()
-        deployable_entity.set_schema(input=input_schema, output=output_schema)
+        deployable_entity.log_schema(input=input_schema, output=output_schema)
 
         assert deployable_entity.get_schema() == {
             "input": input_schema,
             "output": output_schema,
         }
 
-    def test_set_schema_no_output(self, deployable_entity):
+    def test_log_schema_no_output(self, deployable_entity):
         input_schema = InputClass.schema()
-        deployable_entity.set_schema(input=input_schema)
+        deployable_entity.log_schema(input=input_schema)
 
         assert deployable_entity.get_schema() == {
             "input": input_schema,
         }
 
-    def test_set_schema_no_input_which_is_bad(self, deployable_entity):
+    def test_log_schema_no_input_which_is_bad(self, deployable_entity):
         output_schema = OutputClass.schema()
         with pytest.raises(
             TypeError,
             match=re.escape(
-                "_DeployableEntity.set_schema() missing 1 required positional argument: 'input'"
+                "_DeployableEntity.log_schema() missing 1 required positional argument: 'input'"
             ),
         ):
-            deployable_entity.set_schema(output=output_schema)
+            deployable_entity.log_schema(output=output_schema)
