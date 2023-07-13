@@ -702,7 +702,7 @@ class TestLogSchema:
             "input": input_schema,
         }
 
-    def test_log_schema_no_input_which_is_bad(self, deployable_entity):
+    def test_set_schema_no_input_error(self, deployable_entity):
         output_schema = OutputClass.schema()
         with pytest.raises(
             TypeError,

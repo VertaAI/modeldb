@@ -92,8 +92,7 @@ class _DeployableEntity(_ModelDBEntity):
 
     def log_schema(self, input: dict, output: Optional[dict] = None) -> None:
         """
-        Sets the input and output schemas of this deployable entity. Schemas are stored as
-        model artifacts.
+        Sets the input and output schemas, which are stored as model artifacts.
 
         The output schema is optional.
 
@@ -144,7 +143,7 @@ class _DeployableEntity(_ModelDBEntity):
 
     def get_schema(self) -> Dict[str, dict]:
         """
-        Gets the input and output JSON schemas of this deployable entity, in the format:
+        Gets the input and output JSON schemas, in the format:
 
         .. code-block:: python
 
