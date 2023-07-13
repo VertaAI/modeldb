@@ -131,10 +131,12 @@ class _DeployableEntity(_ModelDBEntity):
             schema["output"] = output
 
         # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
-        with tempfile.NamedTemporaryFile(mode="w") as temp_file:
-            temp_filename = temp_file.name
-            with open(temp_filename, "w") as file:
-                json.dump(schema, file)
+        with tempfile.NamedTemporaryFile(mode="w+") as temp_file:
+            json.dump(schema, temp_file)
+            temp_file.flush()  # flush object buffer
+            os.fsync(temp_file.fileno())  # flush OS buffer
+            temp_file.seek(0)
+
             self.log_artifact(  # pylint: disable=no-member
                 key="model_schema_json", artifact=temp_filename, overwrite=True
             )
