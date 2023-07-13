@@ -140,7 +140,6 @@ class _DeployableEntity(_ModelDBEntity):
             os.fsync(temp_file.fileno())  # flush OS buffer
             temp_file.seek(0)
 
-            # pylint: disable=no-member
             self.log_artifact(  # pylint: disable=no-member
                 key="model_schema", artifact=temp_file.name, overwrite=True
             )
@@ -164,7 +163,7 @@ class _DeployableEntity(_ModelDBEntity):
             Input and output JSON schemas.
 
         """
-        schema = self.get_artifact("model_schema")
+        schema = self.get_artifact("model_schema")  # pylint: disable=no-member
         return json.load(schema)
 
     @abc.abstractmethod
