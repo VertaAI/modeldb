@@ -12,6 +12,7 @@ import requests
 from ._internal_utils._utils import check_unnecessary_params_warning
 from ._internal_utils import kafka
 from ._uac._organization import OrganizationV2
+from ._protos.public.uac import OrganizationV2_pb2
 
 from ._vendored import six
 
@@ -96,6 +97,8 @@ class Client(object):
         Extra headers to include on requests, like to permit traffic through a restrictive application load balancer
     organization_id : str, optional
         (alpha) Organization to use for the client calls. If not provided, the default organization will be used.
+    organization_name : str, optional
+        (alpha) Organization to use for the client calls. If not provided, the default organization will be used.
     _connect : str, default True
         Whether to connect to server (``False`` for unit tests).
 
@@ -145,8 +148,11 @@ class Client(object):
         jwt_token=None,
         jwt_token_sig=None,
         organization_id=None,
+        organization_name=None,
         _connect=True,
     ):
+        if organization_id is not None and organization_name is not None:
+            raise ValueError("cannot provide both `organization_id` and `organization_name`")
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
@@ -173,7 +179,7 @@ class Client(object):
             dev_key=dev_key,
             jwt_token=jwt_token,
             jwt_token_sig=jwt_token_sig,
-            organization_id=organization_id,  # TODO: add organization_name as parameter and resolve that
+            organization_id=organization_id,
         )
         self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
@@ -208,6 +214,26 @@ class Client(object):
             credentials=self.auth_credentials,
             headers=extra_auth_headers,
         )
+
+        # Resolve the organization name to an ID
+        if organization_id is None and organization_name is not None:
+            # TODO: use this when the API bug is resolved in the backend (VUMM-1596)
+            # request = conn.make_proto_request(
+            #     "GET", "/api/v2/uac-proxy/organization/getOrganizationByName?org_name={}".format(organization_name)
+            # )
+            # response = conn.must_proto_response(request, OrganizationV2_pb2.GetOrganizationByNameV2.Response)
+            # organization_id = response.organization.id
+            request = conn.make_proto_request(
+                "GET", "/api/v2/uac-proxy/organization"
+            )
+            response = conn.must_proto_response(request, OrganizationV2_pb2.ListOrganizationsV2.Response)
+            for org in response.organizations:
+                if org.name == organization_name:
+                    organization_id = org.id
+                    break
+            else:
+                raise ValueError("organization not found: {}".format(organization_name))
+            self.auth_credentials.set_organization_id(organization_id)
 
         # verify connection
         if _connect:
