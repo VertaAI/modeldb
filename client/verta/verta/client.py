@@ -151,6 +151,8 @@ class Client(object):
         organization_name=None,
         _connect=True,
     ):
+        if organization_id is not None and organization_name is not None:
+            raise ValueError("cannot provide both `organization_id` and `organization_name`")
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
