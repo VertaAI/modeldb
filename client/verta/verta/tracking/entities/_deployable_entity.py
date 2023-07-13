@@ -97,15 +97,17 @@ class _DeployableEntity(_ModelDBEntity):
         The output schema is optional.
 
         To validate a prediction's input and output against these schemas, use the
-        :func:`~verta.registry.validate_schema` decorator on your model's :meth:`~verta.registry.VertaModelBase.predict`
-        function.
+        :func:`~verta.registry.validate_schema` decorator on your model's
+        :meth:`~verta.registry.VertaModelBase.predict` function.
 
         Parameters
         ----------
         input : dict
-            Input schema as an OpenAPI-compatible JSON dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
+            Input schema as an OpenAPI-compatible JSON dict. Easiest to create using
+            pydantic.BaseModel.schema() [#]_.
         output : dict, optional
-            Output schema as an OpenAPI-compatible JSON dict. Easiest to create using pydantic.BaseModel.schema().
+            Output schema as an OpenAPI-compatible JSON dict. Easiest to create using
+            pydantic.BaseModel.schema().
 
 
         References
@@ -130,7 +132,8 @@ class _DeployableEntity(_ModelDBEntity):
         if output is not None:
             schema["output"] = output
 
-        # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
+        # write a temp file because otherwise `log_artifact` will think the artifact contents are
+        # the file path
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".json") as temp_file:
             json.dump(schema, temp_file)
             temp_file.flush()  # flush object buffer
