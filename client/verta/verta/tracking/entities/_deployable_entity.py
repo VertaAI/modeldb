@@ -98,7 +98,7 @@ class _DeployableEntity(_ModelDBEntity):
 
         To validate a prediction's input and output against these schemas, use the
         :func:`~verta.registry.validate_schema` decorator on your model's :meth:`~verta.registry.VertaModelBase.predict`
-         function.
+        function.
 
         Parameters
         ----------
