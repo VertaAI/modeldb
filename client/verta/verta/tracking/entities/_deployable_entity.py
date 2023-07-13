@@ -98,7 +98,8 @@ class _DeployableEntity(_ModelDBEntity):
         The output schema is optional.
 
         To validate a prediction's input and output against these schemas, use the
-        :func:`~verta.registry.validate_schema` decorator on your model's :meth:`~verta.registry.VertaModelBase.predict` function.
+        :func:`~verta.registry.validate_schema` decorator on your model's :meth:`~verta.registry.VertaModelBase.predict`
+         function.
 
         Parameters
         ----------
@@ -115,7 +116,7 @@ class _DeployableEntity(_ModelDBEntity):
         """
         if not isinstance(input, dict):
             raise TypeError(
-                f"`input` must be of type dict, not {type(input)}; did you remember to" 
+                f"`input` must be of type dict, not {type(input)}; did you remember to"
                 " call `.schema()`?"
             )
         if output is not None and not isinstance(output, dict):
@@ -131,14 +132,14 @@ class _DeployableEntity(_ModelDBEntity):
             schema["output"] = output
 
         # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
-        with tempfile.NamedTemporaryFile(mode="w+") as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".json") as temp_file:
             json.dump(schema, temp_file)
             temp_file.flush()  # flush object buffer
             os.fsync(temp_file.fileno())  # flush OS buffer
             temp_file.seek(0)
 
             self.log_artifact(  # pylint: disable=no-member
-                key="model_schema_json", artifact=temp_filename, overwrite=True
+                key="model_schema", artifact=temp_file.name, overwrite=True
             )
 
     def get_schema(self) -> Dict[str, dict]:
@@ -160,7 +161,7 @@ class _DeployableEntity(_ModelDBEntity):
             Input and output JSON schemas.
 
         """
-        schema = self.get_artifact("model_schema_json")
+        schema = self.get_artifact("model_schema")
         return json.load(schema)
 
     @abc.abstractmethod
