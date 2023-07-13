@@ -36,6 +36,17 @@ class Credentials(object):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def set_organization_id(self, organization_id):
+        """Set the organization ID for these credentials.
+
+        Parameters
+        ----------
+        organization_id : str
+            Organization ID to use for authentication.
+        """
+        raise NotImplementedError
+
 
 class EmailCredentials(Credentials):
     """Container class for email and dev key credentials for the Verta Platform.
@@ -91,6 +102,9 @@ class EmailCredentials(Credentials):
             return cls(email_env, dev_key_env)
         else:
             return None
+
+    def set_organization_id(self, organization_id):
+        self.organization_id = organization_id
 
 
 class JWTCredentials(Credentials):
@@ -153,6 +167,8 @@ class JWTCredentials(Credentials):
         else:
             return None
 
+    def set_organization_id(self, organization_id):
+        self.organization_id = organization_id
 
 def load_from_os_env():
     """Loads credentials from environment variables.
