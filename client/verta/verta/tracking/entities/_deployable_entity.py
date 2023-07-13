@@ -115,7 +115,8 @@ class _DeployableEntity(_ModelDBEntity):
         """
         if not isinstance(input, dict):
             raise TypeError(
-                f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?"
+                f"`input` must be of type dict, not {type(input)}; did you remember to" 
+                " call `.schema()`?"
             )
         if output is not None and not isinstance(output, dict):
             raise TypeError(
