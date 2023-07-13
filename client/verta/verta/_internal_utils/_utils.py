@@ -82,7 +82,6 @@ class Connection(object):
             Additional headers to attach to requests.
 
         """
-        self._init_headers()
         self.scheme = scheme
         self.socket = socket
         # TODO: retry on 404s, but only if we're sure it's not legitimate e.g. from a GET
@@ -109,11 +108,15 @@ class Connection(object):
     @credentials.setter
     def credentials(self, value):
         self._credentials = value
-        self._recompute_headers()
 
     @property
     def headers(self):
-        return self._computed_headers
+        # User-defined headers
+        ret = {k: v for k, v in (self._headers or dict()).items() if v is not None}
+        # Creds-defined headers
+        for k, v in self.prefixed_headers_for_credentials(self._credentials).items():
+            ret[k] = v
+        return ret
 
     # Note: Added for temporary backwards compatibility. Remove when possible.
     @property
@@ -123,18 +126,6 @@ class Connection(object):
     @headers.setter
     def headers(self, value):
         self._headers = value or dict()
-        self._recompute_headers()
-
-    def _init_headers(self):
-        self._headers = {}
-        self._computed_headers = {}
-
-    def _recompute_headers(self):
-        headers = self._headers or dict()
-        headers = headers.copy()
-        headers[_GRPC_PREFIX + "scheme"] = self.scheme
-        headers.update(self.prefixed_headers_for_credentials(self.credentials))
-        self._computed_headers = headers
 
     @staticmethod
     def prefixed_headers_for_credentials(credentials):
