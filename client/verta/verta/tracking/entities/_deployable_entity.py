@@ -5,6 +5,7 @@ from __future__ import print_function
 import abc
 import copy
 import importlib
+import json
 import os
 import shutil
 import sys
@@ -12,6 +13,7 @@ import tarfile
 import tempfile
 import warnings
 import zipfile
+from typing import Dict, Optional
 
 import requests
 
@@ -87,6 +89,82 @@ class _DeployableEntity(_ModelDBEntity):
     @abc.abstractmethod
     def _get_artifact(self, key):
         raise NotImplementedError
+
+    def log_schema(self, input: dict, output: Optional[dict] = None) -> None:
+        """
+        Sets the input and output schemas, which are stored as model artifacts.
+
+        The output schema is optional.
+
+        To validate a prediction's input and output against these schemas, use the
+        :func:`~verta.registry.validate_schema` decorator on your model's
+        :meth:`~verta.registry.VertaModelBase.predict` function.
+
+        Parameters
+        ----------
+        input : dict
+            Input schema as an OpenAPI-compatible JSON dict. Easiest to create using
+            pydantic.BaseModel.schema() [#]_.
+        output : dict, optional
+            Output schema as an OpenAPI-compatible JSON dict. Easiest to create using
+            pydantic.BaseModel.schema().
+
+
+        References
+        ----------
+        .. [#] https://docs.pydantic.dev/1.10/usage/schema/
+
+        """
+        if not isinstance(input, dict):
+            raise TypeError(
+                f"`input` must be of type dict, not {type(input)}; did you remember to"
+                " call `.schema()`?"
+            )
+        if output is not None and not isinstance(output, dict):
+            raise TypeError(
+                f"`output` must be of type dict, not {type(output)}; did you remember to"
+                " call `.schema()`?"
+            )
+
+        schema = {
+            "input": input,
+        }
+        if output is not None:
+            schema["output"] = output
+
+        # write a temp file because otherwise `log_artifact` will think the artifact contents are
+        # the file path
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".json") as temp_file:
+            json.dump(schema, temp_file)
+            temp_file.flush()  # flush object buffer
+            os.fsync(temp_file.fileno())  # flush OS buffer
+            temp_file.seek(0)
+
+            self.log_artifact(  # pylint: disable=no-member
+                key="model_schema", artifact=temp_file.name, overwrite=True
+            )
+
+    def get_schema(self) -> Dict[str, dict]:
+        """
+        Gets the input and output JSON schemas, in the format:
+
+        .. code-block:: python
+
+            {
+                "input": <input schema>,
+                "output": <output schema>
+            }
+
+        If no output schema was provided, output will not be included in the returned dict.
+
+        Returns
+        -------
+        dict of str to dict
+            Input and output JSON schemas.
+
+        """
+        schema = self.get_artifact("model_schema")  # pylint: disable=no-member
+        return json.load(schema)
 
     @abc.abstractmethod
     def log_environment(self, env, overwrite=False):

@@ -5,6 +5,7 @@ import filecmp
 import hashlib
 import os
 import pickle
+import re
 import shutil
 import tempfile
 import zipfile
@@ -20,6 +21,7 @@ from verta._internal_utils import (
 )
 
 from .. import utils
+from ..registry.pydantic_models import InputClass, OutputClass
 
 
 def assert_model_packaging(deployable_entity, serialization, framework):
@@ -679,3 +681,33 @@ class TestOverwrite:
         assert deployable_entity.get_artifact(
             "setup_script"
         ).read() == six.ensure_binary(new_setup_script)
+
+
+class TestLogSchema:
+    def test_log_schema(self, deployable_entity):
+        input_schema = InputClass.schema()
+        output_schema = OutputClass.schema()
+        deployable_entity.log_schema(input=input_schema, output=output_schema)
+
+        assert deployable_entity.get_schema() == {
+            "input": input_schema,
+            "output": output_schema,
+        }
+
+    def test_log_schema_no_output(self, deployable_entity):
+        input_schema = InputClass.schema()
+        deployable_entity.log_schema(input=input_schema)
+
+        assert deployable_entity.get_schema() == {
+            "input": input_schema,
+        }
+
+    def test_set_schema_no_input_error(self, deployable_entity):
+        output_schema = OutputClass.schema()
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "_DeployableEntity.log_schema() missing 1 required positional argument: 'input'"
+            ),
+        ):
+            deployable_entity.log_schema(output=output_schema)

@@ -15,7 +15,7 @@ def validate_schema(f):
     """Decorator to validate prediction input and output against previously provided schema.
 
     Validation is done with the ``jsonschema`` library [#]_. If no schema has been provided via
-    :meth:`RegisteredModelVersion.set_schema() <verta.registry.entities.RegisteredModelVersion.set_schema>`,
+    :meth:`RegisteredModelVersion.log_schema() <verta.registry.entities.RegisteredModelVersion.log_schema>`,
     an exception is raised.
 
     Note that an input schema is required but output is not. If the output schema was not set, then the output will
@@ -56,7 +56,7 @@ def validate_schema(f):
                 MyModel,
                 environment=Python([]),
             )
-            model_ver.set_schema(input=Input.schema(), output=Output.schema())
+            model_ver.log_schema(input=Input.schema(), output=Output.schema())
 
             # deploy
             endpoint = client.get_or_create_endpoint("my-model")
@@ -88,7 +88,7 @@ def validate_schema(f):
                 schema = json.load(file)
         except FileNotFoundError as e:
             raise FileNotFoundError(
-                "no schema found for model; did you remember to call `model_ver.set_schema()`?"
+                "no schema found for model; did you remember to call `model_ver.log_schema()`?"
             ) from e
         input_schema = schema["input"]
         output_schema = schema.get("output")
