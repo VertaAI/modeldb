@@ -120,7 +120,8 @@ class _DeployableEntity(_ModelDBEntity):
             )
         if output is not None and not isinstance(output, dict):
             raise TypeError(
-                f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?"
+                f"`output` must be of type dict, not {type(output)}; did you remember to"
+                " call `.schema()`?"
             )
 
         schema = {
