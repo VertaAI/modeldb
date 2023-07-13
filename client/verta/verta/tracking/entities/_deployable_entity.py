@@ -98,7 +98,7 @@ class _DeployableEntity(_ModelDBEntity):
         The output schema is optional.
 
         To validate a prediction's input and output against these schemas, use the
-        :func:`~verta.registry.validate_schema` decorator.
+        :func:`~verta.registry.validate_schema` decorator on your model's predict function.
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class _DeployableEntity(_ModelDBEntity):
 
         Returns
         -------
-        Dict[str, dict]
+        dict of str to dict
             Input and output JSON schemas.
 
         """
