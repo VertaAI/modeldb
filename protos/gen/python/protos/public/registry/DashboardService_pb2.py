@@ -20,8 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='registry/DashboardService.proto',
   package='ai.verta.registry',
   syntax='proto3',
-  serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"<\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x02\"\x90\x01\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x02 \x01(\t\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.ai.verta.registry.Chart.ValuesEntry\x1a-\n\x0bValuesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"\xf5\x02\n\x05Table\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x02 \x01(\t\x12\x30\n\x07\x63olumns\x18\x03 \x03(\x0b\x32\x1f.ai.verta.registry.Table.Column\x12*\n\x04rows\x18\x04 \x03(\x0b\x32\x1c.ai.verta.registry.Table.Row\x1an\n\x06\x43olumn\x12\x0c\n\x04name\x18\x01 \x01(\t\x12V\n\x0e\x61ttribute_type\x18\x02 \x01(\x0e\x32>.ai.verta.registry.CustomAttributeTypeEnum.CustomAttributeType\x1az\n\x03Row\x12\n\n\x02id\x18\x01 \x01(\t\x12\x38\n\x06values\x18\x02 \x03(\x0b\x32(.ai.verta.registry.Table.Row.ValuesEntry\x1a-\n\x0bValuesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9c\x01\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x04 \x03(\x0b\x32\x18.ai.verta.registry.Chart\x12(\n\x06tables\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Table\"i\n\x12GetDashboardByName\x12\x16\n\x0e\x64\x61shboard_name\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard2\xb1\x01\n\x10\x44\x61shboardService\x12\x9c\x01\n\x12getDashboardByName\x12%.ai.verta.registry.GetDashboardByName\x1a..ai.verta.registry.GetDashboardByName.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/registry/dashboard/{dashboard_name}BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_options=b'P\001ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registry',
+  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"&\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\"z\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x34\n\x06values\x18\x02 \x03(\x0b\x32$.ai.verta.registry.Chart.ValuesEntry\x1a-\n\x0bValuesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"r\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Chart\"i\n\x12GetDashboardByName\x12\x16\n\x0e\x64\x61shboard_name\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard2\xb1\x01\n\x10\x44\x61shboardService\x12\x9c\x01\n\x12getDashboardByName\x12%.ai.verta.registry.GetDashboardByName\x1a..ai.verta.registry.GetDashboardByName.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/registry/dashboard/{dashboard_name}BGP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_CustomAttributeService__pb2.DESCRIPTOR,])
 
@@ -43,15 +43,8 @@ _SUMMARY = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='display_name', full_name='ai.verta.registry.Summary.display_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='ai.verta.registry.Summary.value', index=2,
-      number=3, type=2, cpp_type=6, label=1,
+      name='value', full_name='ai.verta.registry.Summary.value', index=1,
+      number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -69,7 +62,7 @@ _SUMMARY = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=151,
-  serialized_end=211,
+  serialized_end=189,
 )
 
 
@@ -106,8 +99,8 @@ _CHART_VALUESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=313,
-  serialized_end=358,
+  serialized_start=268,
+  serialized_end=313,
 )
 
 _CHART = _descriptor.Descriptor(
@@ -125,15 +118,8 @@ _CHART = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='display_name', full_name='ai.verta.registry.Chart.display_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='values', full_name='ai.verta.registry.Chart.values', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      name='values', full_name='ai.verta.registry.Chart.values', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -150,171 +136,8 @@ _CHART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=214,
-  serialized_end=358,
-)
-
-
-_TABLE_COLUMN = _descriptor.Descriptor(
-  name='Column',
-  full_name='ai.verta.registry.Table.Column',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='ai.verta.registry.Table.Column.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='attribute_type', full_name='ai.verta.registry.Table.Column.attribute_type', index=1,
-      number=2, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=500,
-  serialized_end=610,
-)
-
-_TABLE_ROW_VALUESENTRY = _descriptor.Descriptor(
-  name='ValuesEntry',
-  full_name='ai.verta.registry.Table.Row.ValuesEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='ai.verta.registry.Table.Row.ValuesEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='ai.verta.registry.Table.Row.ValuesEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=b'8\001',
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=689,
-  serialized_end=734,
-)
-
-_TABLE_ROW = _descriptor.Descriptor(
-  name='Row',
-  full_name='ai.verta.registry.Table.Row',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.registry.Table.Row.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='values', full_name='ai.verta.registry.Table.Row.values', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_TABLE_ROW_VALUESENTRY, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=612,
-  serialized_end=734,
-)
-
-_TABLE = _descriptor.Descriptor(
-  name='Table',
-  full_name='ai.verta.registry.Table',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='ai.verta.registry.Table.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='display_name', full_name='ai.verta.registry.Table.display_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='columns', full_name='ai.verta.registry.Table.columns', index=2,
-      number=3, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='rows', full_name='ai.verta.registry.Table.rows', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_TABLE_COLUMN, _TABLE_ROW, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=361,
-  serialized_end=734,
+  serialized_start=191,
+  serialized_end=313,
 )
 
 
@@ -341,13 +164,6 @@ _DASHBOARD = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='charts', full_name='ai.verta.registry.Dashboard.charts', index=2,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tables', full_name='ai.verta.registry.Dashboard.tables', index=3,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -365,8 +181,8 @@ _DASHBOARD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=737,
-  serialized_end=893,
+  serialized_start=315,
+  serialized_end=429,
 )
 
 
@@ -396,8 +212,8 @@ _GETDASHBOARDBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=941,
-  serialized_end=1000,
+  serialized_start=477,
+  serialized_end=536,
 )
 
 _GETDASHBOARDBYNAME = _descriptor.Descriptor(
@@ -426,27 +242,18 @@ _GETDASHBOARDBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=895,
-  serialized_end=1000,
+  serialized_start=431,
+  serialized_end=536,
 )
 
 _CHART_VALUESENTRY.containing_type = _CHART
 _CHART.fields_by_name['values'].message_type = _CHART_VALUESENTRY
-_TABLE_COLUMN.fields_by_name['attribute_type'].enum_type = registry_dot_CustomAttributeService__pb2._CUSTOMATTRIBUTETYPEENUM_CUSTOMATTRIBUTETYPE
-_TABLE_COLUMN.containing_type = _TABLE
-_TABLE_ROW_VALUESENTRY.containing_type = _TABLE_ROW
-_TABLE_ROW.fields_by_name['values'].message_type = _TABLE_ROW_VALUESENTRY
-_TABLE_ROW.containing_type = _TABLE
-_TABLE.fields_by_name['columns'].message_type = _TABLE_COLUMN
-_TABLE.fields_by_name['rows'].message_type = _TABLE_ROW
 _DASHBOARD.fields_by_name['summaries'].message_type = _SUMMARY
 _DASHBOARD.fields_by_name['charts'].message_type = _CHART
-_DASHBOARD.fields_by_name['tables'].message_type = _TABLE
 _GETDASHBOARDBYNAME_RESPONSE.fields_by_name['dashboard'].message_type = _DASHBOARD
 _GETDASHBOARDBYNAME_RESPONSE.containing_type = _GETDASHBOARDBYNAME
 DESCRIPTOR.message_types_by_name['Summary'] = _SUMMARY
 DESCRIPTOR.message_types_by_name['Chart'] = _CHART
-DESCRIPTOR.message_types_by_name['Table'] = _TABLE
 DESCRIPTOR.message_types_by_name['Dashboard'] = _DASHBOARD
 DESCRIPTOR.message_types_by_name['GetDashboardByName'] = _GETDASHBOARDBYNAME
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -473,37 +280,6 @@ Chart = _reflection.GeneratedProtocolMessageType('Chart', (_message.Message,), {
 _sym_db.RegisterMessage(Chart)
 _sym_db.RegisterMessage(Chart.ValuesEntry)
 
-Table = _reflection.GeneratedProtocolMessageType('Table', (_message.Message,), {
-
-  'Column' : _reflection.GeneratedProtocolMessageType('Column', (_message.Message,), {
-    'DESCRIPTOR' : _TABLE_COLUMN,
-    '__module__' : 'registry.DashboardService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.registry.Table.Column)
-    })
-  ,
-
-  'Row' : _reflection.GeneratedProtocolMessageType('Row', (_message.Message,), {
-
-    'ValuesEntry' : _reflection.GeneratedProtocolMessageType('ValuesEntry', (_message.Message,), {
-      'DESCRIPTOR' : _TABLE_ROW_VALUESENTRY,
-      '__module__' : 'registry.DashboardService_pb2'
-      # @@protoc_insertion_point(class_scope:ai.verta.registry.Table.Row.ValuesEntry)
-      })
-    ,
-    'DESCRIPTOR' : _TABLE_ROW,
-    '__module__' : 'registry.DashboardService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.registry.Table.Row)
-    })
-  ,
-  'DESCRIPTOR' : _TABLE,
-  '__module__' : 'registry.DashboardService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.registry.Table)
-  })
-_sym_db.RegisterMessage(Table)
-_sym_db.RegisterMessage(Table.Column)
-_sym_db.RegisterMessage(Table.Row)
-_sym_db.RegisterMessage(Table.Row.ValuesEntry)
-
 Dashboard = _reflection.GeneratedProtocolMessageType('Dashboard', (_message.Message,), {
   'DESCRIPTOR' : _DASHBOARD,
   '__module__' : 'registry.DashboardService_pb2'
@@ -529,7 +305,6 @@ _sym_db.RegisterMessage(GetDashboardByName.Response)
 
 DESCRIPTOR._options = None
 _CHART_VALUESENTRY._options = None
-_TABLE_ROW_VALUESENTRY._options = None
 
 _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
   name='DashboardService',
@@ -537,8 +312,8 @@ _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1003,
-  serialized_end=1180,
+  serialized_start=539,
+  serialized_end=716,
   methods=[
   _descriptor.MethodDescriptor(
     name='getDashboardByName',

@@ -43,42 +43,6 @@
     }
   },
   "definitions": {
-    "CustomAttributeTypeEnumCustomAttributeType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "USER",
-        "CUSTOM_LIST",
-        "GROUP",
-        "TEXT"
-      ],
-      "default": "UNKNOWN"
-    },
-    "TableColumn": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "attribute_type": {
-          "$ref": "#/definitions/CustomAttributeTypeEnumCustomAttributeType"
-        }
-      }
-    },
-    "TableRow": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "values": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -95,9 +59,6 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
-        },
-        "display_name": {
           "type": "string"
         },
         "values": {
@@ -126,12 +87,6 @@
           "items": {
             "$ref": "#/definitions/registryChart"
           }
-        },
-        "tables": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/registryTable"
-          }
         }
       }
     },
@@ -149,35 +104,9 @@
         "name": {
           "type": "string"
         },
-        "display_name": {
-          "type": "string"
-        },
         "value": {
           "type": "number",
           "format": "float"
-        }
-      }
-    },
-    "registryTable": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/TableColumn"
-          }
-        },
-        "rows": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/TableRow"
-          }
         }
       }
     },
