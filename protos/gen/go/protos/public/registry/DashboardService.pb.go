@@ -27,6 +27,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// A summary value displayed as single number on a card
 type Summary struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -82,13 +83,15 @@ func (x *Summary) GetValue() float32 {
 	return 0
 }
 
+// A chart of name-value items
+// For exmple a pie chart with incidents per business unit would I have a map business unit names and the count of incidents for that unit.
 type Chart struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Name   string             `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Values map[string]float32 `protobuf:"bytes,2,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"`
+	Values map[string]float32 `protobuf:"bytes,2,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"` // Name-value items to be charted
 }
 
 func (x *Chart) Reset() {
@@ -137,13 +140,14 @@ func (x *Chart) GetValues() map[string]float32 {
 	return nil
 }
 
+// A dashboard containing one or more elements
 type Dashboard struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Name      string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Summaries []*Summary `protobuf:"bytes,2,rep,name=summaries,proto3" json:"summaries,omitempty"`
+	Summaries []*Summary `protobuf:"bytes,2,rep,name=summaries,proto3" json:"summaries,omitempty"` // Summary card
 	Charts    []*Chart   `protobuf:"bytes,3,rep,name=charts,proto3" json:"charts,omitempty"`
 }
 
@@ -205,7 +209,8 @@ type GetDashboardByName struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DashboardName string `protobuf:"bytes,1,opt,name=dashboard_name,json=dashboardName,proto3" json:"dashboard_name,omitempty"`
+	DashboardName  string `protobuf:"bytes,1,opt,name=dashboard_name,json=dashboardName,proto3" json:"dashboard_name,omitempty"`    // The name of the dashboard
+	OrganizationId string `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // The organization id to use when calculating dashboard values and items.
 }
 
 func (x *GetDashboardByName) Reset() {
@@ -247,6 +252,60 @@ func (x *GetDashboardByName) GetDashboardName() string {
 	return ""
 }
 
+func (x *GetDashboardByName) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+type ListDashboards struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	OrganizationId string `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // The organization id to list dashboards for.
+}
+
+func (x *ListDashboards) Reset() {
+	*x = ListDashboards{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_registry_DashboardService_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListDashboards) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDashboards) ProtoMessage() {}
+
+func (x *ListDashboards) ProtoReflect() protoreflect.Message {
+	mi := &file_registry_DashboardService_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDashboards.ProtoReflect.Descriptor instead.
+func (*ListDashboards) Descriptor() ([]byte, []int) {
+	return file_registry_DashboardService_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListDashboards) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
 type GetDashboardByName_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -258,7 +317,7 @@ type GetDashboardByName_Response struct {
 func (x *GetDashboardByName_Response) Reset() {
 	*x = GetDashboardByName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_DashboardService_proto_msgTypes[5]
+		mi := &file_registry_DashboardService_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -271,7 +330,7 @@ func (x *GetDashboardByName_Response) String() string {
 func (*GetDashboardByName_Response) ProtoMessage() {}
 
 func (x *GetDashboardByName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_DashboardService_proto_msgTypes[5]
+	mi := &file_registry_DashboardService_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,6 +349,53 @@ func (*GetDashboardByName_Response) Descriptor() ([]byte, []int) {
 func (x *GetDashboardByName_Response) GetDashboard() *Dashboard {
 	if x != nil {
 		return x.Dashboard
+	}
+	return nil
+}
+
+type ListDashboards_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DashboardNames []string `protobuf:"bytes,1,rep,name=dashboard_names,json=dashboardNames,proto3" json:"dashboard_names,omitempty"`
+}
+
+func (x *ListDashboards_Response) Reset() {
+	*x = ListDashboards_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_registry_DashboardService_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListDashboards_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDashboards_Response) ProtoMessage() {}
+
+func (x *ListDashboards_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_registry_DashboardService_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDashboards_Response.ProtoReflect.Descriptor instead.
+func (*ListDashboards_Response) Descriptor() ([]byte, []int) {
+	return file_registry_DashboardService_proto_rawDescGZIP(), []int{4, 0}
+}
+
+func (x *ListDashboards_Response) GetDashboardNames() []string {
+	if x != nil {
+		return x.DashboardNames
 	}
 	return nil
 }
@@ -328,31 +434,49 @@ var file_registry_DashboardService_proto_rawDesc = []byte{
 	0x06, 0x63, 0x68, 0x61, 0x72, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e,
 	0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
 	0x79, 0x2e, 0x43, 0x68, 0x61, 0x72, 0x74, 0x52, 0x06, 0x63, 0x68, 0x61, 0x72, 0x74, 0x73, 0x22,
-	0x83, 0x01, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64,
+	0xac, 0x01, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64,
 	0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x25, 0x0a, 0x0e, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f,
 	0x61, 0x72, 0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d,
-	0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0x46, 0x0a,
-	0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3a, 0x0a, 0x09, 0x64, 0x61, 0x73,
-	0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x61,
-	0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x2e, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x52, 0x09, 0x64, 0x61, 0x73, 0x68,
-	0x62, 0x6f, 0x61, 0x72, 0x64, 0x32, 0xb1, 0x01, 0x0a, 0x10, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f,
-	0x61, 0x72, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x12, 0x67,
+	0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x27, 0x0a,
+	0x0f, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x1a, 0x46, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x3a, 0x0a, 0x09, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61,
+	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f,
+	0x61, 0x72, 0x64, 0x52, 0x09, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x22, 0x6e,
+	0x0a, 0x0e, 0x4c, 0x69, 0x73, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x73,
+	0x12, 0x27, 0x0a, 0x0f, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x6f, 0x72, 0x67, 0x61, 0x6e,
+	0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x1a, 0x33, 0x0a, 0x08, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x27, 0x0a, 0x0f, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61,
+	0x72, 0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0e,
+	0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x32, 0xb7,
+	0x02, 0x0a, 0x10, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x12, 0x67, 0x65, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62,
+	0x6f, 0x61, 0x72, 0x64, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x25, 0x2e, 0x61, 0x69, 0x2e,
+	0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x47,
 	0x65, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x42, 0x79, 0x4e, 0x61, 0x6d,
-	0x65, 0x12, 0x25, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67,
+	0x65, 0x1a, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67,
 	0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x47, 0x65, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61,
-	0x72, 0x64, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
+	0x72, 0x64, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x2f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x29, 0x12, 0x27, 0x2f, 0x76, 0x31, 0x2f, 0x72,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72,
+	0x64, 0x2f, 0x7b, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x5f, 0x6e, 0x61, 0x6d,
+	0x65, 0x7d, 0x12, 0x83, 0x01, 0x0a, 0x0e, 0x6c, 0x69, 0x73, 0x74, 0x44, 0x61, 0x73, 0x68, 0x62,
+	0x6f, 0x61, 0x72, 0x64, 0x73, 0x12, 0x21, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61,
+	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x44, 0x61,
+	0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x73, 0x1a, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
 	0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x47, 0x65, 0x74,
 	0x44, 0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x2e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x29,
-	0x12, 0x27, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x64,
-	0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x2f, 0x7b, 0x64, 0x61, 0x73, 0x68, 0x62, 0x6f,
-	0x61, 0x72, 0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x7d, 0x42, 0x47, 0x50, 0x01, 0x5a, 0x43, 0x67,
-	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41,
-	0x49, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2d, 0x61, 0x6c, 0x6c, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x73, 0x2f, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x72, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x1e, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x18,
+	0x12, 0x16, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x64,
+	0x61, 0x73, 0x68, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x42, 0x47, 0x50, 0x01, 0x5a, 0x43, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49,
+	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2d, 0x61, 0x6c, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
+	0x2f, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -367,24 +491,28 @@ func file_registry_DashboardService_proto_rawDescGZIP() []byte {
 	return file_registry_DashboardService_proto_rawDescData
 }
 
-var file_registry_DashboardService_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_registry_DashboardService_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_registry_DashboardService_proto_goTypes = []interface{}{
 	(*Summary)(nil),                     // 0: ai.verta.registry.Summary
 	(*Chart)(nil),                       // 1: ai.verta.registry.Chart
 	(*Dashboard)(nil),                   // 2: ai.verta.registry.Dashboard
 	(*GetDashboardByName)(nil),          // 3: ai.verta.registry.GetDashboardByName
-	nil,                                 // 4: ai.verta.registry.Chart.ValuesEntry
-	(*GetDashboardByName_Response)(nil), // 5: ai.verta.registry.GetDashboardByName.Response
+	(*ListDashboards)(nil),              // 4: ai.verta.registry.ListDashboards
+	nil,                                 // 5: ai.verta.registry.Chart.ValuesEntry
+	(*GetDashboardByName_Response)(nil), // 6: ai.verta.registry.GetDashboardByName.Response
+	(*ListDashboards_Response)(nil),     // 7: ai.verta.registry.ListDashboards.Response
 }
 var file_registry_DashboardService_proto_depIdxs = []int32{
-	4, // 0: ai.verta.registry.Chart.values:type_name -> ai.verta.registry.Chart.ValuesEntry
+	5, // 0: ai.verta.registry.Chart.values:type_name -> ai.verta.registry.Chart.ValuesEntry
 	0, // 1: ai.verta.registry.Dashboard.summaries:type_name -> ai.verta.registry.Summary
 	1, // 2: ai.verta.registry.Dashboard.charts:type_name -> ai.verta.registry.Chart
 	2, // 3: ai.verta.registry.GetDashboardByName.Response.dashboard:type_name -> ai.verta.registry.Dashboard
 	3, // 4: ai.verta.registry.DashboardService.getDashboardByName:input_type -> ai.verta.registry.GetDashboardByName
-	5, // 5: ai.verta.registry.DashboardService.getDashboardByName:output_type -> ai.verta.registry.GetDashboardByName.Response
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
+	4, // 5: ai.verta.registry.DashboardService.listDashboards:input_type -> ai.verta.registry.ListDashboards
+	6, // 6: ai.verta.registry.DashboardService.getDashboardByName:output_type -> ai.verta.registry.GetDashboardByName.Response
+	6, // 7: ai.verta.registry.DashboardService.listDashboards:output_type -> ai.verta.registry.GetDashboardByName.Response
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
 	4, // [4:4] is the sub-list for extension extendee
 	0, // [0:4] is the sub-list for field type_name
@@ -444,8 +572,32 @@ func file_registry_DashboardService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_DashboardService_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_DashboardService_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListDashboards); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_DashboardService_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetDashboardByName_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_DashboardService_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListDashboards_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -463,7 +615,7 @@ func file_registry_DashboardService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_registry_DashboardService_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -489,7 +641,10 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type DashboardServiceClient interface {
+	// Gets information for a named dashboard. organization_id can be provided as a query parameter.
 	GetDashboardByName(ctx context.Context, in *GetDashboardByName, opts ...grpc.CallOption) (*GetDashboardByName_Response, error)
+	// Lists the names of available dashboards. organization_id can be provided as a query parameter.
+	ListDashboards(ctx context.Context, in *ListDashboards, opts ...grpc.CallOption) (*GetDashboardByName_Response, error)
 }
 
 type dashboardServiceClient struct {
@@ -509,9 +664,21 @@ func (c *dashboardServiceClient) GetDashboardByName(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *dashboardServiceClient) ListDashboards(ctx context.Context, in *ListDashboards, opts ...grpc.CallOption) (*GetDashboardByName_Response, error) {
+	out := new(GetDashboardByName_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.registry.DashboardService/listDashboards", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DashboardServiceServer is the server API for DashboardService service.
 type DashboardServiceServer interface {
+	// Gets information for a named dashboard. organization_id can be provided as a query parameter.
 	GetDashboardByName(context.Context, *GetDashboardByName) (*GetDashboardByName_Response, error)
+	// Lists the names of available dashboards. organization_id can be provided as a query parameter.
+	ListDashboards(context.Context, *ListDashboards) (*GetDashboardByName_Response, error)
 }
 
 // UnimplementedDashboardServiceServer can be embedded to have forward compatible implementations.
@@ -520,6 +687,9 @@ type UnimplementedDashboardServiceServer struct {
 
 func (*UnimplementedDashboardServiceServer) GetDashboardByName(context.Context, *GetDashboardByName) (*GetDashboardByName_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDashboardByName not implemented")
+}
+func (*UnimplementedDashboardServiceServer) ListDashboards(context.Context, *ListDashboards) (*GetDashboardByName_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDashboards not implemented")
 }
 
 func RegisterDashboardServiceServer(s *grpc.Server, srv DashboardServiceServer) {
@@ -544,6 +714,24 @@ func _DashboardService_GetDashboardByName_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DashboardService_ListDashboards_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDashboards)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DashboardServiceServer).ListDashboards(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.registry.DashboardService/ListDashboards",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DashboardServiceServer).ListDashboards(ctx, req.(*ListDashboards))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _DashboardService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.registry.DashboardService",
 	HandlerType: (*DashboardServiceServer)(nil),
@@ -551,6 +739,10 @@ var _DashboardService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getDashboardByName",
 			Handler:    _DashboardService_GetDashboardByName_Handler,
+		},
+		{
+			MethodName: "listDashboards",
+			Handler:    _DashboardService_ListDashboards_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

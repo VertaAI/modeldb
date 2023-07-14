@@ -9,35 +9,58 @@ import "registry/CustomAttributeService.proto";
 option go_package = "github.com/VertaAI/protos-all/protos/gen/go/protos/private/registry";
 option java_multiple_files = true;
 
+// A summary value displayed as single number on a card
 message Summary {
   string name = 1;
   float value = 2;
 }
 
+// A chart of name-value items
+// For exmple a pie chart with incidents per business unit would I have a map business unit names and the count of incidents for that unit.
 message Chart {
   string name = 1;
-  map<string, float> values = 2;
+  map<string, float> values = 2; // Name-value items to be charted
 }
 
+// A dashboard containing one or more elements
 message Dashboard {
   string name = 1;
-  repeated Summary summaries = 2;
+  repeated Summary summaries = 2; // Summary card
   repeated Chart charts = 3;
 }
 
+
 message GetDashboardByName {
-    string dashboard_name = 1;
+    string dashboard_name = 1; // The name of the dashboard
+    string organization_id = 2; // The organization id to use when calculating dashboard values and items.
 
     message Response {
         Dashboard dashboard = 1;
     }
 }
 
+message ListDashboards {
+    string organization_id = 1; // The organization id to list dashboards for.
+
+    message Response {
+        repeated string dashboard_names = 1;
+    }
+}
+
 service DashboardService {
+  // Gets information for a named dashboard. organization_id can be provided as a query parameter.
   rpc getDashboardByName(GetDashboardByName)
       returns (GetDashboardByName.Response) {
     option (google.api.http) = {
       get: "/v1/registry/dashboard/{dashboard_name}"
+    };
+  };
+
+  // Lists the names of available dashboards. organization_id can be provided as a query parameter.
+  rpc listDashboards(ListDashboards)
+      returns (GetDashboardByName.Response) {
+    option (google.api.http) = {
+      get: "/v1/registry/dashboard"
     };
   };
 }

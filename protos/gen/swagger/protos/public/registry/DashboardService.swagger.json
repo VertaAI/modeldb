@@ -11,8 +11,40 @@
     "application/json"
   ],
   "paths": {
+    "/dashboard": {
+      "get": {
+        "summary": "Lists the names of available dashboards. organization_id can be provided as a query parameter.",
+        "operationId": "DashboardService_listDashboards",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetDashboardByNameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DashboardService"
+        ]
+      }
+    },
     "/dashboard/{dashboard_name}": {
       "get": {
+        "summary": "Gets information for a named dashboard. organization_id can be provided as a query parameter.",
         "operationId": "DashboardService_getDashboardByName",
         "responses": {
           "200": {
@@ -33,6 +65,12 @@
             "name": "dashboard_name",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
@@ -68,7 +106,8 @@
             "format": "float"
           }
         }
-      }
+      },
+      "description": "A chart of name-value items\nFor exmple a pie chart with incidents per business unit would I have a map business unit names and the count of incidents for that unit."
     },
     "registryDashboard": {
       "type": "object",
@@ -88,7 +127,8 @@
             "$ref": "#/definitions/registryChart"
           }
         }
-      }
+      },
+      "title": "A dashboard containing one or more elements"
     },
     "registryGetDashboardByNameResponse": {
       "type": "object",
@@ -108,7 +148,8 @@
           "type": "number",
           "format": "float"
         }
-      }
+      },
+      "title": "A summary value displayed as single number on a card"
     },
     "runtimeError": {
       "type": "object",

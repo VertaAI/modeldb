@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registry',
-  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"&\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\"z\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x34\n\x06values\x18\x02 \x03(\x0b\x32$.ai.verta.registry.Chart.ValuesEntry\x1a-\n\x0bValuesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"r\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Chart\"i\n\x12GetDashboardByName\x12\x16\n\x0e\x64\x61shboard_name\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard2\xb1\x01\n\x10\x44\x61shboardService\x12\x9c\x01\n\x12getDashboardByName\x12%.ai.verta.registry.GetDashboardByName\x1a..ai.verta.registry.GetDashboardByName.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/registry/dashboard/{dashboard_name}BGP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
+  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"&\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\"z\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x34\n\x06values\x18\x02 \x03(\x0b\x32$.ai.verta.registry.Chart.ValuesEntry\x1a-\n\x0bValuesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"r\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Chart\"\x82\x01\n\x12GetDashboardByName\x12\x16\n\x0e\x64\x61shboard_name\x18\x01 \x01(\t\x12\x17\n\x0forganization_id\x18\x02 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard\"N\n\x0eListDashboards\x12\x17\n\x0forganization_id\x18\x01 \x01(\t\x1a#\n\x08Response\x12\x17\n\x0f\x64\x61shboard_names\x18\x01 \x03(\t2\xb7\x02\n\x10\x44\x61shboardService\x12\x9c\x01\n\x12getDashboardByName\x12%.ai.verta.registry.GetDashboardByName\x1a..ai.verta.registry.GetDashboardByName.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/registry/dashboard/{dashboard_name}\x12\x83\x01\n\x0elistDashboards\x12!.ai.verta.registry.ListDashboards\x1a..ai.verta.registry.GetDashboardByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/registry/dashboardBGP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_CustomAttributeService__pb2.DESCRIPTOR,])
 
@@ -212,8 +212,8 @@ _GETDASHBOARDBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=477,
-  serialized_end=536,
+  serialized_start=503,
+  serialized_end=562,
 )
 
 _GETDASHBOARDBYNAME = _descriptor.Descriptor(
@@ -230,6 +230,13 @@ _GETDASHBOARDBYNAME = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='organization_id', full_name='ai.verta.registry.GetDashboardByName.organization_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -242,8 +249,69 @@ _GETDASHBOARDBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=431,
-  serialized_end=536,
+  serialized_start=432,
+  serialized_end=562,
+)
+
+
+_LISTDASHBOARDS_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.registry.ListDashboards.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='dashboard_names', full_name='ai.verta.registry.ListDashboards.Response.dashboard_names', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=607,
+  serialized_end=642,
+)
+
+_LISTDASHBOARDS = _descriptor.Descriptor(
+  name='ListDashboards',
+  full_name='ai.verta.registry.ListDashboards',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='organization_id', full_name='ai.verta.registry.ListDashboards.organization_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_LISTDASHBOARDS_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=564,
+  serialized_end=642,
 )
 
 _CHART_VALUESENTRY.containing_type = _CHART
@@ -252,10 +320,12 @@ _DASHBOARD.fields_by_name['summaries'].message_type = _SUMMARY
 _DASHBOARD.fields_by_name['charts'].message_type = _CHART
 _GETDASHBOARDBYNAME_RESPONSE.fields_by_name['dashboard'].message_type = _DASHBOARD
 _GETDASHBOARDBYNAME_RESPONSE.containing_type = _GETDASHBOARDBYNAME
+_LISTDASHBOARDS_RESPONSE.containing_type = _LISTDASHBOARDS
 DESCRIPTOR.message_types_by_name['Summary'] = _SUMMARY
 DESCRIPTOR.message_types_by_name['Chart'] = _CHART
 DESCRIPTOR.message_types_by_name['Dashboard'] = _DASHBOARD
 DESCRIPTOR.message_types_by_name['GetDashboardByName'] = _GETDASHBOARDBYNAME
+DESCRIPTOR.message_types_by_name['ListDashboards'] = _LISTDASHBOARDS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Summary = _reflection.GeneratedProtocolMessageType('Summary', (_message.Message,), {
@@ -302,6 +372,21 @@ GetDashboardByName = _reflection.GeneratedProtocolMessageType('GetDashboardByNam
 _sym_db.RegisterMessage(GetDashboardByName)
 _sym_db.RegisterMessage(GetDashboardByName.Response)
 
+ListDashboards = _reflection.GeneratedProtocolMessageType('ListDashboards', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _LISTDASHBOARDS_RESPONSE,
+    '__module__' : 'registry.DashboardService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.registry.ListDashboards.Response)
+    })
+  ,
+  'DESCRIPTOR' : _LISTDASHBOARDS,
+  '__module__' : 'registry.DashboardService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.registry.ListDashboards)
+  })
+_sym_db.RegisterMessage(ListDashboards)
+_sym_db.RegisterMessage(ListDashboards.Response)
+
 
 DESCRIPTOR._options = None
 _CHART_VALUESENTRY._options = None
@@ -312,8 +397,8 @@ _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=539,
-  serialized_end=716,
+  serialized_start=645,
+  serialized_end=956,
   methods=[
   _descriptor.MethodDescriptor(
     name='getDashboardByName',
@@ -323,6 +408,15 @@ _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
     input_type=_GETDASHBOARDBYNAME,
     output_type=_GETDASHBOARDBYNAME_RESPONSE,
     serialized_options=b'\202\323\344\223\002)\022\'/v1/registry/dashboard/{dashboard_name}',
+  ),
+  _descriptor.MethodDescriptor(
+    name='listDashboards',
+    full_name='ai.verta.registry.DashboardService.listDashboards',
+    index=1,
+    containing_service=None,
+    input_type=_LISTDASHBOARDS,
+    output_type=_GETDASHBOARDBYNAME_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\030\022\026/v1/registry/dashboard',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_DASHBOARDSERVICE)

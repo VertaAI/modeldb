@@ -19,6 +19,11 @@ class DashboardServiceStub(object):
         request_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.SerializeToString,
         response_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.FromString,
         )
+    self.listDashboards = channel.unary_unary(
+        '/ai.verta.registry.DashboardService/listDashboards',
+        request_serializer=registry_dot_DashboardService__pb2.ListDashboards.SerializeToString,
+        response_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.FromString,
+        )
 
 
 class DashboardServiceServicer(object):
@@ -26,8 +31,15 @@ class DashboardServiceServicer(object):
   pass
 
   def getDashboardByName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """Gets information for a named dashboard. organization_id can be provided as a query parameter.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def listDashboards(self, request, context):
+    """Lists the names of available dashboards. organization_id can be provided as a query parameter.
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -38,6 +50,11 @@ def add_DashboardServiceServicer_to_server(servicer, server):
       'getDashboardByName': grpc.unary_unary_rpc_method_handler(
           servicer.getDashboardByName,
           request_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.FromString,
+          response_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.SerializeToString,
+      ),
+      'listDashboards': grpc.unary_unary_rpc_method_handler(
+          servicer.listDashboards,
+          request_deserializer=registry_dot_DashboardService__pb2.ListDashboards.FromString,
           response_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.SerializeToString,
       ),
   }
