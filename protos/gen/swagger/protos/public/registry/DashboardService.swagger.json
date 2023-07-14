@@ -13,13 +13,13 @@
   "paths": {
     "/dashboard": {
       "get": {
-        "summary": "Lists the names of available dashboards. organization_id can be provided as a query parameter.",
-        "operationId": "DashboardService_listDashboards",
+        "summary": "Gets information for a named dashboard. organization_id can be provided as a query parameter.",
+        "operationId": "DashboardService_getDashboard",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetDashboardByNameResponse"
+              "$ref": "#/definitions/registryGetDashboardResponse"
             }
           },
           "default": {
@@ -42,15 +42,15 @@
         ]
       }
     },
-    "/dashboard/{dashboard_name}": {
+    "/dashboard/models": {
       "get": {
-        "summary": "Gets information for a named dashboard. organization_id can be provided as a query parameter.",
-        "operationId": "DashboardService_getDashboardByName",
+        "summary": "Gets a list of models sorted by model attribute",
+        "operationId": "DashboardService_getTopModels",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetDashboardByNameResponse"
+              "$ref": "#/definitions/registryTopModelsResponse"
             }
           },
           "default": {
@@ -62,13 +62,20 @@
         },
         "parameters": [
           {
-            "name": "dashboard_name",
-            "in": "path",
-            "required": true,
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
             "type": "string"
           },
           {
-            "name": "organization_id",
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort_by",
             "in": "query",
             "required": false,
             "type": "string"
@@ -99,7 +106,7 @@
         "name": {
           "type": "string"
         },
-        "values": {
+        "items": {
           "type": "object",
           "additionalProperties": {
             "type": "number",
@@ -107,7 +114,7 @@
           }
         }
       },
-      "description": "A chart of name-value items\nFor exmple a pie chart with incidents per business unit would I have a map business unit names and the count of incidents for that unit."
+      "description": "A chart of name-value items\nFor exmple a pie chart with incidents per business unit would I have a map business unit names and the sum of incidents for that unit."
     },
     "registryDashboard": {
       "type": "object",
@@ -130,7 +137,16 @@
       },
       "title": "A dashboard containing one or more elements"
     },
-    "registryGetDashboardByNameResponse": {
+    "registryDashboardModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "registryGetDashboardResponse": {
       "type": "object",
       "properties": {
         "dashboard": {
@@ -150,6 +166,17 @@
         }
       },
       "title": "A summary value displayed as single number on a card"
+    },
+    "registryTopModelsResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryDashboardModel"
+          }
+        }
+      }
     },
     "runtimeError": {
       "type": "object",

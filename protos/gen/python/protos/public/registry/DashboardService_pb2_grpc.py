@@ -14,15 +14,15 @@ class DashboardServiceStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.getDashboardByName = channel.unary_unary(
-        '/ai.verta.registry.DashboardService/getDashboardByName',
-        request_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.SerializeToString,
-        response_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.FromString,
+    self.getDashboard = channel.unary_unary(
+        '/ai.verta.registry.DashboardService/getDashboard',
+        request_serializer=registry_dot_DashboardService__pb2.GetDashboard.SerializeToString,
+        response_deserializer=registry_dot_DashboardService__pb2.GetDashboard.Response.FromString,
         )
-    self.listDashboards = channel.unary_unary(
-        '/ai.verta.registry.DashboardService/listDashboards',
-        request_serializer=registry_dot_DashboardService__pb2.ListDashboards.SerializeToString,
-        response_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.FromString,
+    self.getTopModels = channel.unary_unary(
+        '/ai.verta.registry.DashboardService/getTopModels',
+        request_serializer=registry_dot_DashboardService__pb2.TopModels.SerializeToString,
+        response_deserializer=registry_dot_DashboardService__pb2.TopModels.Response.FromString,
         )
 
 
@@ -30,15 +30,15 @@ class DashboardServiceServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def getDashboardByName(self, request, context):
+  def getDashboard(self, request, context):
     """Gets information for a named dashboard. organization_id can be provided as a query parameter.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def listDashboards(self, request, context):
-    """Lists the names of available dashboards. organization_id can be provided as a query parameter.
+  def getTopModels(self, request, context):
+    """Gets a list of models sorted by model attribute
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -47,15 +47,15 @@ class DashboardServiceServicer(object):
 
 def add_DashboardServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'getDashboardByName': grpc.unary_unary_rpc_method_handler(
-          servicer.getDashboardByName,
-          request_deserializer=registry_dot_DashboardService__pb2.GetDashboardByName.FromString,
-          response_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.SerializeToString,
+      'getDashboard': grpc.unary_unary_rpc_method_handler(
+          servicer.getDashboard,
+          request_deserializer=registry_dot_DashboardService__pb2.GetDashboard.FromString,
+          response_serializer=registry_dot_DashboardService__pb2.GetDashboard.Response.SerializeToString,
       ),
-      'listDashboards': grpc.unary_unary_rpc_method_handler(
-          servicer.listDashboards,
-          request_deserializer=registry_dot_DashboardService__pb2.ListDashboards.FromString,
-          response_serializer=registry_dot_DashboardService__pb2.GetDashboardByName.Response.SerializeToString,
+      'getTopModels': grpc.unary_unary_rpc_method_handler(
+          servicer.getTopModels,
+          request_deserializer=registry_dot_DashboardService__pb2.TopModels.FromString,
+          response_serializer=registry_dot_DashboardService__pb2.TopModels.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
