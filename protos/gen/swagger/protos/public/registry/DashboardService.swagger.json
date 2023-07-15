@@ -1,0 +1,204 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "registry/DashboardService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/dashboard": {
+      "get": {
+        "summary": "Gets information for a named dashboard. organization_id can be provided as a query parameter.",
+        "operationId": "DashboardService_getDashboard",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetDashboardResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DashboardService"
+        ]
+      }
+    },
+    "/dashboard/models": {
+      "get": {
+        "summary": "Gets a list of models sorted by model attribute",
+        "operationId": "DashboardService_getTopModels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryTopModelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DashboardService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "registryChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "description": "A chart of name-value items\nFor exmple a pie chart with incidents per business unit would I have a map business unit names and the sum of incidents for that unit."
+    },
+    "registryDashboard": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "summaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registrySummary"
+          }
+        },
+        "charts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChart"
+          }
+        }
+      },
+      "title": "A dashboard containing one or more elements"
+    },
+    "registryDashboardModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "registryGetDashboardResponse": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "$ref": "#/definitions/registryDashboard"
+        }
+      }
+    },
+    "registrySummary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "title": "A summary value displayed as single number on a card"
+    },
+    "registryTopModelsResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryDashboardModel"
+          }
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}
