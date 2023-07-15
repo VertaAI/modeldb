@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -30,6 +31,7 @@ var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
+var _ = metadata.Join
 
 func request_OrganizationServiceV2_GetOrganizationById_0(ctx context.Context, marshaler runtime.Marshaler, client OrganizationServiceV2Client, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetOrganizationByIdV2
@@ -404,11 +406,14 @@ func local_request_OrganizationServiceV2_DeleteContainerRegistryConfiguration_0(
 // RegisterOrganizationServiceV2HandlerServer registers the http handlers for service OrganizationServiceV2 to "mux".
 // UnaryRPC     :call OrganizationServiceV2Server directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterOrganizationServiceV2HandlerFromEndpoint instead.
 func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtime.ServeMux, server OrganizationServiceV2Server) error {
 
 	mux.Handle("GET", pattern_OrganizationServiceV2_GetOrganizationById_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -416,6 +421,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_GetOrganizationById_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -429,6 +435,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("GET", pattern_OrganizationServiceV2_GetOrganizationByName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -436,6 +444,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_GetOrganizationByName_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -449,6 +458,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("GET", pattern_OrganizationServiceV2_ListOrganizations_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -456,6 +467,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_ListOrganizations_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -469,6 +481,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("POST", pattern_OrganizationServiceV2_SetOrganization_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -476,6 +490,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_SetOrganization_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -489,6 +504,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("DELETE", pattern_OrganizationServiceV2_DeleteOrganization_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -496,6 +513,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_DeleteOrganization_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -509,6 +527,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("POST", pattern_OrganizationServiceV2_CreateOrUpdateContainerRegistryConfiguration_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -516,6 +536,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_CreateOrUpdateContainerRegistryConfiguration_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -529,6 +550,8 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 	mux.Handle("POST", pattern_OrganizationServiceV2_DeleteContainerRegistryConfiguration_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -536,6 +559,7 @@ func RegisterOrganizationServiceV2HandlerServer(ctx context.Context, mux *runtim
 			return
 		}
 		resp, md, err := local_request_OrganizationServiceV2_DeleteContainerRegistryConfiguration_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)

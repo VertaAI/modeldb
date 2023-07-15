@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -30,6 +31,7 @@ var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
+var _ = metadata.Join
 
 func request_ExperimentRunService_CreateExperimentRun_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq CreateExperimentRun
@@ -2398,11 +2400,14 @@ func local_request_ExperimentRunService_CloneExperimentRun_0(ctx context.Context
 // RegisterExperimentRunServiceHandlerServer registers the http handlers for service ExperimentRunService to "mux".
 // UnaryRPC     :call ExperimentRunServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterExperimentRunServiceHandlerFromEndpoint instead.
 func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ExperimentRunServiceServer) error {
 
 	mux.Handle("POST", pattern_ExperimentRunService_CreateExperimentRun_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2410,6 +2415,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_CreateExperimentRun_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2423,6 +2429,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRun_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2430,6 +2438,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRun_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2443,6 +2452,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInProject_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2450,6 +2461,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunsInProject_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2463,6 +2475,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInExperiment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2470,6 +2484,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunsInExperiment_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2483,6 +2498,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunById_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2490,6 +2507,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunById_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2503,6 +2521,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunByName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2510,6 +2530,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunByName_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2523,6 +2544,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_UpdateExperimentRunName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2530,6 +2553,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_UpdateExperimentRunName_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2543,6 +2567,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_UpdateExperimentRunDescription_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2550,6 +2576,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_UpdateExperimentRunDescription_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2563,6 +2590,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_AddExperimentRunTags_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2570,6 +2599,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_AddExperimentRunTags_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2583,6 +2613,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunTags_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2590,6 +2622,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunTags_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2603,6 +2636,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRunTags_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2610,6 +2645,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRunTags_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2623,6 +2659,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_AddExperimentRunTag_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2630,6 +2668,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_AddExperimentRunTag_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2643,6 +2682,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRunTag_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2650,6 +2691,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRunTag_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2663,6 +2705,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogObservation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2670,6 +2714,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogObservation_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2683,6 +2728,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogObservations_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2690,6 +2737,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogObservations_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2703,6 +2751,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetObservations_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2710,6 +2760,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetObservations_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2723,6 +2774,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogMetric_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2730,6 +2783,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogMetric_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2743,6 +2797,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogMetrics_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2750,6 +2806,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogMetrics_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2763,6 +2820,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetMetrics_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2770,6 +2829,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetMetrics_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2783,6 +2843,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogDataset_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2790,6 +2852,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogDataset_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2803,6 +2866,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogDatasets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2810,6 +2875,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogDatasets_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2823,6 +2889,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetDatasets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2830,6 +2898,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetDatasets_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2843,6 +2912,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogHyperparameter_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2850,6 +2921,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogHyperparameter_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2863,6 +2935,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2870,6 +2944,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogHyperparameters_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2883,6 +2958,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2890,6 +2967,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetHyperparameters_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2903,6 +2981,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogAttribute_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2910,6 +2990,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogAttribute_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2923,6 +3004,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogAttributes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2930,6 +3013,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogAttributes_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2943,6 +3027,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunAttributes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2950,6 +3036,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunAttributes_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2963,6 +3050,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_AddExperimentRunAttributes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2970,6 +3059,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_AddExperimentRunAttributes_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2983,6 +3073,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRunAttributes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -2990,6 +3082,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRunAttributes_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3003,6 +3096,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogEnvironment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3010,6 +3105,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogEnvironment_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3023,6 +3119,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogExperimentRunCodeVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3030,6 +3128,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogExperimentRunCodeVersion_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3043,6 +3142,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunCodeVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3050,6 +3151,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunCodeVersion_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3063,6 +3165,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogArtifact_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3070,6 +3174,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogArtifact_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3083,6 +3188,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogArtifacts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3090,6 +3197,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogArtifacts_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3103,6 +3211,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetArtifacts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3110,6 +3220,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetArtifacts_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3123,6 +3234,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteArtifact_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3130,6 +3243,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteArtifact_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3143,6 +3257,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_GetUrlForArtifact_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3150,6 +3266,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetUrlForArtifact_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3163,6 +3280,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_CommitArtifactPart_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3170,6 +3289,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_CommitArtifactPart_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3183,6 +3303,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetCommittedArtifactParts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3190,6 +3312,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetCommittedArtifactParts_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3203,6 +3326,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_CommitMultipartArtifact_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3210,6 +3335,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_CommitMultipartArtifact_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3223,6 +3349,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_FindExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3230,6 +3358,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_FindExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3243,6 +3372,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_SortExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3250,6 +3381,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_SortExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3263,6 +3395,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetTopExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3270,6 +3404,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetTopExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3283,6 +3418,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_LogJobId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3290,6 +3427,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogJobId_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3303,6 +3441,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetJobId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3310,6 +3450,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetJobId_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3323,6 +3464,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetChildrenExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3330,6 +3473,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetChildrenExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3343,6 +3487,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_SetParentExperimentRunId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3350,6 +3496,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_SetParentExperimentRunId_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3363,6 +3510,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3370,6 +3519,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3383,6 +3533,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3390,6 +3542,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3403,6 +3556,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_LogVersionedInput_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3410,6 +3565,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_LogVersionedInput_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3423,6 +3579,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_GetVersionedInputs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3430,6 +3588,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_GetVersionedInputs_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3443,6 +3602,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_ListCommitExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3450,6 +3611,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_ListCommitExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3463,6 +3625,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_ListCommitExperimentRuns_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3470,6 +3634,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_ListCommitExperimentRuns_1(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3483,6 +3648,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_ListBlobExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3490,6 +3657,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_ListBlobExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3503,6 +3671,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("GET", pattern_ExperimentRunService_ListBlobExperimentRuns_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3510,6 +3680,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_ListBlobExperimentRuns_1(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3523,6 +3694,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteObservations_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3530,6 +3703,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteObservations_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3543,6 +3717,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteMetrics_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3550,6 +3726,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteMetrics_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3563,6 +3740,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3570,6 +3749,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_DeleteHyperparameters_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3583,6 +3763,8 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 	mux.Handle("POST", pattern_ExperimentRunService_CloneExperimentRun_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
 		if err != nil {
@@ -3590,6 +3772,7 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 		resp, md, err := local_request_ExperimentRunService_CloneExperimentRun_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
