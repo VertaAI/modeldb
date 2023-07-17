@@ -80,7 +80,7 @@ def validate_schema(f):
     def wrapper(self, input: Dict):
         # fetch schema
         model_schema_path = os.environ.get(
-            _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
+            _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema"
         )
         try:
             with open(model_schema_path, "r") as file:
@@ -116,7 +116,9 @@ def validate_schema(f):
         try:
             jsonschema.validate(instance=output, schema=output_schema)
         except jsonschema.exceptions.ValidationError as e:
-            warnings.warn("output failed schema validation: " + str(e))
+            raise jsonschema.exceptions.ValidationError(
+                "output failed schema validation"
+            ) from e
 
         return output
 

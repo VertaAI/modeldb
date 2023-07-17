@@ -92,7 +92,9 @@ class _DeployableEntity(_ModelDBEntity):
 
     def log_schema(self, input: dict, output: Optional[dict] = None) -> None:
         """
-        Sets the input and output schemas, which are stored as model artifacts.
+        Sets the input and output schemas, which are stored as model artifacts. To propagate this
+        change to any live endpoints, you must redeploy the model by calling
+        :func:`~verta.endpoint.Endpoint.update`.
 
         The output schema is optional.
 
