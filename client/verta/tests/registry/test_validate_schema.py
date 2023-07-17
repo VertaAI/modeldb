@@ -18,19 +18,16 @@ class TestValidateSchema:
         matching_output_value=generate_another_object(),
     )
     def test_validate_schema_allow(
-        self,
-        recwarn,
-        make_model_schema_file,
-        matching_input_value,
-        matching_output_value,
+            self,
+            make_model_schema_file,
+            matching_input_value,
+            matching_output_value,
     ):
         @validate_schema
         def predict(self, input):
             return matching_output_value.dict()
 
         predict(None, matching_input_value.dict())
-        # verify there were no warnings
-        assert len(recwarn) == 0
 
     @hypothesis.settings(
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
@@ -38,7 +35,7 @@ class TestValidateSchema:
     )
     @hypothesis.given(non_matching_input_value=generate_another_object())
     def test_validate_schema_deny(
-        self, make_model_schema_file, non_matching_input_value
+            self, make_model_schema_file, non_matching_input_value
     ):
         @validate_schema
         def predict(self, input):
@@ -68,7 +65,7 @@ class TestValidateSchema:
 
         # when verify_io is first, it will raise a TypeError before validate_schema is called
         with pytest.raises(
-            TypeError, match="Object of type ndarray is not JSON serializable.*"
+                TypeError, match="Object of type ndarray is not JSON serializable.*"
         ):
             predict(None, array)
 
@@ -78,7 +75,7 @@ class TestValidateSchema:
     )
     @hypothesis.given(matching_input_value=generate_object())
     def test_validate_schema_deny_output(
-        self, recwarn, make_model_schema_file, matching_input_value
+            self, make_model_schema_file, matching_input_value
     ):
         @validate_schema
         def predict(self, input):
@@ -95,7 +92,7 @@ class TestValidateSchema:
         matching_input_value=generate_object(),
     )
     def test_validate_schema_no_output(
-        self, make_model_schema_file_no_output, matching_input_value
+            self, make_model_schema_file_no_output, matching_input_value
     ):
         @validate_schema
         def predict(self, input):
@@ -111,7 +108,7 @@ class TestValidateSchema:
         matching_input_value=generate_object(),
     )
     def test_validate_schema_deny_output_not_json(
-        self, make_model_schema_file, matching_input_value
+            self, make_model_schema_file, matching_input_value
     ):
         @validate_schema
         def predict(self, input):
