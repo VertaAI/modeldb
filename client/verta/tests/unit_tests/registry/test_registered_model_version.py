@@ -31,29 +31,36 @@ def model_ver_proto(draw) -> RegistryService_pb2.ModelVersion:
 
     """
     return RegistryService_pb2.ModelVersion(
+        # creation metadata
         id=draw(uint64()),
         registered_model_id=draw(uint64()),
         version=draw(st.text(ascii_letters)),
-
         time_updated=draw(int64()),
         time_created=draw(int64()),
-
+        # user-specified metadata
         labels=draw(st.lists(st.text(ascii_letters), unique=True)),
-
+        # I/O descriptions
         input_description=draw(st.text(ascii_letters)),
         output_description=draw(st.text(ascii_letters)),
         hide_input_label=draw(st.booleans()),
         hide_output_label=draw(st.booleans()),
-
+        # artifacts
         model=draw(st.one_of(st.none(), model_artifact_proto())),
-        artifacts=draw(st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key)),
-        datasets=draw(st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key)),
+        artifacts=draw(
+            st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
+        ),
+        datasets=draw(
+            st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
+        ),
         code_blob_map=draw(st.dictionaries(st.text(ascii_letters), code_blob_proto())),
     )
 
 
 @patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
-@hypothesis.given(model_ver_proto=model_ver_proto(), workspace=st.text(ascii_letters, min_size=1))
+@hypothesis.given(
+    model_ver_proto=model_ver_proto(),
+    workspace=st.text(ascii_letters, min_size=1),
+)
 def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
     """
     Verify that RegisteredModelVersion.__repr__() renders expected fields and correct values.
@@ -61,19 +68,26 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
     This test does not yet cover all available fields, but exists in its current form to cover newly-added model catalog fields.
 
     """
-    model_ver = RegisteredModelVersion(conn=mock_conn, conf=mock_config, msg=model_ver_proto)
+    model_ver = RegisteredModelVersion(
+        conn=mock_conn,
+        conf=mock_config,
+        msg=model_ver_proto,
+    )
     with patch.object(RegisteredModelVersion, "workspace", new=workspace):
         repr_lines: List[str] = repr(model_ver).split("\n")
     msg: RegistryService_pb2.ModelVersion = model_ver._msg
 
     assert f"version: {msg.version}" in repr_lines
-    assert "url: {}://{}/{}/registry/{}/versions/{}".format(
-        mock_conn.scheme,
-        mock_conn.socket,
-        workspace,
-        msg.registered_model_id,
-        msg.id,
-    ) in repr_lines
+    assert (
+        "url: {}://{}/{}/registry/{}/versions/{}".format(
+            mock_conn.scheme,
+            mock_conn.socket,
+            workspace,
+            msg.registered_model_id,
+            msg.id,
+        )
+        in repr_lines
+    )
     assert f"time created: {timestamp_to_str(msg.time_created)}" in repr_lines
     assert f"time updated: {timestamp_to_str(msg.time_updated)}" in repr_lines
     assert f"labels: {msg.labels}" in repr_lines
@@ -90,5 +104,8 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
     if msg.model.key:
         expected_artifact_keys.append(model_ver._MODEL_KEY)
     assert f"artifact keys: {sorted(expected_artifact_keys)}" in repr_lines
-    assert f"dataset version keys: {sorted(dataset.key for dataset in msg.datasets)}" in repr_lines
+    assert (
+        f"dataset version keys: {sorted(dataset.key for dataset in msg.datasets)}"
+        in repr_lines
+    )
     assert f"code version keys: {sorted(msg.code_blob_map.keys())}" in repr_lines
