@@ -3,13 +3,12 @@
 from __future__ import print_function
 
 import ast
-import json
 import logging
 import os
 import pathlib
 import pickle
 import tempfile
-from typing import List
+from typing import List, Optional
 import warnings
 
 from google.protobuf.struct_pb2 import Value
@@ -69,6 +68,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         Whether there is a model associated with this model version.
     registered_model_id : int
         ID of this version's registered model.
+    experiment_run_id : str or None
+        ID of this version's source experiment run, if it was created via
+        :meth:`RegisteredModel.create_version_from_run()
+        <verta.registry.entities.RegisteredModel.create_version_from_run>`.
     stage : str
         Model version stage.
     url : str
@@ -191,6 +194,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             )
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
+
+    @property
+    def experiment_run_id(self) -> Optional[str]:
+        self._refresh_cache()
+        return self._msg.experiment_run_id or None
 
     def get_artifact_keys(self):
         """
