@@ -22,7 +22,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -54,7 +54,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -86,7 +86,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -118,7 +118,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -525,8 +525,7 @@
       "type": "object",
       "properties": {
         "allowed": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -562,8 +561,7 @@
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"

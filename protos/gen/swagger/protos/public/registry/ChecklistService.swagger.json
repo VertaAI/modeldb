@@ -22,7 +22,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -54,7 +54,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -86,7 +86,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -118,7 +118,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -150,7 +150,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -182,7 +182,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -222,7 +222,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -319,7 +319,6 @@
         },
         "completed": {
           "type": "boolean",
-          "format": "boolean",
           "title": "value corresponds to if the item was marked as completed"
         },
         "evidence": {
@@ -377,7 +376,6 @@
         },
         "blocks_deployment": {
           "type": "boolean",
-          "format": "boolean",
           "title": "flag for blocking deploy without all requiments satisfied"
         },
         "desired_stage": {
@@ -459,12 +457,10 @@
         },
         "required": {
           "type": "boolean",
-          "format": "boolean",
           "title": "flag for item as required"
         },
         "require_evidence": {
           "type": "boolean",
-          "format": "boolean",
           "title": "flag for asking for evidence"
         },
         "user_group_id": {
