@@ -29,9 +29,9 @@ class RegisteredModel(_entity._ModelDBEntity):
     Attributes
     ----------
     id : int
-        ID of this Registered Model.
+        ID of this registered model.
     name : str
-        Name of this Registered Model.
+        Name of this registered model.
     url : str
         Verta web app URL.
     versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
@@ -105,27 +105,27 @@ class RegisteredModel(_entity._ModelDBEntity):
         hide_output_label=False,
     ):
         """
-        Gets or creates a Model Version.
+        Gets or creates a model version.
 
-        If an accessible Model Version with name `name` does not already exist under this
-        Registered Model, it will be created and initialized with specified metadata
-        parameters. If such a Model Version does already exist, it will be retrieved;
+        If an accessible model version with name `name` does not already exist under this
+        registered model, it will be created and initialized with specified metadata
+        parameters. If such a model version does already exist, it will be retrieved;
         specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
         name : str, optional
-            Name of the Model Version. If no name is provided, one will be generated.
+            Name of the model version. If no name is provided, one will be generated.
         desc : str, optional
-            Description of the Model Version.
+            Description of the model version.
         labels : list of str, optional
-            Labels of the Model Version.
+            Labels of the model version.
         attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Model Version.
+            Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         id : str, optional
-            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            ID of the model version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
         input_description : str, optional
             Description of the model version's input.
@@ -149,7 +149,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
-        resource_name = "Model Version"
+        resource_name = "model version"
         param_names = "`desc`, `labels`, `attrs`, `time_created`, `lock_level`, `input_description`, `hide_input_label`, `output_description`, or `hide_output_label`"
         params = (
             desc,
@@ -225,13 +225,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         Parameters
         ----------
         name : str, optional
-            Name of the Model Version. If no name is provided, one will be generated.
+            Name of the model version. If no name is provided, one will be generated.
         desc : str, optional
-            Description of the Model Version.
+            Description of the model version.
         labels : list of str, optional
-            Labels of the Model Version.
+            Labels of the model version.
         attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Model Version.
+            Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
@@ -966,14 +966,14 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def get_version(self, name=None, id=None):
         """
-        Gets a Model Version of this Registered Model by `name` or `id`
+        Gets a model version of this registered model by `name` or `id`
 
         Parameters
         ----------
         name : str, optional
-            Name of the Model Version. If no name is provided, one will be generated.
+            Name of the model version. If no name is provided, one will be generated.
         id : str, optional
-            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            ID of the model version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
 
         Returns
@@ -1090,7 +1090,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def set_pii(self, pii):
         """
-        Updates the PII value of this Registered Model.
+        Updates the PII value of this registered model.
 
 
         Parameters
@@ -1109,7 +1109,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def get_pii(self):
         """
-        Returns the PII value of this Registered Model.
+        Returns the PII value of this registered model.
 
         Returns
         -------
@@ -1131,7 +1131,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def add_labels(self, labels):
         """
-        Adds multiple labels to this Registered Model.
+        Adds multiple labels to this registered model.
 
         Parameters
         ----------
@@ -1146,7 +1146,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def add_label(self, label):
         """
-        Adds a label to this Registered Model.
+        Adds a label to this registered model.
 
         Parameters
         ----------
@@ -1160,7 +1160,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def del_label(self, label):
         """
-        Deletes a label from this Registered Model.
+        Deletes a label from this registered model.
 
         Parameters
         ----------
@@ -1177,12 +1177,12 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def get_labels(self):
         """
-        Gets all labels of this Registered Model.
+        Gets all labels of this registered model.
 
         Returns
         -------
         labels : list of str
-            List of all labels of this Registered Model.
+            List of all labels of this registered model.
 
         """
         self._refresh_cache()

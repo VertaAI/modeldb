@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     """
-    Object representing a version of a Registered Model.
+    Object representing a version of a registered model.
 
     There should not be a need to instantiate this class directly; please use
     :meth:`RegisteredModel.get_or_create_version()
@@ -60,15 +60,15 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     Attributes
     ----------
     id : int
-        ID of this Model Version.
+        ID of this model version.
     name : str
-        Name of this Model Version.
+        Name of this model version.
     has_environment : bool
-        Whether there is an environment associated with this Model Version.
+        Whether there is an environment associated with this model version.
     has_model : bool
-        Whether there is a model associated with this Model Version.
+        Whether there is a model associated with this model version.
     registered_model_id : int
-        ID of this version's Registered Model.
+        ID of this version's registered model.
     stage : str
         Model version stage.
     url : str
@@ -194,12 +194,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_artifact_keys(self):
         """
-        Gets the artifact keys of this Model Version.
+        Gets the artifact keys of this model version.
 
         Returns
         -------
         list of str
-            List of artifact keys of this Model Version.
+            List of artifact keys of this model version.
 
         """
         self._refresh_cache()
@@ -543,7 +543,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_model(self):
         """
-        Gets the model of this Model Version.
+        Gets the model of this model version.
 
         If the model was originally logged as just a filesystem path, that path will be returned.
         Otherwise, bytes representing the model object will be returned.
@@ -566,7 +566,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_model(self):
         """
-        Deletes model of this Model Version.
+        Deletes model of this model version.
 
         """
         self._fetch_with_no_cache()
@@ -575,7 +575,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def log_artifact(self, key, artifact, overwrite=False, _extension=None):
         """
-        Logs an artifact to this Model Version.
+        Logs an artifact to this model version.
 
         .. note::
 
@@ -653,7 +653,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_artifact(self, key):
         """
-        Gets the artifact with name `key` from this Model Version.
+        Gets the artifact with name `key` from this model version.
 
         If the artifact was originally logged as just a filesystem path, that path will be returned.
         Otherwise, bytes representing the artifact object will be returned.
@@ -719,7 +719,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_artifact(self, key):
         """
-        Deletes the artifact with name `key` from this Model Version.
+        Deletes the artifact with name `key` from this model version.
 
         Parameters
         ----------
@@ -771,7 +771,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_environment(self):
         """
-        Deletes the environment of this Model Version.
+        Deletes the environment of this model version.
 
         """
         self._fetch_with_no_cache()
@@ -903,7 +903,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def add_labels(self, labels):
         """
-        Adds multiple labels to this Model Version.
+        Adds multiple labels to this model version.
 
         Parameters
         ----------
@@ -918,7 +918,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def add_label(self, label):
         """
-        Adds a label to this Model Version.
+        Adds a label to this model version.
 
         Parameters
         ----------
@@ -933,7 +933,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_label(self, label):
         """
-        Deletes a label from this Model Version.
+        Deletes a label from this model version.
 
         Parameters
         ----------
@@ -950,12 +950,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_labels(self):
         """
-        Gets all labels of this Model Version.
+        Gets all labels of this model version.
 
         Returns
         -------
         list of str
-            List of all labels of this Model Version.
+            List of all labels of this model version.
 
         """
         self._refresh_cache()
@@ -1013,7 +1013,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def download_docker_context(self, download_to_path, self_contained=False):
         """
-        Downloads this Model Version's Docker context ``tgz``.
+        Downloads this model version's Docker context ``tgz``.
 
         Parameters
         ----------
@@ -1061,7 +1061,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     # def archive(self):
     #     """
-    #     Archive this Model Version.
+    #     Archive this model version.
 
     #     """
     #     if self.is_archived:
@@ -1071,7 +1071,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def add_attribute(self, key, value, overwrite=False):
         """
-        Adds an attribute to this Model Version.
+        Adds an attribute to this model version.
 
         Parameters
         ----------
@@ -1087,7 +1087,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def add_attributes(self, attrs, overwrite=False):
         """
-        Adds potentially multiple attributes to this Model Version.
+        Adds potentially multiple attributes to this model version.
 
         Parameters
         ----------
@@ -1127,7 +1127,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_attribute(self, key):
         """
-        Gets the attribute with name `key` from this Model Version.
+        Gets the attribute with name `key` from this model version.
 
         Parameters
         ----------
@@ -1150,7 +1150,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_attributes(self):
         """
-        Gets all attributes from this Model Version.
+        Gets all attributes from this model version.
 
         Returns
         -------
@@ -1172,7 +1172,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_attribute(self, key):
         """
-        Deletes the attribute with name `key` from this Model Version
+        Deletes the attribute with name `key` from this model version
 
         Parameters
         ----------
@@ -1593,7 +1593,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def log_dataset_version(self, key, dataset_version):
         """
-        Logs a Verta DatasetVersion to this Model Version with the given key.
+        Logs a Verta DatasetVersion to this model version with the given key.
 
         .. versionadded:: 0.21.1
 
@@ -1630,7 +1630,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_dataset_version(self, key):
         """
-        Gets the DatasetVersion with name `key` from this Model Version.
+        Gets the DatasetVersion with name `key` from this model version.
 
         .. versionadded:: 0.21.1
 
@@ -1661,12 +1661,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_dataset_versions(self):
         """
-        Gets all DatasetVersions associated with this Model Version.
+        Gets all DatasetVersions associated with this model version.
 
         Returns
         -------
         list of :class:`~verta.dataset.entities.DatasetVersion`
-            DatasetVersions associated with this Model Version.
+            DatasetVersions associated with this model version.
         """
         self._refresh_cache()
 
@@ -1686,7 +1686,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def del_dataset_version(self, key):
         """
-        Deletes the DatasetVersion with name `key` from this Model Version.
+        Deletes the DatasetVersion with name `key` from this model version.
 
         .. versionadded:: 0.21.1
 
