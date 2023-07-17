@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import collections
 import copy
 import logging
 import os
 import sys
+from typing import Optional
 
 from .._vendored import six
 
@@ -53,6 +55,12 @@ class Python(_environment._Environment):
         Apt packages to be installed alongside a Python environment.
     env_vars : dict of str to str, or None
         Environment variables.
+    python_version : 3-tuple of int, or None
+        Python version. This tuple contains three compoennts of the version number:
+        *major*, *minor*, and *micro*. Similar to :obj:`sys.version_info`, the
+        components can be accessed by index or by name, so
+        ``env.python_version[0]`` is equivalent to
+        ``env.python_version.major`` and so on.
 
     Examples
     --------
@@ -173,6 +181,21 @@ class Python(_environment._Environment):
         else:
             # raw requirements
             return self._msg.python.raw_requirements.splitlines()
+
+    @property
+    def python_version(self) -> Optional[collections.namedtuple]:
+        if not self._msg.python.version.major:
+            return None
+
+        python_version = collections.namedtuple(
+            "python_version",
+            ["major", "minor", "micro"],
+        )
+        return python_version(
+            major=self._msg.python.version.major,
+            minor=self._msg.python.version.minor,
+            micro=self._msg.python.version.patch,
+        )
 
     @classmethod
     def _from_proto(cls, blob_msg):
