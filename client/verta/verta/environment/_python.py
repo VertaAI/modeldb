@@ -60,7 +60,8 @@ class Python(_environment._Environment):
         *major*, *minor*, and *micro*. Similar to :obj:`sys.version_info`, the
         components can be accessed by index or by name, so
         ``env.python_version[0]`` is equivalent to
-        ``env.python_version.major`` and so on.
+        ``env.python_version.major`` and so on. Returns ``None`` if no Python
+        version was captured.
 
     Examples
     --------
