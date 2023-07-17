@@ -23,14 +23,17 @@ from ..strategies import (
 
 
 @st.composite
-def model_ver_proto(draw) -> RegistryService_pb2.ModelVersion:
+def model_ver_proto(
+    draw,
+    with_experiment_run_id=False,
+) -> RegistryService_pb2.ModelVersion:
     """
     Generate a mocked ModelVersion protobuf object.
 
     This strategy does not yet set all available fields, but exists in its current form to cover newly-added model catalog fields.
 
     """
-    return RegistryService_pb2.ModelVersion(
+    msg = RegistryService_pb2.ModelVersion(
         # creation metadata
         id=draw(uint64()),
         registered_model_id=draw(uint64()),
@@ -54,6 +57,10 @@ def model_ver_proto(draw) -> RegistryService_pb2.ModelVersion:
         ),
         code_blob_map=draw(st.dictionaries(st.text(ascii_letters), code_blob_proto())),
     )
+    if with_experiment_run_id:
+        msg.experiment_run_id = str(draw(st.uuids()))
+
+    return msg
 
 
 @patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
@@ -109,3 +116,33 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
         in repr_lines
     )
     assert f"code version keys: {sorted(msg.code_blob_map.keys())}" in repr_lines
+
+
+@patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
+@hypothesis.given(
+    model_ver_proto=model_ver_proto(with_experiment_run_id=False),
+    model_ver_from_run_proto=model_ver_proto(with_experiment_run_id=True),
+)
+def test_experiment_run_id_property(
+    mock_conn,
+    mock_config,
+    model_ver_proto,
+    model_ver_from_run_proto,
+):
+    """Verify ``ModelVersion.experiment_run_id`` value."""
+    model_ver = RegisteredModelVersion(
+        conn=mock_conn,
+        conf=mock_config,
+        msg=model_ver_proto,
+    )
+    assert model_ver.experiment_run_id is None
+
+    model_ver_from_run = RegisteredModelVersion(
+        conn=mock_conn,
+        conf=mock_config,
+        msg=model_ver_from_run_proto,
+    )
+    assert (
+        model_ver_from_run.experiment_run_id
+        == model_ver_from_run_proto.experiment_run_id
+    )
