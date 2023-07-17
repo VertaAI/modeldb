@@ -116,7 +116,9 @@ def validate_schema(f):
         try:
             jsonschema.validate(instance=output, schema=output_schema)
         except jsonschema.exceptions.ValidationError as e:
-            warnings.warn("output failed schema validation: " + str(e))
+            raise jsonschema.exceptions.ValidationError(
+                "output failed schema validation"
+            ) from e
 
         return output
 

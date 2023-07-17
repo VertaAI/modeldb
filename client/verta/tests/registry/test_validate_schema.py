@@ -67,7 +67,9 @@ class TestValidateSchema:
             return input
 
         # when verify_io is first, it will raise a TypeError before validate_schema is called
-        with pytest.raises(TypeError, match="Object of type ndarray is not JSON serializable.*"):
+        with pytest.raises(
+            TypeError, match="Object of type ndarray is not JSON serializable.*"
+        ):
             predict(None, array)
 
     @hypothesis.settings(
@@ -82,10 +84,8 @@ class TestValidateSchema:
         def predict(self, input):
             return input  # note that this does not match the output schema
 
-        predict(None, matching_input_value.dict())
-        assert len(recwarn) == 1
-        w = recwarn.pop(UserWarning)
-        assert str(w.message).startswith("output failed schema validation")
+        with pytest.raises(ValidationError, match="output failed schema validation.*"):
+            predict(None, matching_input_value.dict())
 
     @hypothesis.settings(
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
