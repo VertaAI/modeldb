@@ -149,7 +149,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
-        resource_name = "model version"
+        resource_name = "Model Version"
         param_names = "`desc`, `labels`, `attrs`, `time_created`, `lock_level`, `input_description`, `hide_input_label`, `output_description`, or `hide_output_label`"
         params = (
             desc,
