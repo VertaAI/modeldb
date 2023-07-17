@@ -80,7 +80,7 @@ def validate_schema(f):
     def wrapper(self, input: Dict):
         # fetch schema
         model_schema_path = os.environ.get(
-            _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
+            _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema"
         )
         try:
             with open(model_schema_path, "r") as file:
