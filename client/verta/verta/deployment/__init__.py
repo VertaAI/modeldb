@@ -11,15 +11,10 @@ from ._deployedmodel import (
     prediction_io_cleanup,
 )
 
-from ._pipeline import Pipeline
-from ._pipelinestep import PipelineStep
-
 
 documentation.reassign_module(
     [
         DeployedModel,
-        Pipeline,
-        PipelineStep,
         prediction_input_unpack,
         prediction_io_cleanup,
     ],
