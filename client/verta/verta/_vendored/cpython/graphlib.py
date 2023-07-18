@@ -1,7 +1,5 @@
 # https://github.com/python/cpython/blob/v3.11.0/Lib/graphlib.py
 
-from types import GenericAlias
-
 __all__ = ["TopologicalSorter", "CycleError"]
 
 _NODE_OUT = -1
@@ -249,5 +247,3 @@ class TopologicalSorter:
             node_group = self.get_ready()
             yield from node_group
             self.done(*node_group)
-
-    __class_getitem__ = classmethod(GenericAlias)
