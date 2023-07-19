@@ -51,14 +51,12 @@ class VertaModelBase(object):
 
     """
 
-    headers = {}
-
     @abc.abstractmethod
     def __init__(self, artifacts):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, input):
+    def predict(self, input, headers=None):
         """Produce an output from `input`.
 
         This method is called when requests are made against a Verta endpoint.
@@ -195,17 +193,3 @@ class VertaModelBase(object):
 
         """
         pass
-
-    def add_headers(self, headers: dict):
-        for key, value in headers.items():
-            # Remember we're logging NONE of the values at this point
-            self.headers["CUSTOM_" + key] = value
-
-    def _get_custom_headers(self):
-        return self.headers
-
-    def get_headers(self):
-        out_headers = {}
-        for key, value in self.headers.items():
-            out_headers[_file_utils.remove_prefix(key, "CUSTOM_")] = value
-        return out_headers
