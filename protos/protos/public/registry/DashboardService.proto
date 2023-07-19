@@ -15,11 +15,18 @@ message Summary {
   float value = 2;
 }
 
-// A chart of name-value items
-// For exmple a pie chart with incidents per business unit would I have a map business unit names and the sum of incidents for that unit.
+// One value in a chart
+message ChartValue {
+  string name = 1;
+  float value = 2;
+}
+
+// A chart containing a list of items
+// For exmple a pie chart with incidents per business unit would have a list business unit names and the sum of incidents for that unit.
 message Chart {
   string name = 1;
-  map<string, float> items = 2; // Name-value items to be charted
+  map<string, float> items = 2  [deprecated = true]; // Name-value items to be charted
+  repeated ChartValue chart_values = 3;
 }
 
 // A dashboard containing one or more elements

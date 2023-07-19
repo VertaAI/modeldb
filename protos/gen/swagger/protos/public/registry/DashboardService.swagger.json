@@ -112,9 +112,28 @@
             "type": "number",
             "format": "float"
           }
+        },
+        "chart_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChartValue"
+          }
         }
       },
-      "description": "A chart of name-value items\nFor exmple a pie chart with incidents per business unit would I have a map business unit names and the sum of incidents for that unit."
+      "description": "A chart containing a list of items\nFor exmple a pie chart with incidents per business unit would have a list business unit names and the sum of incidents for that unit."
+    },
+    "registryChartValue": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "title": "One value in a chart"
     },
     "registryDashboard": {
       "type": "object",
