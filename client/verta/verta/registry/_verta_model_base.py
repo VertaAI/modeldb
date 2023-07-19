@@ -55,7 +55,7 @@ class VertaModelBase(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, input):
+    def predict(self, input, headers=None):
         """Produce an output from `input`.
 
         This method is called when requests are made against a Verta endpoint.
@@ -93,7 +93,7 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    def batch_predict(self, df):
+    def batch_predict(self, df, headers=None):
         """Produce an output from `df`.
 
         This method is called when batch predictions are made against a Verta endpoint.

@@ -40,30 +40,6 @@ def _delete_thread_logs() -> None:
     delattr(_THREAD, "logs")
 
 
-def _get_thread_headers() -> Dict[str, str]:
-    """
-    Return the 'headers' attribute of the thread-local variable.
-    """
-    if hasattr(_THREAD, "headers"):
-        return _THREAD.headers
-    return {}
-
-
-def _set_thread_headers(headers: Dict[str, str]) -> Dict[str, str]:
-    """
-    Set the thread-local headers, overwriting values for existing header keys.
-    """
-    _THREAD.headers = headers
-    return _THREAD.headers
-
-
-def _delete_thread_headers() -> None:
-    """
-    Drop the `headers` attribute from the thread local variable.
-    """
-    delattr(_THREAD, "headers")
-
-
 def _get_validate_flag() -> bool:
     """
     Return the 'validate' attribute of the thread local variable.
@@ -238,7 +214,6 @@ class context:
     def __init__(self, validate: Optional[bool] = False):
         self._validate = validate
         self._logs_dict = dict()
-        self._headers_dict = dict()
 
     def __enter__(self):
         """
@@ -250,7 +225,6 @@ class context:
                 " an existing instance is not supported."
             )
         _set_thread_logs(dict())
-        _set_thread_headers(dict())
         _set_validate_flag(self._validate)
         return self
 
@@ -261,7 +235,6 @@ class context:
         """
         self._logs_dict = _get_thread_logs()
         _delete_thread_logs()
-        _delete_thread_headers()
         _delete_validate_flag()
 
     def logs(self) -> Dict[str, Any]:
@@ -276,16 +249,3 @@ class context:
             Dictionary of logs collected within this context manager.
         """
         return self._logs_dict or _get_thread_logs()
-
-    def headers(self) -> Dict[str, Any]:
-        """
-        Return the currently stored, thread-local request headers from inside this
-        context manager. If called after exiting the context manager, the
-        final collection of headers captured at the time of exit is returned.
-
-        Returns
-        -------
-        headers : Dict[str, str]
-            Dictionary of request headers collected within this context manager.
-        """
-        return self._headers_dict or _get_thread_headers()
