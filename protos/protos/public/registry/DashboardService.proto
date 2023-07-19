@@ -25,7 +25,7 @@ message ChartValue {
 // For exmple a pie chart with incidents per business unit would have a list business unit names and the sum of incidents for that unit.
 message Chart {
   string name = 1;
-  // map<string, float> items = 2; // Name-value items to be charted
+  map<string, float> items = 2  [deprecated = true]; // Name-value items to be charted
   repeated ChartValue chart_values = 3;
 }
 

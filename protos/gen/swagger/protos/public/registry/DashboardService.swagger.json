@@ -106,12 +106,18 @@
         "name": {
           "type": "string"
         },
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        },
         "chart_values": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/registryChartValue"
-          },
-          "title": "map<string, float> items = 2; // Name-value items to be charted"
+          }
         }
       },
       "description": "A chart containing a list of items\nFor exmple a pie chart with incidents per business unit would have a list business unit names and the sum of incidents for that unit."

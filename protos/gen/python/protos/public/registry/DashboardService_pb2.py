@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registry',
-  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"&\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\")\n\nChartValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\"J\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x0c\x63hart_values\x18\x03 \x03(\x0b\x32\x1d.ai.verta.registry.ChartValue\"r\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Chart\"d\n\x0cGetDashboard\x12\x17\n\x0forganization_id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard\"\x1c\n\x0e\x44\x61shboardModel\x12\n\n\x02id\x18\x01 \x01(\x04\"\x83\x01\n\tTopModels\x12\x17\n\x0forganization_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0f\n\x07sort_by\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x06models\x18\x01 \x03(\x0b\x32!.ai.verta.registry.DashboardModel2\x89\x02\n\x10\x44\x61shboardService\x12y\n\x0cgetDashboard\x12\x1f.ai.verta.registry.GetDashboard\x1a(.ai.verta.registry.GetDashboard.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/registry/dashboard\x12z\n\x0cgetTopModels\x12\x1c.ai.verta.registry.TopModels\x1a%.ai.verta.registry.TopModels.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/registry/dashboard/modelsBGP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
+  serialized_pb=b'\n\x1fregistry/DashboardService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a%registry/CustomAttributeService.proto\"&\n\x07Summary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\")\n\nChartValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02\"\xb0\x01\n\x05\x43hart\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x36\n\x05items\x18\x02 \x03(\x0b\x32#.ai.verta.registry.Chart.ItemsEntryB\x02\x18\x01\x12\x33\n\x0c\x63hart_values\x18\x03 \x03(\x0b\x32\x1d.ai.verta.registry.ChartValue\x1a,\n\nItemsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"r\n\tDashboard\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\tsummaries\x18\x02 \x03(\x0b\x32\x1a.ai.verta.registry.Summary\x12(\n\x06\x63harts\x18\x03 \x03(\x0b\x32\x18.ai.verta.registry.Chart\"d\n\x0cGetDashboard\x12\x17\n\x0forganization_id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\tdashboard\x18\x01 \x01(\x0b\x32\x1c.ai.verta.registry.Dashboard\"\x1c\n\x0e\x44\x61shboardModel\x12\n\n\x02id\x18\x01 \x01(\x04\"\x83\x01\n\tTopModels\x12\x17\n\x0forganization_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0f\n\x07sort_by\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x06models\x18\x01 \x03(\x0b\x32!.ai.verta.registry.DashboardModel2\x89\x02\n\x10\x44\x61shboardService\x12y\n\x0cgetDashboard\x12\x1f.ai.verta.registry.GetDashboard\x1a(.ai.verta.registry.GetDashboard.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/registry/dashboard\x12z\n\x0cgetTopModels\x12\x1c.ai.verta.registry.TopModels\x1a%.ai.verta.registry.TopModels.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/registry/dashboard/modelsBGP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_CustomAttributeService__pb2.DESCRIPTOR,])
 
@@ -104,6 +104,43 @@ _CHARTVALUE = _descriptor.Descriptor(
 )
 
 
+_CHART_ITEMSENTRY = _descriptor.Descriptor(
+  name='ItemsEntry',
+  full_name='ai.verta.registry.Chart.ItemsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.registry.Chart.ItemsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.registry.Chart.ItemsEntry.value', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=367,
+  serialized_end=411,
+)
+
 _CHART = _descriptor.Descriptor(
   name='Chart',
   full_name='ai.verta.registry.Chart',
@@ -119,7 +156,14 @@ _CHART = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='chart_values', full_name='ai.verta.registry.Chart.chart_values', index=1,
+      name='items', full_name='ai.verta.registry.Chart.items', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=b'\030\001', file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='chart_values', full_name='ai.verta.registry.Chart.chart_values', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -128,7 +172,7 @@ _CHART = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_CHART_ITEMSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -137,8 +181,8 @@ _CHART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=234,
-  serialized_end=308,
+  serialized_start=235,
+  serialized_end=411,
 )
 
 
@@ -182,8 +226,8 @@ _DASHBOARD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=310,
-  serialized_end=424,
+  serialized_start=413,
+  serialized_end=527,
 )
 
 
@@ -213,8 +257,8 @@ _GETDASHBOARD_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=467,
-  serialized_end=526,
+  serialized_start=570,
+  serialized_end=629,
 )
 
 _GETDASHBOARD = _descriptor.Descriptor(
@@ -243,8 +287,8 @@ _GETDASHBOARD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=426,
-  serialized_end=526,
+  serialized_start=529,
+  serialized_end=629,
 )
 
 
@@ -274,8 +318,8 @@ _DASHBOARDMODEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=528,
-  serialized_end=556,
+  serialized_start=631,
+  serialized_end=659,
 )
 
 
@@ -305,8 +349,8 @@ _TOPMODELS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=629,
-  serialized_end=690,
+  serialized_start=732,
+  serialized_end=793,
 )
 
 _TOPMODELS = _descriptor.Descriptor(
@@ -349,10 +393,12 @@ _TOPMODELS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=559,
-  serialized_end=690,
+  serialized_start=662,
+  serialized_end=793,
 )
 
+_CHART_ITEMSENTRY.containing_type = _CHART
+_CHART.fields_by_name['items'].message_type = _CHART_ITEMSENTRY
 _CHART.fields_by_name['chart_values'].message_type = _CHARTVALUE
 _DASHBOARD.fields_by_name['summaries'].message_type = _SUMMARY
 _DASHBOARD.fields_by_name['charts'].message_type = _CHART
@@ -384,11 +430,19 @@ ChartValue = _reflection.GeneratedProtocolMessageType('ChartValue', (_message.Me
 _sym_db.RegisterMessage(ChartValue)
 
 Chart = _reflection.GeneratedProtocolMessageType('Chart', (_message.Message,), {
+
+  'ItemsEntry' : _reflection.GeneratedProtocolMessageType('ItemsEntry', (_message.Message,), {
+    'DESCRIPTOR' : _CHART_ITEMSENTRY,
+    '__module__' : 'registry.DashboardService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.registry.Chart.ItemsEntry)
+    })
+  ,
   'DESCRIPTOR' : _CHART,
   '__module__' : 'registry.DashboardService_pb2'
   # @@protoc_insertion_point(class_scope:ai.verta.registry.Chart)
   })
 _sym_db.RegisterMessage(Chart)
+_sym_db.RegisterMessage(Chart.ItemsEntry)
 
 Dashboard = _reflection.GeneratedProtocolMessageType('Dashboard', (_message.Message,), {
   'DESCRIPTOR' : _DASHBOARD,
@@ -436,6 +490,8 @@ _sym_db.RegisterMessage(TopModels.Response)
 
 
 DESCRIPTOR._options = None
+_CHART_ITEMSENTRY._options = None
+_CHART.fields_by_name['items']._options = None
 
 _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
   name='DashboardService',
@@ -443,8 +499,8 @@ _DASHBOARDSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=693,
-  serialized_end=958,
+  serialized_start=796,
+  serialized_end=1061,
   methods=[
   _descriptor.MethodDescriptor(
     name='getDashboard',
