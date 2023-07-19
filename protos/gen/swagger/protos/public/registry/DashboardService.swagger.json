@@ -130,7 +130,7 @@
         },
         "value": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         }
       },
       "title": "One value in a chart"
@@ -181,7 +181,7 @@
         },
         "value": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         }
       },
       "title": "A summary value displayed as single number on a card"
