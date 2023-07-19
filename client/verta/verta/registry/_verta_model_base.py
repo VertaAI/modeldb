@@ -2,7 +2,6 @@
 
 import abc
 
-from verta._internal_utils import _file_utils
 from verta._vendored import six
 
 
