@@ -12,13 +12,13 @@ option java_multiple_files = true;
 // A summary value displayed as single number on a card
 message Summary {
   string name = 1;
-  float value = 2;
+  double value = 2;
 }
 
 // One value in a chart
 message ChartValue {
   string name = 1;
-  float value = 2;
+  double value = 2;
 }
 
 // A chart containing a list of items
