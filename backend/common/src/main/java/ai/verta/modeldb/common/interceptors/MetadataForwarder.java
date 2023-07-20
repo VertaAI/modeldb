@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public class MetadataForwarder implements ServerInterceptor {
   public static final Context.Key<Metadata> METADATA_INFO = Context.key("metadata");
+  public static final String ORGANIZATION_ID = "organization-id";
 
   @Override
   public <R, S> ServerCall.Listener<R> interceptCall(
@@ -32,5 +33,9 @@ public class MetadataForwarder implements ServerInterceptor {
       return Optional.empty();
     }
     return Optional.of(value);
+  }
+
+  public static Optional<String> getOrganizationId() {
+    return getMetadataKey(ORGANIZATION_ID);
   }
 }
