@@ -56,7 +56,7 @@ class VertaModelBase(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, input, headers=Dict[str, str]):
+    def predict(self, input, headers: Dict[str, str]):
         """Produce an output from `input`.
 
         This method is called when requests are made against a Verta endpoint.
