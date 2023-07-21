@@ -3,6 +3,8 @@
 # TODO: this functionality should be tucked into a method on Pipeline, so this test
 # logic should be moved to use that instead of LocalOrchestrator directly.
 
+import functools
+
 from verta import runtime
 from verta._pipeline_orchestrator import LocalOrchestrator
 from verta.environment import Python
@@ -60,26 +62,15 @@ class TestLocalOrchestrator:
                  sum
 
         """
-        echo_model_ver = registered_model.create_standard_model(
-            Echo,
+        create_standard_model = functools.partial(
+            registered_model.create_standard_model,
             code_dependencies=[],
             environment=Python([]),
         )
-        double_model_ver = registered_model.create_standard_model(
-            Double,
-            code_dependencies=[],
-            environment=Python([]),
-        )
-        triple_model_ver = registered_model.create_standard_model(
-            Triple,
-            code_dependencies=[],
-            environment=Python([]),
-        )
-        sum_model_ver = registered_model.create_standard_model(
-            Sum,
-            code_dependencies=[],
-            environment=Python([]),
-        )
+        echo_model_ver = create_standard_model(Echo)
+        double_model_ver = create_standard_model(Double)
+        triple_model_ver = create_standard_model(Triple)
+        sum_model_ver = create_standard_model(Sum)
 
         pipeline_spec = {
             "pipeline_name": "miliu-simple-pipeline",
@@ -95,7 +86,6 @@ class TestLocalOrchestrator:
                 {"name": "sum", "inputs": ["double", "triple"]},
             ],
         }
-
         orchestrator = LocalOrchestrator(registered_model._conn, pipeline_spec)
 
         input = 3
