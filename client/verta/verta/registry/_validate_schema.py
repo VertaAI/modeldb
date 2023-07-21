@@ -77,7 +77,7 @@ def validate_schema(f):
     """
 
     @functools.wraps(f)
-    def wrapper(self, input, headers):
+    def wrapper(self, input: Dict, headers):
         # fetch schema
         model_schema_path = os.environ.get(
             _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema"
