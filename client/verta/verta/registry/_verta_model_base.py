@@ -94,7 +94,7 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    def batch_predict(self, df, headers=Dict[str, str]):
+    def batch_predict(self, df, headers: Dict[str, str]):
         """Produce an output from `df`.
 
         This method is called when batch predictions are made against a Verta endpoint.
