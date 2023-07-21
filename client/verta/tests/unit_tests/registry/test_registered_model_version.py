@@ -3,7 +3,7 @@
 """ Unit tests for the RegisteredModelVersion class. """
 
 from string import ascii_letters
-from typing import List
+from typing import List, Optional
 from unittest.mock import patch
 
 import hypothesis
@@ -14,23 +14,39 @@ from verta._protos.public.registry import RegistryService_pb2
 from verta.registry.entities import RegisteredModelVersion
 
 from ..strategies import (
-    artifact_proto,
-    code_blob_proto,
     int64,
-    model_artifact_proto,
     uint64,
+    artifact_proto,
+    attribute_proto,
+    code_blob_proto,
+    model_artifact_proto,
 )
 
 
 @st.composite
 def model_ver_proto(
     draw,
-    with_experiment_run_id=False,
+    allow_attributes: bool = True,
+    allow_artifacts: bool = True,
+    with_model: Optional[bool] = None,
+    with_experiment_run_id: bool = False,
 ) -> RegistryService_pb2.ModelVersion:
-    """
-    Generate a mocked ModelVersion protobuf object.
+    """Generate a mocked ModelVersion protobuf object.
 
-    This strategy does not yet set all available fields, but exists in its current form to cover newly-added model catalog fields.
+    This strategy does not yet set all available fields, but exists in its
+    current form to cover newly-added model catalog fields.
+
+    Parameters
+    ----------
+    allow_attributes : bool, default True
+        Whether to sometimes set the ``attributes`` field.
+    allow_artifacts : bool, default True
+        Whether to sometimes set the ``artifacts`` field.
+    with_model : bool, optional
+        Whether to set ``model`` field. Default behavior is to sometimes set
+        it and sometimes not.
+    with_experiment_run_id : bool, default False
+        Whether to set ``experiment_run_id`` field.
 
     """
     msg = RegistryService_pb2.ModelVersion(
@@ -48,15 +64,25 @@ def model_ver_proto(
         hide_input_label=draw(st.booleans()),
         hide_output_label=draw(st.booleans()),
         # artifacts
-        model=draw(st.one_of(st.none(), model_artifact_proto())),
-        artifacts=draw(
-            st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
-        ),
         datasets=draw(
             st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
         ),
         code_blob_map=draw(st.dictionaries(st.text(ascii_letters), code_blob_proto())),
     )
+    if allow_attributes:
+        msg.attributes.extend(
+            draw(
+                st.lists(attribute_proto(), unique_by=lambda attribute: attribute.key),
+            )
+        )
+    if allow_artifacts:
+        msg.artifacts.extend(
+            draw(
+                st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
+            ),
+        )
+    if with_model or (with_model is None and draw(st.booleans())):
+        msg.model.CopyFrom(draw(model_artifact_proto()))
     if with_experiment_run_id:
         msg.experiment_run_id = str(draw(st.uuids()))
 
