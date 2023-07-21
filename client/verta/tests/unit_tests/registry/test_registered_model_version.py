@@ -14,12 +14,12 @@ from verta._protos.public.registry import RegistryService_pb2
 from verta.registry.entities import RegisteredModelVersion
 
 from ..strategies import (
-    int64,
-    uint64,
     artifact_proto,
     attribute_proto,
     code_blob_proto,
+    int64,
     model_artifact_proto,
+    uint64,
 )
 
 
