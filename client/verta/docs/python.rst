@@ -29,6 +29,7 @@ Verta
         endpoint
         environment
         integrations
+        pipeline
         registry
         runtime
         tracking
