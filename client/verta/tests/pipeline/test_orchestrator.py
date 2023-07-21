@@ -73,7 +73,7 @@ class TestLocalOrchestrator:
         sum_model_ver = create_standard_model(Sum)
 
         pipeline_spec = {
-            "pipeline_name": "miliu-simple-pipeline",
+            "pipeline_name": "diamond-pipeline",
             "steps": [
                 {"name": "echo", "model_version_id": echo_model_ver.id},
                 {"name": "double", "model_version_id": double_model_ver.id},
