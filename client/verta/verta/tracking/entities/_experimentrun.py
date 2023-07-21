@@ -39,6 +39,7 @@ from verta.dataset.entities import (
     _dataset_version,
 )
 from verta import data_types
+from verta import deployment
 from verta import utils
 from verta.environment import _Environment
 
