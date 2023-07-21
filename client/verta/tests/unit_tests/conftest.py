@@ -76,3 +76,18 @@ def mock_registered_model_version(mock_conn, mock_config):
         mock_config,
         _RegistryService.ModelVersion(id=555, registered_model_id=123)
     )
+
+
+@pytest.fixture(scope="session")
+def mock_registered_model_version_2(mock_conn, mock_config):
+    """Return a mocked object of the RegisteredModelVersion class for use in tests"""
+
+    class MockRegisteredModelVersion(RegisteredModelVersion):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    return MockRegisteredModelVersion(
+        mock_conn,
+        mock_config,
+        _RegistryService.ModelVersion(id=444, registered_model_id=456)
+    )

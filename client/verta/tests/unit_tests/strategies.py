@@ -229,7 +229,7 @@ def build_scan_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any
 
 @st.composite
 def mock_workspace(draw):
-    """ Return a valid workspace name.
+    """Return a valid workspace name.
     Unicode categories allowed: Ll (lowercase letter), Lu (Uppercase letters),
     Nd (Decimal number), Pd (Dash punctuation).  `%` disallowed to prevent
     url encoding issues when testing.
@@ -241,3 +241,83 @@ def mock_workspace(draw):
         )
     )
     return workspace
+
+
+@st.composite
+def mock_pipeline_spec(draw):
+    """Generate a mocked pipeline specification dictionary"""
+
+    # step names in a pipeline must be unique
+    step_names = draw(
+        st.lists(st.text(min_size=5), min_size=5, max_size=5, unique=True)
+    )
+
+    d = {
+        "graph": [
+            {"inputs": [], "name": step_names[0]},
+            {"inputs": [step_names[0]], "name": step_names[1]},
+            {"inputs": [step_names[1]], "name": step_names[2]},
+            {"inputs": [step_names[1]], "name": step_names[3]},
+            {"inputs": [step_names[2], step_names[1]], "name": step_names[4]},
+        ],
+        "path": draw(st.text(min_size=1)),
+        "pipeline_name": draw(st.text(min_size=1)),
+        "steps": [
+            {
+                "attributes": [
+                    {
+                        "key": draw(st.text(min_size=1)),
+                        "value": draw(st.text(min_size=1)),
+                    }
+                ],
+                "model_version_id": draw(st.integers(min_value=1)),
+                "name": step_names[0],
+                "path": draw(st.text(min_size=1)),
+            },
+            {
+                "attributes": [
+                    {
+                        "key": draw(st.text(min_size=1)),
+                        "value": draw(st.text(min_size=1)),
+                    },
+                ],
+                "model_version_id": draw(st.integers(min_value=1)),
+                "name": step_names[1],
+                "path": draw(st.text(min_size=1)),
+            },
+            {
+                "attributes": [
+                    {
+                        "key": draw(st.text(min_size=1)),
+                        "value": draw(st.text(min_size=1)),
+                    }
+                ],
+                "model_version_id": draw(st.integers(min_value=1)),
+                "name": step_names[2],
+                "path": draw(st.text(min_size=1)),
+            },
+            {
+                "attributes": [
+                    {
+                        "key": draw(st.text(min_size=1)),
+                        "value": draw(st.text(min_size=1)),
+                    }
+                ],
+                "model_version_id": draw(st.integers(min_value=1)),
+                "name": step_names[3],
+                "path": draw(st.text(min_size=1)),
+            },
+            {
+                "attributes": [
+                    {
+                        "key": draw(st.text(min_size=1)),
+                        "value": draw(st.text(min_size=1)),
+                    }
+                ],
+                "model_version_id": draw(st.integers(min_value=1)),
+                "name": step_names[4],
+                "path": draw(st.text(min_size=1)),
+            },
+        ],
+    }
+    return d
