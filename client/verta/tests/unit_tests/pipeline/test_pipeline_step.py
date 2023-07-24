@@ -52,7 +52,7 @@ def test_to_steps_spec(
     )
     assert step._to_steps_spec() == {
         "name": name,
-        "model_version_id": 555,  # default id for the fixture
+        "model_version_id": mock_registered_model_version.id,
         "attributes": [{"key": k, "value": v} for k, v in attributes.items()],
     }
 
@@ -101,7 +101,7 @@ def test_add_input_steps(mock_registered_model_version, input_steps) -> None:
 def test_remove_input_steps(mock_registered_model_version, input_steps) -> None:
     """Test that input steps can be removed from a PipelineStep object"""
     steps_to_remain = input_steps[: len(input_steps) // 2]
-    steps_to_remove = input_steps[len(input_steps) // 2:]
+    steps_to_remove = input_steps[len(input_steps) // 2 :]
     step = PipelineStep(
         model_version=mock_registered_model_version,
         name="test",
@@ -112,14 +112,17 @@ def test_remove_input_steps(mock_registered_model_version, input_steps) -> None:
     assert step.input_steps == steps_to_remain
 
 
-def test_change_model_version(mock_registered_model_version, mock_registered_model_version_2) -> None:
+def test_change_model_version(make_mock_registered_model_version) -> None:
     """Test that a PipelineStep object can have its model version changed"""
+    model_ver_1 = make_mock_registered_model_version()
+    model_ver_2 = make_mock_registered_model_version()
+
     step = PipelineStep(
-        model_version=mock_registered_model_version,
+        model_version=model_ver_1,
         name="test",
         input_steps=[],
         attributes={},
     )
-    assert step.model_version.id == 555
-    step.change_model_version(mock_registered_model_version_2)
-    assert step.model_version.id == 444
+    assert step.model_version.id == model_ver_1.id
+    step.change_model_version(model_ver_2)
+    assert step.model_version.id == model_ver_2.id

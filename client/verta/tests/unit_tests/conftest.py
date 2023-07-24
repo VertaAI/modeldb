@@ -3,6 +3,7 @@
 """Pytest fixtures for use in client unit tests."""
 
 import os
+import random
 from unittest.mock import patch
 
 import pytest
@@ -64,30 +65,45 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 
 
 @pytest.fixture(scope="session")
-def mock_registered_model_version(mock_conn, mock_config):
+def mock_registered_model_version(make_mock_registered_model_version):
     """Return a mocked object of the RegisteredModelVersion class for use in tests"""
 
-    class MockRegisteredModelVersion(RegisteredModelVersion):
-        def __repr__(self):  # avoid network calls when displaying test results
-            return object.__repr__(self)
-
-    return MockRegisteredModelVersion(
-        mock_conn,
-        mock_config,
-        _RegistryService.ModelVersion(id=555, registered_model_id=123)
-    )
+    return make_mock_registered_model_version()
 
 
 @pytest.fixture(scope="session")
-def mock_registered_model_version_2(mock_conn, mock_config):
-    """Return a mocked object of the RegisteredModelVersion class for use in tests"""
+def make_mock_registered_model_version(mock_conn, mock_config):
+    """Factory fixture for creating mocked ``RegisteredModelVersion``s."""
 
     class MockRegisteredModelVersion(RegisteredModelVersion):
         def __repr__(self):  # avoid network calls when displaying test results
             return object.__repr__(self)
 
-    return MockRegisteredModelVersion(
-        mock_conn,
-        mock_config,
-        _RegistryService.ModelVersion(id=444, registered_model_id=456)
-    )
+    model_ver_ids = set()
+    reg_model_ids = set()
+
+    def _make_mock_registered_model_version():
+        """Return a mocked ``RegisteredModelVersion``.
+
+        ``id`` and ``registered_model_id`` will be random and unique for the
+        test session.
+
+        """
+        model_ver_id = random.randint(1, 999)
+        while model_ver_id in model_ver_ids:
+            model_ver_id = random.randint(1, 999)
+
+        reg_model_id = random.randint(1, 999)
+        while reg_model_id in reg_model_ids:
+            reg_model_id = random.randint(1, 999)
+
+        return MockRegisteredModelVersion(
+            mock_conn,
+            mock_config,
+            _RegistryService.ModelVersion(
+                id=model_ver_id,
+                registered_model_id=reg_model_id,
+            ),
+        )
+
+    return _make_mock_registered_model_version
