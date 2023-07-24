@@ -57,7 +57,10 @@ public class S3Service implements ArtifactStoreService {
 
   private Boolean doesBucketExist(String bucketName) throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().doesBucketExistV2(bucketName);
+      LOGGER.debug("calling doesBucketExistV2");
+      boolean result = client.getClient().doesBucketExistV2(bucketName);
+      LOGGER.debug("done calling doesBucketExistV2");
+      return result;
     } catch (AmazonServiceException e) {
       CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
@@ -73,7 +76,10 @@ public class S3Service implements ArtifactStoreService {
 
   private Boolean doesObjectExist(String bucketName, String path) throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().doesObjectExist(bucketName, path);
+      LOGGER.debug("calling doesObjectExist");
+      boolean result = client.getClient().doesObjectExist(bucketName, path);
+      LOGGER.debug("done calling doesObjectExist");
+      return result;
     } catch (AmazonServiceException e) {
       CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
@@ -99,8 +105,10 @@ public class S3Service implements ArtifactStoreService {
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      LOGGER.debug("calling initiateMultipartUpload");
       InitiateMultipartUploadResult result =
           client.getClient().initiateMultipartUpload(initiateMultipartUploadRequest);
+      LOGGER.debug("done calling initiateMultipartUpload");
       return Optional.ofNullable(result.getUploadId());
     }
   }
@@ -149,7 +157,10 @@ public class S3Service implements ArtifactStoreService {
     }
 
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().generatePresignedUrl(request).toString();
+      LOGGER.debug("calling generatePresignedUrl");
+      var result = client.getClient().generatePresignedUrl(request).toString();
+      LOGGER.debug("done calling generatePresignedUrl");
+      return result;
     }
   }
 
@@ -209,10 +220,14 @@ public class S3Service implements ArtifactStoreService {
                 .withMultipartUploadThreshold((long) (5 * 1024 * 1024)) // 5 MB
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
                 .build();
+        LOGGER.debug("calling transferManager.upload");
         var upload =
             transferManager.upload(bucketName, artifactPath, request.getInputStream(), metadata);
+        LOGGER.debug("upload started");
         upload.waitForCompletion();
+        LOGGER.debug("upload completed");
         var uploadResult = upload.waitForUploadResult();
+        LOGGER.debug("upload result received");
         return uploadResult.getETag();
       }
     } catch (AmazonServiceException e) {
@@ -232,11 +247,11 @@ public class S3Service implements ArtifactStoreService {
 
   public ResponseEntity<Resource> loadFileAsResource(String fileName, String artifactPath)
       throws ModelDBException {
-    LOGGER.trace("S3Service - loadFileAsResource called");
+    LOGGER.debug("S3Service - loadFileAsResource called");
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       if (doesObjectExist(bucketName, artifactPath)) {
-        LOGGER.trace("S3Service - loadFileAsResource - resource exists");
-        LOGGER.trace("S3Service - loadFileAsResource returned");
+        LOGGER.debug("S3Service - loadFileAsResource - resource exists");
+        LOGGER.debug("S3Service - loadFileAsResource returned");
         S3Object resource = client.getClient().getObject(bucketName, artifactPath);
 
         var responseHeaders = new HttpHeaders();
