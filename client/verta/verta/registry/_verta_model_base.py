@@ -117,7 +117,6 @@ class VertaModelBase(object):
         Parameters
         ----------
         df : pandas.DataFrame
-
         headers : dict of str to str, optional
             Headers provided on the prediction request.
 
