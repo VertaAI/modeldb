@@ -81,6 +81,9 @@ class VertaModelBase(object):
         input : any JSON-compatible Python type
             Model input.
 
+        headers : dict of str to str, optional
+            Headers provided on the prediction request.
+
         Returns
         -------
         any JSON-compatible Python type
@@ -114,6 +117,9 @@ class VertaModelBase(object):
         Parameters
         ----------
         df : pandas.DataFrame
+
+        headers : dict of str to str, optional
+            Headers provided on the prediction request.
 
         Returns
         -------
