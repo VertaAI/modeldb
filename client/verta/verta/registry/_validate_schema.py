@@ -77,7 +77,7 @@ def validate_schema(f):
     """
 
     @functools.wraps(f)
-    def wrapper(self, input: Dict):
+    def wrapper(self, input: Dict, *args, **kwargs):
         # fetch schema
         model_schema_path = os.environ.get(
             _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema"
@@ -104,7 +104,7 @@ def validate_schema(f):
             ) from e
 
         # run function
-        output = f(self, input)
+        output = f(self, input, *args, **kwargs)
         if output_schema is None:
             return output
 

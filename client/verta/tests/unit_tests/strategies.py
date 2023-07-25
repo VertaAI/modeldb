@@ -7,10 +7,12 @@ from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
-from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS
+from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS, python_to_val_proto
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
 from verta.endpoint import KafkaSettings, build
+
+from tests.strategies import json_strategy
 
 
 @st.composite
@@ -26,14 +28,33 @@ def int64(draw) -> int:
 
 
 @st.composite
-def artifact_proto(draw) -> CommonService_pb2.Artifact:
-    """Generate a mocked Artifact protobuf object."""
-    key: str = draw(st.text(_VALID_FLAT_KEY_CHARS, min_size=1))
+def attribute_proto(draw) -> CommonService_pb2.KeyValue:
+    """Generate a mocked KeyValue protobuf object representing an attribute."""
+    return CommonService_pb2.KeyValue(
+        key=draw(st.text()),
+        value=python_to_val_proto(
+            draw(json_strategy),
+            allow_collection=True,
+        ),
+    )
+
+
+@st.composite
+def artifact_proto(draw, key: Optional[str] = None) -> CommonService_pb2.Artifact:
+    """Generate a mocked Artifact protobuf object.
+
+    Parameters
+    ----------
+    key : str, optional
+        Key to use for the artifact. If not provided, one will be generated.
+
+    """
+    key: str = draw(st.text(_VALID_FLAT_KEY_CHARS, min_size=1)) if key is None else key
     filename_extension: str = draw(st.text(ascii_lowercase))
 
     return CommonService_pb2.Artifact(
         key=key,
-        path=f"{draw(st.text(ascii_letters + '/'))}/{key}.{filename_extension}",
+        path=f"{draw(st.text(ascii_letters, min_size=1))}/{key}.{filename_extension}",
         filename_extension=filename_extension,
         artifact_type=CommonService_pb2.ArtifactTypeEnum.BLOB,
         upload_completed=draw(st.booleans()),
@@ -229,7 +250,7 @@ def build_scan_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any
 
 @st.composite
 def mock_workspace(draw):
-    """ Return a valid workspace name.
+    """Return a valid workspace name.
     Unicode categories allowed: Ll (lowercase letter), Lu (Uppercase letters),
     Nd (Decimal number), Pd (Dash punctuation).  `%` disallowed to prevent
     url encoding issues when testing.

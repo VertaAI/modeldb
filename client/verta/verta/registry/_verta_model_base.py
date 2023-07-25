@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import abc
+from typing import Dict
 
 from verta._vendored import six
 
@@ -55,7 +56,7 @@ class VertaModelBase(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, input):
+    def predict(self, input, headers: Dict[str, str]):
         """Produce an output from `input`.
 
         This method is called when requests are made against a Verta endpoint.
@@ -79,6 +80,8 @@ class VertaModelBase(object):
         ----------
         input : any JSON-compatible Python type
             Model input.
+        headers : dict of str to str, optional
+            Headers provided on the prediction request.
 
         Returns
         -------
@@ -93,7 +96,7 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    def batch_predict(self, df):
+    def batch_predict(self, df, headers: Dict[str, str]):
         """Produce an output from `df`.
 
         This method is called when batch predictions are made against a Verta endpoint.
@@ -113,6 +116,8 @@ class VertaModelBase(object):
         Parameters
         ----------
         df : pandas.DataFrame
+        headers : dict of str to str, optional
+            Headers provided on the prediction request.
 
         Returns
         -------
