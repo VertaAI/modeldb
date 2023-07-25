@@ -20,13 +20,13 @@ class _StepHandlerBase(abc.ABC):
         self._predecessors = set(predecessors)
 
     @abc.abstractmethod
-    def run(self, input: Any) -> Any:
+    def run(self, input: Dict[str, Any]) -> Any:
         """Run this step.
 
         Parameters
         ----------
-        input : object
-            Step input.
+        input : dict of str to object
+            Step input. Keys are precessors' names.
 
         Returns
         -------

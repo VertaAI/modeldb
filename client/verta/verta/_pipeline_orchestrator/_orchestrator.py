@@ -93,26 +93,17 @@ class _OrchestratorBase(abc.ABC):
             raise ValueError(
                 f"unexpected error: step {name} has no predecessors",
             )
-        if not predecessors <= self._outputs.keys():
+        if not predecessors.issubset(self._outputs.keys()):
             raise RuntimeError(
                 f"unexpected error: step {name}'s predecessors' outputs not found",
             )
 
-        # TODO: figure out how we actually want to collect upstream outputs
-        if len(predecessors) == 1:
-            return self._outputs[list(predecessors)[0]]
-        else:
-            # TODO: figure out how to orchestrate complex pipelines
-            raise ValueError("multiple inputs not yet supported")
-            # input = {
-            #     predecessor: self._outputs[predecessor]
-            #     for predecessor in predecessors
-            # }
+        return {predecessor: self._outputs[predecessor] for predecessor in predecessors}
 
     def _run_step_inner(
         self,
         name: str,
-        input: Any,
+        input: Dict[str, Any],
     ) -> Any:
         """Pass `input` to step `name` and return its output.
 
@@ -123,8 +114,8 @@ class _OrchestratorBase(abc.ABC):
         ----------
         name : str
             Step name.
-        input : object
-            Step input.
+        input : dict of str to object
+            Step input. Keys are precessors' names.
 
         Returns
         -------
@@ -151,8 +142,10 @@ class _OrchestratorBase(abc.ABC):
         name : str
             Step name.
         input : object, optional
-            Step input. If not provided, output(s) from the step's
-            predecessor(s) will be fetched from ``self._outputs``.
+            Step input. If provided, the value will be nested into a
+            dictionary under the key ``"input"`` before being passed to the
+            step. If not provided, output(s) from the step's predecessor(s)
+            will be fetched from ``self._outputs``.
 
         """
         if self._dag is None:  # TODO: also check if DAG is completed
@@ -160,8 +153,9 @@ class _OrchestratorBase(abc.ABC):
                 "DAG not initialized; call run() instead of using this method directly",
             )
 
-        if input is None:
-            input = self._get_step_input(name)
+        input: Dict[str, Any] = (
+            self._get_step_input(name) if input is None else {"input": input}
+        )
 
         self._outputs[name] = self._run_step_inner(name, input)
         self._dag.done(name)
