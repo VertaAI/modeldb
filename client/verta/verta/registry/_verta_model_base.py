@@ -80,7 +80,6 @@ class VertaModelBase(object):
         ----------
         input : any JSON-compatible Python type
             Model input.
-
         headers : dict of str to str, optional
             Headers provided on the prediction request.
 
