@@ -70,8 +70,14 @@ def verify_io(f):
 
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
-        for arg in itertools.chain(args, kwargs.values()):
-            _check_compatible_input(arg)
+        # Model input can either be passed by position or by keyword, and we
+        # don't have a strict requirement on the parameter name ("input" is
+        # only a recommendation, officially), so we'll check both and pass it
+        # to the model to deal with.
+        if args:
+            _check_compatible_input(args[0])
+        if "input" in kwargs:
+            _check_compatible_input(kwargs["input"])
 
         output = f(self, *args, **kwargs)
         _check_compatible_output(output)
