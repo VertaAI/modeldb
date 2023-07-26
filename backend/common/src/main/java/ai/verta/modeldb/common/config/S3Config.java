@@ -24,6 +24,7 @@ public class S3Config {
   @JsonProperty private String awsRegion = "us-east-1";
   @JsonProperty private Boolean s3presignedURLEnabled = true;
   @JsonProperty private Integer requestTimeoutMs = 30 * 1000;
+  @JsonProperty private Integer clientExecutionTimeout = 40 * 1000;
   @JsonProperty private Integer connectionPoolSize = 75;
 
   public void validate(String base) throws InvalidConfigException {

@@ -42,7 +42,8 @@ public class S3Client {
     this.defaultClientConfig =
         new ClientConfiguration()
             .withMaxConnections(s3Config.getConnectionPoolSize())
-            .withRequestTimeout(s3Config.getRequestTimeoutMs());
+            .withRequestTimeout(s3Config.getRequestTimeoutMs())
+            .withClientExecutionTimeout(s3Config.getClientExecutionTimeout());
 
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
