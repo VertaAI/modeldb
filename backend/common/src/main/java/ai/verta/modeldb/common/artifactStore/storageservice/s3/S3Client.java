@@ -25,12 +25,7 @@ import org.apache.logging.log4j.Logger;
 // should not be used anymore.
 public class S3Client {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
-  public static final int REQUEST_TIMEOUT_MS = 30 * 1000;
-  public static final int MAX_CONNECTIONS = 75;
-  public static final ClientConfiguration DEFAULT_CLIENT_CONFIG =
-      new ClientConfiguration()
-          .withMaxConnections(MAX_CONNECTIONS)
-          .withRequestTimeout(REQUEST_TIMEOUT_MS);
+  private final ClientConfiguration defaultClientConfig;
 
   private final String bucketName;
 
@@ -44,6 +39,10 @@ public class S3Client {
     String minioEndpoint = s3Config.getMinioEndpoint();
     Regions awsRegion = Regions.fromName(s3Config.getAwsRegion());
     this.bucketName = s3Config.getCloudBucketName();
+    this.defaultClientConfig =
+        new ClientConfiguration()
+            .withMaxConnections(s3Config.getConnectionPoolSize())
+            .withRequestTimeout(s3Config.getRequestTimeoutMs());
 
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
@@ -70,7 +69,7 @@ public class S3Client {
   private void initializeWithEnvironment(Regions awsRegion) {
     this.s3Client =
         AmazonS3ClientBuilder.standard()
-            .withClientConfiguration(DEFAULT_CLIENT_CONFIG)
+            .withClientConfiguration(defaultClientConfig)
             .withRegion(awsRegion)
             .build();
   }
@@ -78,7 +77,7 @@ public class S3Client {
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
     awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    var clientConfiguration = DEFAULT_CLIENT_CONFIG;
+    var clientConfiguration = new ClientConfiguration(defaultClientConfig);
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
@@ -98,7 +97,7 @@ public class S3Client {
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withRegion(awsRegion)
-            .withClientConfiguration(DEFAULT_CLIENT_CONFIG)
+            .withClientConfiguration(defaultClientConfig)
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
