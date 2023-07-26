@@ -18,6 +18,8 @@ message ServiceEnum {
         AUTHZ_SERVICE = 3;
         MODELDB_SERVICE = 4;
         DEPLOYMENT_SERVICE = 5;
+        REGISTRY_SERVICE = 6;
+        MONITORING_SERVICE = 7;
     }
 };
 
@@ -44,6 +46,11 @@ message AuthzActionEnum {
         READ = 5;
         UPDATE = 6;
         DELETE = 7;
+        READ_SECRETS = 8;
+        CREATE_SERVICE_ACCOUNT = 9;
+        CREATE_CONTAINER_REGISTRY = 10;
+        CREATE_WEBHOOK = 11;
+        CREATE_GROUP = 12;
     }
 
 };
@@ -62,6 +69,15 @@ message ModelDBActionEnum {
         LOCK = 9;
         UNLOCK = 10;
         UPDATE_REDACT = 11;
+        ALERTER = 12;
+        PREDICT = 13;
+        CONTROL = 14;
+        IS_ALLOWED = 15;
+        GET = 16;
+        READ_SECRETS = 17;
+        CREATE_SERVICE_ACCOUNT = 18;
+        CREATE_CONTAINER_REGISTRY = 19;
+        PROMOTE = 20;
     }
 };
 
@@ -74,6 +90,8 @@ message DeploymentActionEnum {
         UPDATE = 4;
         DELETE = 5;
         UPDATE_PERMISSIONS = 8;
+        PREDICT = 9;
+        CONTROL = 10;
     }
 };
 
@@ -105,6 +123,15 @@ message AuthzResourceEnum {
         TEAM = 3;
         WORKSPACE = 4;
         USER = 5;
+        SERVICE_ACCOUNT = 6;
+        CONTAINER_REGISTRY_CONFIGURATION = 7;
+        EVENT = 8;
+        WEBHOOK = 9;
+        SYSTEM_ADMIN = 10;
+        PYPI_CONFIGURATION = 11;
+        KAFKA_CONFIGURATION = 12;
+        SCIM_CONFIGURATION = 13;
+        GROUP = 14;
     }
 };
 
@@ -113,6 +140,7 @@ message DeploymentResourceEnum {
         UNKNOWN = 0; // Resource 0 should always cause an error
         ALL = 1;
         ENDPOINT = 2;
+        BUILD = 3;
     }
 };
 
@@ -164,6 +192,7 @@ message Entities {
     repeated string user_ids = 1;
     repeated string org_ids = 2;
     repeated string team_ids = 3;
+    repeated string group_ids = 4;
 };
 
 // Binds a set of roles to a set of entities
@@ -200,10 +229,12 @@ message GetRoleByName {
 };
 
 message ListRoles {
+    common.Pagination pagination = 1;
     RoleScope scope = 2;
 
     message Response {
         repeated Role roles = 1;
+        int64 total_records = 2;
     };
 };
 
@@ -243,9 +274,11 @@ message GetRoleBindingByName {
 message ListRoleBindings {
     string entity_id = 1;
     RoleScope scope = 2;
+    common.Pagination pagination = 3;
 
     message Response {
         repeated RoleBinding role_bindings = 1;
+        int64 total_records = 2;
     };
 };
 

@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
+from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,11 +21,45 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x16uac/Organization.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\xa8\x06\n\x0cOrganization\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x12\n\nshort_name\x18\x07 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x10\n\x08owner_id\x18\x04 \x01(\t\x12\x19\n\x11\x63reated_timestamp\x18\x05 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x06 \x01(\x03\x12X\n\x18global_collaborator_type\x18\x08 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12?\n\x11global_can_deploy\x18\t \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12^\n\x1e\x64\x65\x66\x61ult_repo_collaborator_type\x18\n \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x62\n\"default_endpoint_collaborator_type\x18\x0b \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x61\n!default_dataset_collaborator_type\x18\x0c \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12j\n*default_registered_model_collaborator_type\x18\r \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x14\n\x0cworkspace_id\x18\x0e \x01(\t\x12I\n\x1bregistered_model_can_deploy\x18\x0f \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"c\n\x13GetOrganizationById\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"g\n\x15GetOrganizationByName\x12\x10\n\x08org_name\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"n\n\x1aGetOrganizationByShortName\x12\x12\n\nshort_name\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"T\n\x13ListMyOrganizations\x1a=\n\x08Response\x12\x31\n\rorganizations\x18\x01 \x03(\x0b\x32\x1a.ai.verta.uac.Organization\"\x81\x01\n\x0fSetOrganization\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"@\n\x12\x44\x65leteOrganization\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"9\n\tListUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a\x1c\n\x08Response\x12\x10\n\x08user_ids\x18\x01 \x03(\t\"9\n\tListTeams\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a\x1c\n\x08Response\x12\x10\n\x08team_ids\x18\x01 \x03(\t\"I\n\x07\x41\x64\x64User\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"L\n\nRemoveUser\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xdb\n\n\x13OrganizationService\x12\x92\x01\n\x13getOrganizationById\x12!.ai.verta.uac.GetOrganizationById\x1a*.ai.verta.uac.GetOrganizationById.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/organization/getOrganizationById\x12\x9a\x01\n\x15getOrganizationByName\x12#.ai.verta.uac.GetOrganizationByName\x1a,.ai.verta.uac.GetOrganizationByName.Response\".\x82\xd3\xe4\x93\x02(\x12&/v1/organization/getOrganizationByName\x12\xae\x01\n\x1agetOrganizationByShortName\x12(.ai.verta.uac.GetOrganizationByShortName\x1a\x31.ai.verta.uac.GetOrganizationByShortName.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v1/organization/getOrganizationByShortName\x12\x92\x01\n\x13listMyOrganizations\x12!.ai.verta.uac.ListMyOrganizations\x1a*.ai.verta.uac.ListMyOrganizations.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/organization/listMyOrganizations\x12\x85\x01\n\x0fsetOrganization\x12\x1d.ai.verta.uac.SetOrganization\x1a&.ai.verta.uac.SetOrganization.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/organization/setOrganization:\x01*\x12\x91\x01\n\x12\x64\x65leteOrganization\x12 .ai.verta.uac.DeleteOrganization\x1a).ai.verta.uac.DeleteOrganization.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/organization/deleteOrganization:\x01*\x12j\n\tlistTeams\x12\x17.ai.verta.uac.ListTeams\x1a .ai.verta.uac.ListTeams.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/organization/listTeams\x12j\n\tlistUsers\x12\x17.ai.verta.uac.ListUsers\x1a .ai.verta.uac.ListUsers.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/organization/listUsers\x12\x65\n\x07\x61\x64\x64User\x12\x15.ai.verta.uac.AddUser\x1a\x1e.ai.verta.uac.AddUser.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/organization/addUser:\x01*\x12q\n\nremoveUser\x12\x18.ai.verta.uac.RemoveUser\x1a!.ai.verta.uac.RemoveUser.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/organization/removeUser:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x16uac/Organization.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\xca\n\n\x0cOrganization\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x12\n\nshort_name\x18\x07 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x10\n\x08owner_id\x18\x04 \x01(\t\x12\x30\n\x03idp\x18\x15 \x01(\x0b\x32#.ai.verta.uac.IdServiceProviderEnum\x12\x19\n\x11\x63reated_timestamp\x18\x05 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x06 \x01(\x03\x12X\n\x18global_collaborator_type\x18\x08 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12?\n\x11global_can_deploy\x18\t \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12^\n\x1e\x64\x65\x66\x61ult_repo_collaborator_type\x18\n \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x62\n\"default_endpoint_collaborator_type\x18\x0b \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x42\n\x14\x65ndpoint_can_predict\x18\x12 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x61\n!default_dataset_collaborator_type\x18\x0c \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12j\n*default_registered_model_collaborator_type\x18\r \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x14\n\x0cworkspace_id\x18\x0e \x01(\t\x12I\n\x1bregistered_model_can_deploy\x18\x0f \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x88\x01\n*default_monitored_entity_collaborator_type\x18\x10 \x01(\x0e\x32T.ai.verta.common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault\x12\x8c\x01\n.default_notification_channel_collaborator_type\x18\x11 \x01(\x0e\x32T.ai.verta.common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault\x12\x30\n\x06\x61\x64mins\x18\x13 \x01(\x0b\x32 .ai.verta.uac.OrganizationAdmins\x12K\n\x14\x62\x61seline_permissions\x18\x14 \x01(\x0b\x32-.ai.verta.uac.OrganizationBaselinePermissions\x12\x11\n\tnamespace\x18\x16 \x01(\t\"\xa4\x03\n\x1fOrganizationBaselinePermissions\x12g\n\x1cminimum_resources_permission\x18\x01 \x01(\x0e\x32\x41.ai.verta.uac.OrganizationBaselinePermissions.BaselinePermissions\x12@\n\x12project_can_deploy\x18\x02 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x41\n\x13registry_can_deploy\x18\x03 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x42\n\x14\x65ndpoint_can_predict\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"O\n\x13\x42\x61selinePermissions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07PRIVATE\x10\x01\x12\x08\n\x04READ\x10\x02\x12\t\n\x05WRITE\x10\x03\x12\t\n\x05\x41\x44MIN\x10\x04\"8\n\x12OrganizationAdmins\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x10\n\x08team_ids\x18\x02 \x03(\t\"N\n\x18ModifyOrganizationAdmins\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08user_ids\x18\x02 \x03(\t\x12\x10\n\x08team_ids\x18\x03 \x03(\t\"c\n\x13GetOrganizationById\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"g\n\x15GetOrganizationByName\x12\x10\n\x08org_name\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"n\n\x1aGetOrganizationByShortName\x12\x12\n\nshort_name\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"\xb0\x01\n\x11ListOrganizations\x12\x14\n\x0c\x65xternalOnly\x18\x01 \x01(\x08\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aT\n\x08Response\x12\x31\n\rorganizations\x18\x01 \x03(\x0b\x32\x1a.ai.verta.uac.Organization\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x9c\x01\n\x13ListMyOrganizations\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aT\n\x08Response\x12\x31\n\rorganizations\x18\x01 \x03(\x0b\x32\x1a.ai.verta.uac.Organization\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x81\x01\n\x0fSetOrganization\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\x1a<\n\x08Response\x12\x30\n\x0corganization\x18\x01 \x01(\x0b\x32\x1a.ai.verta.uac.Organization\"@\n\x12\x44\x65leteOrganization\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x81\x01\n\tListUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x33\n\x08Response\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x98\x01\n\tListTeams\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x15\n\rexternal_only\x18\x02 \x01(\x08\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x33\n\x08Response\x12\x10\n\x08team_ids\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"I\n\x07\x41\x64\x64User\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"L\n\nRemoveUser\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xd0\r\n\x13OrganizationService\x12\x92\x01\n\x13getOrganizationById\x12!.ai.verta.uac.GetOrganizationById\x1a*.ai.verta.uac.GetOrganizationById.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/organization/getOrganizationById\x12\x9a\x01\n\x15getOrganizationByName\x12#.ai.verta.uac.GetOrganizationByName\x1a,.ai.verta.uac.GetOrganizationByName.Response\".\x82\xd3\xe4\x93\x02(\x12&/v1/organization/getOrganizationByName\x12\xae\x01\n\x1agetOrganizationByShortName\x12(.ai.verta.uac.GetOrganizationByShortName\x1a\x31.ai.verta.uac.GetOrganizationByShortName.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v1/organization/getOrganizationByShortName\x12\x8a\x01\n\x11listOrganizations\x12\x1f.ai.verta.uac.ListOrganizations\x1a(.ai.verta.uac.ListOrganizations.Response\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/organization/listOrganizations\x12\x92\x01\n\x13listMyOrganizations\x12!.ai.verta.uac.ListMyOrganizations\x1a*.ai.verta.uac.ListMyOrganizations.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/organization/listMyOrganizations\x12\x85\x01\n\x0fsetOrganization\x12\x1d.ai.verta.uac.SetOrganization\x1a&.ai.verta.uac.SetOrganization.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/organization/setOrganization:\x01*\x12\x91\x01\n\x12\x64\x65leteOrganization\x12 .ai.verta.uac.DeleteOrganization\x1a).ai.verta.uac.DeleteOrganization.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/organization/deleteOrganization:\x01*\x12j\n\tlistTeams\x12\x17.ai.verta.uac.ListTeams\x1a .ai.verta.uac.ListTeams.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/organization/listTeams\x12j\n\tlistUsers\x12\x17.ai.verta.uac.ListUsers\x1a .ai.verta.uac.ListUsers.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/organization/listUsers\x12\x65\n\x07\x61\x64\x64User\x12\x15.ai.verta.uac.AddUser\x1a\x1e.ai.verta.uac.AddUser.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/organization/addUser:\x01*\x12q\n\nremoveUser\x12\x18.ai.verta.uac.RemoveUser\x1a!.ai.verta.uac.RemoveUser.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/organization/removeUser:\x01*\x12o\n\taddAdmins\x12&.ai.verta.uac.ModifyOrganizationAdmins\x1a\x13.ai.verta.uac.Empty\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/organization/addAdmins:\x01*\x12u\n\x0cremoveAdmins\x12&.ai.verta.uac.ModifyOrganizationAdmins\x1a\x13.ai.verta.uac.Empty\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/organization/removeAdmins:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,])
 
 
+
+_ORGANIZATIONBASELINEPERMISSIONS_BASELINEPERMISSIONS = _descriptor.EnumDescriptor(
+  name='BaselinePermissions',
+  full_name='ai.verta.uac.OrganizationBaselinePermissions.BaselinePermissions',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PRIVATE', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WRITE', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ADMIN', index=4, number=4,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1819,
+  serialized_end=1898,
+)
+_sym_db.RegisterEnumDescriptor(_ORGANIZATIONBASELINEPERMISSIONS_BASELINEPERMISSIONS)
 
 
 _ORGANIZATION = _descriptor.Descriptor(
@@ -70,72 +105,121 @@ _ORGANIZATION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='created_timestamp', full_name='ai.verta.uac.Organization.created_timestamp', index=5,
+      name='idp', full_name='ai.verta.uac.Organization.idp', index=5,
+      number=21, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='created_timestamp', full_name='ai.verta.uac.Organization.created_timestamp', index=6,
       number=5, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='updated_timestamp', full_name='ai.verta.uac.Organization.updated_timestamp', index=6,
+      name='updated_timestamp', full_name='ai.verta.uac.Organization.updated_timestamp', index=7,
       number=6, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='global_collaborator_type', full_name='ai.verta.uac.Organization.global_collaborator_type', index=7,
+      name='global_collaborator_type', full_name='ai.verta.uac.Organization.global_collaborator_type', index=8,
       number=8, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='global_can_deploy', full_name='ai.verta.uac.Organization.global_can_deploy', index=8,
+      name='global_can_deploy', full_name='ai.verta.uac.Organization.global_can_deploy', index=9,
       number=9, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='default_repo_collaborator_type', full_name='ai.verta.uac.Organization.default_repo_collaborator_type', index=9,
+      name='default_repo_collaborator_type', full_name='ai.verta.uac.Organization.default_repo_collaborator_type', index=10,
       number=10, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='default_endpoint_collaborator_type', full_name='ai.verta.uac.Organization.default_endpoint_collaborator_type', index=10,
+      name='default_endpoint_collaborator_type', full_name='ai.verta.uac.Organization.default_endpoint_collaborator_type', index=11,
       number=11, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='default_dataset_collaborator_type', full_name='ai.verta.uac.Organization.default_dataset_collaborator_type', index=11,
+      name='endpoint_can_predict', full_name='ai.verta.uac.Organization.endpoint_can_predict', index=12,
+      number=18, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='default_dataset_collaborator_type', full_name='ai.verta.uac.Organization.default_dataset_collaborator_type', index=13,
       number=12, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='default_registered_model_collaborator_type', full_name='ai.verta.uac.Organization.default_registered_model_collaborator_type', index=12,
+      name='default_registered_model_collaborator_type', full_name='ai.verta.uac.Organization.default_registered_model_collaborator_type', index=14,
       number=13, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='workspace_id', full_name='ai.verta.uac.Organization.workspace_id', index=13,
+      name='workspace_id', full_name='ai.verta.uac.Organization.workspace_id', index=15,
       number=14, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='registered_model_can_deploy', full_name='ai.verta.uac.Organization.registered_model_can_deploy', index=14,
+      name='registered_model_can_deploy', full_name='ai.verta.uac.Organization.registered_model_can_deploy', index=16,
       number=15, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='default_monitored_entity_collaborator_type', full_name='ai.verta.uac.Organization.default_monitored_entity_collaborator_type', index=17,
+      number=16, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='default_notification_channel_collaborator_type', full_name='ai.verta.uac.Organization.default_notification_channel_collaborator_type', index=18,
+      number=17, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='admins', full_name='ai.verta.uac.Organization.admins', index=19,
+      number=19, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='baseline_permissions', full_name='ai.verta.uac.Organization.baseline_permissions', index=20,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='namespace', full_name='ai.verta.uac.Organization.namespace', index=21,
+      number=22, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -151,8 +235,144 @@ _ORGANIZATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=99,
-  serialized_end=907,
+  serialized_start=121,
+  serialized_end=1475,
+)
+
+
+_ORGANIZATIONBASELINEPERMISSIONS = _descriptor.Descriptor(
+  name='OrganizationBaselinePermissions',
+  full_name='ai.verta.uac.OrganizationBaselinePermissions',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='minimum_resources_permission', full_name='ai.verta.uac.OrganizationBaselinePermissions.minimum_resources_permission', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='project_can_deploy', full_name='ai.verta.uac.OrganizationBaselinePermissions.project_can_deploy', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='registry_can_deploy', full_name='ai.verta.uac.OrganizationBaselinePermissions.registry_can_deploy', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='endpoint_can_predict', full_name='ai.verta.uac.OrganizationBaselinePermissions.endpoint_can_predict', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _ORGANIZATIONBASELINEPERMISSIONS_BASELINEPERMISSIONS,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1478,
+  serialized_end=1898,
+)
+
+
+_ORGANIZATIONADMINS = _descriptor.Descriptor(
+  name='OrganizationAdmins',
+  full_name='ai.verta.uac.OrganizationAdmins',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='user_ids', full_name='ai.verta.uac.OrganizationAdmins.user_ids', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='team_ids', full_name='ai.verta.uac.OrganizationAdmins.team_ids', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1900,
+  serialized_end=1956,
+)
+
+
+_MODIFYORGANIZATIONADMINS = _descriptor.Descriptor(
+  name='ModifyOrganizationAdmins',
+  full_name='ai.verta.uac.ModifyOrganizationAdmins',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='org_id', full_name='ai.verta.uac.ModifyOrganizationAdmins.org_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='user_ids', full_name='ai.verta.uac.ModifyOrganizationAdmins.user_ids', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='team_ids', full_name='ai.verta.uac.ModifyOrganizationAdmins.team_ids', index=2,
+      number=3, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1958,
+  serialized_end=2036,
 )
 
 
@@ -182,8 +402,8 @@ _GETORGANIZATIONBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=948,
-  serialized_end=1008,
+  serialized_start=2077,
+  serialized_end=2137,
 )
 
 _GETORGANIZATIONBYID = _descriptor.Descriptor(
@@ -212,8 +432,8 @@ _GETORGANIZATIONBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=909,
-  serialized_end=1008,
+  serialized_start=2038,
+  serialized_end=2137,
 )
 
 
@@ -243,8 +463,8 @@ _GETORGANIZATIONBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=948,
-  serialized_end=1008,
+  serialized_start=2077,
+  serialized_end=2137,
 )
 
 _GETORGANIZATIONBYNAME = _descriptor.Descriptor(
@@ -273,8 +493,8 @@ _GETORGANIZATIONBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1010,
-  serialized_end=1113,
+  serialized_start=2139,
+  serialized_end=2242,
 )
 
 
@@ -304,8 +524,8 @@ _GETORGANIZATIONBYSHORTNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=948,
-  serialized_end=1008,
+  serialized_start=2077,
+  serialized_end=2137,
 )
 
 _GETORGANIZATIONBYSHORTNAME = _descriptor.Descriptor(
@@ -334,8 +554,83 @@ _GETORGANIZATIONBYSHORTNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1115,
-  serialized_end=1225,
+  serialized_start=2244,
+  serialized_end=2354,
+)
+
+
+_LISTORGANIZATIONS_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.uac.ListOrganizations.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='organizations', full_name='ai.verta.uac.ListOrganizations.Response.organizations', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.ListOrganizations.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2449,
+  serialized_end=2533,
+)
+
+_LISTORGANIZATIONS = _descriptor.Descriptor(
+  name='ListOrganizations',
+  full_name='ai.verta.uac.ListOrganizations',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='externalOnly', full_name='ai.verta.uac.ListOrganizations.externalOnly', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.ListOrganizations.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_LISTORGANIZATIONS_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2357,
+  serialized_end=2533,
 )
 
 
@@ -353,6 +648,13 @@ _LISTMYORGANIZATIONS_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.ListMyOrganizations.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -365,8 +667,8 @@ _LISTMYORGANIZATIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1250,
-  serialized_end=1311,
+  serialized_start=2449,
+  serialized_end=2533,
 )
 
 _LISTMYORGANIZATIONS = _descriptor.Descriptor(
@@ -376,6 +678,13 @@ _LISTMYORGANIZATIONS = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.ListMyOrganizations.pagination', index=0,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -388,8 +697,8 @@ _LISTMYORGANIZATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1227,
-  serialized_end=1311,
+  serialized_start=2536,
+  serialized_end=2692,
 )
 
 
@@ -419,8 +728,8 @@ _SETORGANIZATION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=948,
-  serialized_end=1008,
+  serialized_start=2077,
+  serialized_end=2137,
 )
 
 _SETORGANIZATION = _descriptor.Descriptor(
@@ -449,8 +758,8 @@ _SETORGANIZATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1314,
-  serialized_end=1443,
+  serialized_start=2695,
+  serialized_end=2824,
 )
 
 
@@ -480,8 +789,8 @@ _DELETEORGANIZATION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1483,
-  serialized_end=1509,
+  serialized_start=2864,
+  serialized_end=2890,
 )
 
 _DELETEORGANIZATION = _descriptor.Descriptor(
@@ -510,8 +819,8 @@ _DELETEORGANIZATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1445,
-  serialized_end=1509,
+  serialized_start=2826,
+  serialized_end=2890,
 )
 
 
@@ -529,6 +838,13 @@ _LISTUSERS_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.ListUsers.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -541,8 +857,8 @@ _LISTUSERS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1540,
-  serialized_end=1568,
+  serialized_start=2971,
+  serialized_end=3022,
 )
 
 _LISTUSERS = _descriptor.Descriptor(
@@ -559,6 +875,13 @@ _LISTUSERS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.ListUsers.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -571,8 +894,8 @@ _LISTUSERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1511,
-  serialized_end=1568,
+  serialized_start=2893,
+  serialized_end=3022,
 )
 
 
@@ -590,6 +913,13 @@ _LISTTEAMS_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.ListTeams.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -602,8 +932,8 @@ _LISTTEAMS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1599,
-  serialized_end=1627,
+  serialized_start=3126,
+  serialized_end=3177,
 )
 
 _LISTTEAMS = _descriptor.Descriptor(
@@ -620,6 +950,20 @@ _LISTTEAMS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='external_only', full_name='ai.verta.uac.ListTeams.external_only', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.ListTeams.pagination', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -632,8 +976,8 @@ _LISTTEAMS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1570,
-  serialized_end=1627,
+  serialized_start=3025,
+  serialized_end=3177,
 )
 
 
@@ -663,8 +1007,8 @@ _ADDUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1483,
-  serialized_end=1509,
+  serialized_start=2864,
+  serialized_end=2890,
 )
 
 _ADDUSER = _descriptor.Descriptor(
@@ -700,8 +1044,8 @@ _ADDUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1629,
-  serialized_end=1702,
+  serialized_start=3179,
+  serialized_end=3252,
 )
 
 
@@ -731,8 +1075,8 @@ _REMOVEUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1483,
-  serialized_end=1509,
+  serialized_start=2864,
+  serialized_end=2890,
 )
 
 _REMOVEUSER = _descriptor.Descriptor(
@@ -768,37 +1112,58 @@ _REMOVEUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1704,
-  serialized_end=1780,
+  serialized_start=3254,
+  serialized_end=3330,
 )
 
+_ORGANIZATION.fields_by_name['idp'].message_type = uac_dot_UACService__pb2._IDSERVICEPROVIDERENUM
 _ORGANIZATION.fields_by_name['global_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
 _ORGANIZATION.fields_by_name['global_can_deploy'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
 _ORGANIZATION.fields_by_name['default_repo_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
 _ORGANIZATION.fields_by_name['default_endpoint_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
+_ORGANIZATION.fields_by_name['endpoint_can_predict'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
 _ORGANIZATION.fields_by_name['default_dataset_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
 _ORGANIZATION.fields_by_name['default_registered_model_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
 _ORGANIZATION.fields_by_name['registered_model_can_deploy'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
+_ORGANIZATION.fields_by_name['default_monitored_entity_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT
+_ORGANIZATION.fields_by_name['default_notification_channel_collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT
+_ORGANIZATION.fields_by_name['admins'].message_type = _ORGANIZATIONADMINS
+_ORGANIZATION.fields_by_name['baseline_permissions'].message_type = _ORGANIZATIONBASELINEPERMISSIONS
+_ORGANIZATIONBASELINEPERMISSIONS.fields_by_name['minimum_resources_permission'].enum_type = _ORGANIZATIONBASELINEPERMISSIONS_BASELINEPERMISSIONS
+_ORGANIZATIONBASELINEPERMISSIONS.fields_by_name['project_can_deploy'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
+_ORGANIZATIONBASELINEPERMISSIONS.fields_by_name['registry_can_deploy'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
+_ORGANIZATIONBASELINEPERMISSIONS.fields_by_name['endpoint_can_predict'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
+_ORGANIZATIONBASELINEPERMISSIONS_BASELINEPERMISSIONS.containing_type = _ORGANIZATIONBASELINEPERMISSIONS
 _GETORGANIZATIONBYID_RESPONSE.fields_by_name['organization'].message_type = _ORGANIZATION
 _GETORGANIZATIONBYID_RESPONSE.containing_type = _GETORGANIZATIONBYID
 _GETORGANIZATIONBYNAME_RESPONSE.fields_by_name['organization'].message_type = _ORGANIZATION
 _GETORGANIZATIONBYNAME_RESPONSE.containing_type = _GETORGANIZATIONBYNAME
 _GETORGANIZATIONBYSHORTNAME_RESPONSE.fields_by_name['organization'].message_type = _ORGANIZATION
 _GETORGANIZATIONBYSHORTNAME_RESPONSE.containing_type = _GETORGANIZATIONBYSHORTNAME
+_LISTORGANIZATIONS_RESPONSE.fields_by_name['organizations'].message_type = _ORGANIZATION
+_LISTORGANIZATIONS_RESPONSE.containing_type = _LISTORGANIZATIONS
+_LISTORGANIZATIONS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _LISTMYORGANIZATIONS_RESPONSE.fields_by_name['organizations'].message_type = _ORGANIZATION
 _LISTMYORGANIZATIONS_RESPONSE.containing_type = _LISTMYORGANIZATIONS
+_LISTMYORGANIZATIONS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _SETORGANIZATION_RESPONSE.fields_by_name['organization'].message_type = _ORGANIZATION
 _SETORGANIZATION_RESPONSE.containing_type = _SETORGANIZATION
 _SETORGANIZATION.fields_by_name['organization'].message_type = _ORGANIZATION
 _DELETEORGANIZATION_RESPONSE.containing_type = _DELETEORGANIZATION
 _LISTUSERS_RESPONSE.containing_type = _LISTUSERS
+_LISTUSERS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _LISTTEAMS_RESPONSE.containing_type = _LISTTEAMS
+_LISTTEAMS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _ADDUSER_RESPONSE.containing_type = _ADDUSER
 _REMOVEUSER_RESPONSE.containing_type = _REMOVEUSER
 DESCRIPTOR.message_types_by_name['Organization'] = _ORGANIZATION
+DESCRIPTOR.message_types_by_name['OrganizationBaselinePermissions'] = _ORGANIZATIONBASELINEPERMISSIONS
+DESCRIPTOR.message_types_by_name['OrganizationAdmins'] = _ORGANIZATIONADMINS
+DESCRIPTOR.message_types_by_name['ModifyOrganizationAdmins'] = _MODIFYORGANIZATIONADMINS
 DESCRIPTOR.message_types_by_name['GetOrganizationById'] = _GETORGANIZATIONBYID
 DESCRIPTOR.message_types_by_name['GetOrganizationByName'] = _GETORGANIZATIONBYNAME
 DESCRIPTOR.message_types_by_name['GetOrganizationByShortName'] = _GETORGANIZATIONBYSHORTNAME
+DESCRIPTOR.message_types_by_name['ListOrganizations'] = _LISTORGANIZATIONS
 DESCRIPTOR.message_types_by_name['ListMyOrganizations'] = _LISTMYORGANIZATIONS
 DESCRIPTOR.message_types_by_name['SetOrganization'] = _SETORGANIZATION
 DESCRIPTOR.message_types_by_name['DeleteOrganization'] = _DELETEORGANIZATION
@@ -814,6 +1179,27 @@ Organization = _reflection.GeneratedProtocolMessageType('Organization', (_messag
   # @@protoc_insertion_point(class_scope:ai.verta.uac.Organization)
   })
 _sym_db.RegisterMessage(Organization)
+
+OrganizationBaselinePermissions = _reflection.GeneratedProtocolMessageType('OrganizationBaselinePermissions', (_message.Message,), {
+  'DESCRIPTOR' : _ORGANIZATIONBASELINEPERMISSIONS,
+  '__module__' : 'uac.Organization_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.OrganizationBaselinePermissions)
+  })
+_sym_db.RegisterMessage(OrganizationBaselinePermissions)
+
+OrganizationAdmins = _reflection.GeneratedProtocolMessageType('OrganizationAdmins', (_message.Message,), {
+  'DESCRIPTOR' : _ORGANIZATIONADMINS,
+  '__module__' : 'uac.Organization_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.OrganizationAdmins)
+  })
+_sym_db.RegisterMessage(OrganizationAdmins)
+
+ModifyOrganizationAdmins = _reflection.GeneratedProtocolMessageType('ModifyOrganizationAdmins', (_message.Message,), {
+  'DESCRIPTOR' : _MODIFYORGANIZATIONADMINS,
+  '__module__' : 'uac.Organization_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.ModifyOrganizationAdmins)
+  })
+_sym_db.RegisterMessage(ModifyOrganizationAdmins)
 
 GetOrganizationById = _reflection.GeneratedProtocolMessageType('GetOrganizationById', (_message.Message,), {
 
@@ -859,6 +1245,21 @@ GetOrganizationByShortName = _reflection.GeneratedProtocolMessageType('GetOrgani
   })
 _sym_db.RegisterMessage(GetOrganizationByShortName)
 _sym_db.RegisterMessage(GetOrganizationByShortName.Response)
+
+ListOrganizations = _reflection.GeneratedProtocolMessageType('ListOrganizations', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _LISTORGANIZATIONS_RESPONSE,
+    '__module__' : 'uac.Organization_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.uac.ListOrganizations.Response)
+    })
+  ,
+  'DESCRIPTOR' : _LISTORGANIZATIONS,
+  '__module__' : 'uac.Organization_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.ListOrganizations)
+  })
+_sym_db.RegisterMessage(ListOrganizations)
+_sym_db.RegisterMessage(ListOrganizations.Response)
 
 ListMyOrganizations = _reflection.GeneratedProtocolMessageType('ListMyOrganizations', (_message.Message,), {
 
@@ -974,8 +1375,8 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1783,
-  serialized_end=3154,
+  serialized_start=3333,
+  serialized_end=5077,
   methods=[
   _descriptor.MethodDescriptor(
     name='getOrganizationById',
@@ -1005,9 +1406,18 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=b'\202\323\344\223\002-\022+/v1/organization/getOrganizationByShortName',
   ),
   _descriptor.MethodDescriptor(
+    name='listOrganizations',
+    full_name='ai.verta.uac.OrganizationService.listOrganizations',
+    index=3,
+    containing_service=None,
+    input_type=_LISTORGANIZATIONS,
+    output_type=_LISTORGANIZATIONS_RESPONSE,
+    serialized_options=b'\202\323\344\223\002$\022\"/v1/organization/listOrganizations',
+  ),
+  _descriptor.MethodDescriptor(
     name='listMyOrganizations',
     full_name='ai.verta.uac.OrganizationService.listMyOrganizations',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_LISTMYORGANIZATIONS,
     output_type=_LISTMYORGANIZATIONS_RESPONSE,
@@ -1016,7 +1426,7 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='setOrganization',
     full_name='ai.verta.uac.OrganizationService.setOrganization',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_SETORGANIZATION,
     output_type=_SETORGANIZATION_RESPONSE,
@@ -1025,7 +1435,7 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='deleteOrganization',
     full_name='ai.verta.uac.OrganizationService.deleteOrganization',
-    index=5,
+    index=6,
     containing_service=None,
     input_type=_DELETEORGANIZATION,
     output_type=_DELETEORGANIZATION_RESPONSE,
@@ -1034,7 +1444,7 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='listTeams',
     full_name='ai.verta.uac.OrganizationService.listTeams',
-    index=6,
+    index=7,
     containing_service=None,
     input_type=_LISTTEAMS,
     output_type=_LISTTEAMS_RESPONSE,
@@ -1043,7 +1453,7 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='listUsers',
     full_name='ai.verta.uac.OrganizationService.listUsers',
-    index=7,
+    index=8,
     containing_service=None,
     input_type=_LISTUSERS,
     output_type=_LISTUSERS_RESPONSE,
@@ -1052,7 +1462,7 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='addUser',
     full_name='ai.verta.uac.OrganizationService.addUser',
-    index=8,
+    index=9,
     containing_service=None,
     input_type=_ADDUSER,
     output_type=_ADDUSER_RESPONSE,
@@ -1061,11 +1471,29 @@ _ORGANIZATIONSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='removeUser',
     full_name='ai.verta.uac.OrganizationService.removeUser',
-    index=9,
+    index=10,
     containing_service=None,
     input_type=_REMOVEUSER,
     output_type=_REMOVEUSER_RESPONSE,
     serialized_options=b'\202\323\344\223\002 \"\033/v1/organization/removeUser:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='addAdmins',
+    full_name='ai.verta.uac.OrganizationService.addAdmins',
+    index=11,
+    containing_service=None,
+    input_type=_MODIFYORGANIZATIONADMINS,
+    output_type=uac_dot_UACService__pb2._EMPTY,
+    serialized_options=b'\202\323\344\223\002\037\"\032/v1/organization/addAdmins:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='removeAdmins',
+    full_name='ai.verta.uac.OrganizationService.removeAdmins',
+    index=12,
+    containing_service=None,
+    input_type=_MODIFYORGANIZATIONADMINS,
+    output_type=uac_dot_UACService__pb2._EMPTY,
+    serialized_options=b'\202\323\344\223\002\"\"\035/v1/organization/removeAdmins:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_ORGANIZATIONSERVICE)

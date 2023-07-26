@@ -22,7 +22,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -54,7 +54,71 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/addOrUpdateEndpointCollaboratorCommonService": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateEndpointCollaboratorCommonService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/addOrUpdateMonitoredEntityCollaborator": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateMonitoredEntityCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -86,7 +150,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -118,7 +182,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -150,7 +214,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -171,6 +235,38 @@
         ]
       }
     },
+    "/collaborator/addResourceAdmins": {
+      "post": {
+        "operationId": "CollaboratorService_addResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertauacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyResourceAdmins"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/getDatasetCollaborators": {
       "get": {
         "operationId": "CollaboratorService_getDatasetCollaborators",
@@ -182,7 +278,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -194,6 +290,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -212,7 +322,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -224,6 +334,108 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getEndpointCollaboratorsCommonService": {
+      "get": {
+        "operationId": "CollaboratorService_getEndpointCollaboratorsCommonService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getMonitoredEntityCollaborators": {
+      "get": {
+        "operationId": "CollaboratorService_getMonitoredEntityCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -242,7 +454,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -254,6 +466,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -272,7 +498,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -284,6 +510,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -302,7 +542,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -314,6 +554,164 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getResourceAdmins": {
+      "get": {
+        "operationId": "CollaboratorService_getResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacResourceAdmins"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE_SERVICE",
+              "AUTHZ_SERVICE",
+              "MODELDB_SERVICE",
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resource_type.role_service_resource_type",
+            "description": "Separate based on the service itself.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE",
+              "ROLE_BINDING"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK",
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "PROJECT",
+              "EXPERIMENT",
+              "EXPERIMENT_RUN",
+              "DATASET",
+              "DATASET_VERSION",
+              "DASHBOARD",
+              "REPOSITORY",
+              "REGISTERED_MODEL",
+              "REGISTERED_MODEL_VERSION",
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ENDPOINT",
+              "BUILD"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -333,7 +731,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -351,7 +749,9 @@
               "ROLE_SERVICE",
               "AUTHZ_SERVICE",
               "MODELDB_SERVICE",
-              "DEPLOYMENT_SERVICE"
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
             ],
             "default": "UNKNOWN"
           },
@@ -370,8 +770,7 @@
             "name": "resources.all_resource_ids",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -398,7 +797,16 @@
               "ORGANIZATION",
               "TEAM",
               "WORKSPACE",
-              "USER"
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK",
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           },
@@ -419,7 +827,18 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY"
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
             ],
             "default": "UNKNOWN"
           },
@@ -431,7 +850,8 @@
             "enum": [
               "UNKNOWN",
               "ALL",
-              "ENDPOINT"
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -454,6 +874,31 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "owner_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uint64"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -473,7 +918,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -491,7 +936,9 @@
               "ROLE_SERVICE",
               "AUTHZ_SERVICE",
               "MODELDB_SERVICE",
-              "DEPLOYMENT_SERVICE"
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
             ],
             "default": "UNKNOWN"
           },
@@ -510,8 +957,7 @@
             "name": "resources.all_resource_ids",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -538,7 +984,16 @@
               "ORGANIZATION",
               "TEAM",
               "WORKSPACE",
-              "USER"
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK",
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           },
@@ -559,7 +1014,18 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY"
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
             ],
             "default": "UNKNOWN"
           },
@@ -571,7 +1037,8 @@
             "enum": [
               "UNKNOWN",
               "ALL",
-              "ENDPOINT"
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -594,6 +1061,31 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "owner_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uint64"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -612,7 +1104,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -647,7 +1139,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -668,7 +1161,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -703,7 +1196,122 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeEndpointCollaboratorCommonService": {
+      "delete": {
+        "operationId": "CollaboratorService_removeEndpointCollaboratorCommonService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER",
+              "GROUP"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeMonitoredEntityCollaborator": {
+      "delete": {
+        "operationId": "CollaboratorService_removeMonitoredEntityCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -724,7 +1332,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -759,7 +1367,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -780,7 +1389,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -815,7 +1424,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -836,7 +1446,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -871,9 +1481,42 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeResourceAdmins": {
+      "post": {
+        "operationId": "CollaboratorService_removeResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertauacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyResourceAdmins"
+            }
           }
         ],
         "tags": [
@@ -893,7 +1536,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -926,7 +1569,12 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "CREATE_WEBHOOK",
+        "CREATE_GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -938,7 +1586,16 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER"
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "EVENT",
+        "WEBHOOK",
+        "SYSTEM_ADMIN",
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION",
+        "SCIM_CONFIGURATION",
+        "GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -950,6 +1607,15 @@
       ],
       "default": "READ_ONLY"
     },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
+    },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
       "enum": [
@@ -959,7 +1625,9 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -968,7 +1636,8 @@
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ENDPOINT"
+        "ENDPOINT",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
@@ -978,7 +1647,8 @@
         "UNKNOWN",
         "ORGANIZATION",
         "TEAM",
-        "USER"
+        "USER",
+        "GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -990,7 +1660,12 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD_OAUTH2",
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
@@ -1008,7 +1683,16 @@
         "UPDATE_PERMISSIONS",
         "LOCK",
         "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_REDACT",
+        "ALERTER",
+        "PREDICT",
+        "CONTROL",
+        "IS_ALLOWED",
+        "GET",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "PROMOTE"
       ],
       "default": "UNKNOWN"
     },
@@ -1026,7 +1710,29 @@
         "REPOSITORY",
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY"
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL",
+        "ENDPOINT",
+        "BUILD",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "STAGE",
+        "PROFILER"
+      ],
+      "default": "UNKNOWN"
+    },
+    "OrganizationBaselinePermissionsBaselinePermissions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "PRIVATE",
+        "READ",
+        "WRITE",
+        "ADMIN"
       ],
       "default": "UNKNOWN"
     },
@@ -1062,7 +1768,9 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -1075,17 +1783,45 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        }
+      }
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
         "type_url": {
-          "type": "string"
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
         "value": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
-      }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "runtimeError": {
       "type": "object",
@@ -1158,6 +1894,9 @@
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         },
@@ -1176,8 +1915,7 @@
           }
         },
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "collaborator_user_info": {
           "$ref": "#/definitions/uacUserInfo"
@@ -1197,6 +1935,9 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -1221,6 +1962,10 @@
           "items": {
             "$ref": "#/definitions/uacGetCollaboratorResponseItem"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1242,6 +1987,9 @@
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         },
@@ -1258,6 +2006,10 @@
           "items": {
             "$ref": "#/definitions/uacGetResourcesResponseItem"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1282,8 +2034,10 @@
         },
         "owner_id": {
           "type": "string",
-          "format": "uint64",
-          "title": "Owner of the resource"
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
@@ -1292,6 +2046,35 @@
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
           "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        }
+      }
+    },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
+    },
+    "uacModifyResourceAdmins": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "resource_id": {
+          "type": "string"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1313,6 +2096,9 @@
         "owner_id": {
           "type": "string"
         },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
+        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -1333,6 +2119,9 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
@@ -1344,6 +2133,55 @@
         },
         "registered_model_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_monitored_entity_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "default_notification_channel_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "admins": {
+          "$ref": "#/definitions/uacOrganizationAdmins"
+        },
+        "baseline_permissions": {
+          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "uacOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacOrganizationBaselinePermissions": {
+      "type": "object",
+      "properties": {
+        "minimum_resources_permission": {
+          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
+        },
+        "project_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "registry_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1351,14 +2189,34 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "self_allowed_actions": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/uacAction"
           }
+        }
+      }
+    },
+    "uacResourceAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1405,8 +2263,7 @@
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
@@ -1440,8 +2297,10 @@
         },
         "owner_id": {
           "type": "string",
-          "format": "uint64",
-          "title": "Owner of the resource"
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
@@ -1452,6 +2311,9 @@
           "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -1489,6 +2351,9 @@
         "owner_id": {
           "type": "string"
         },
+        "id_service_provider": {
+          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
+        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -1496,15 +2361,6 @@
         "updated_timestamp": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "uacTrialUserInfo": {
-      "type": "object",
-      "properties": {
-        "days_remaining": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     },
@@ -1546,6 +2402,19 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "job_title": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -1553,8 +2422,7 @@
       "type": "object",
       "properties": {
         "individual_user": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "username": {
           "type": "string"
@@ -1576,15 +2444,18 @@
         "workspace_id": {
           "type": "string"
         },
-        "trial_info": {
-          "$ref": "#/definitions/uacTrialUserInfo"
-        },
         "default_workspace_id": {
           "type": "string",
           "format": "uint64",
           "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
         }
       }
+    },
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

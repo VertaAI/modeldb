@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
+from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"{\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x42\r\n\x0binternal_idB\x06\n\x04name\"\x16\n\x14GetVisibleWorkspaces\"8\n\nWorkspaces\x12*\n\tworkspace\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Workspace2\x8d\x04\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyId\x12\x80\x01\n\x14getVisibleWorkspaces\x12\".ai.verta.uac.GetVisibleWorkspaces\x1a\x18.ai.verta.uac.Workspaces\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/workspace/getVisibleWorkspacesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"\xe3\x01\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x12S\n\x14\x63ontainer_registries\x18\x06 \x03(\x0b\x32\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x12\x11\n\tnamespace\x18\x07 \x01(\tB\r\n\x0binternal_idB\x06\n\x04name\"\x7f\n\'WorkspaceContainerRegistryConfiguration\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04\x62\x61se\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\x12\x12\n\nsecret_key\x18\x04 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\"G\n\x14GetVisibleWorkspaces\x12/\n\npagination\x18\x01 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"O\n\nWorkspaces\x12*\n\tworkspace\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Workspace\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x32\xa7\x07\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyId\x12\x80\x01\n\x14getVisibleWorkspaces\x12\".ai.verta.uac.GetVisibleWorkspaces\x1a\x18.ai.verta.uac.Workspaces\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/workspace/getVisibleWorkspaces\x12\xe3\x01\n,createOrUpdateContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\"E\x82\xd3\xe4\x93\x02?\":/v1/workspace/createOrUpdateContainerRegistryConfiguration:\x01*\x12\xb1\x01\n$deleteContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x13.ai.verta.uac.Empty\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/workspace/deleteContainerRegistryConfiguration:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,])
 
 
 
@@ -53,8 +54,8 @@ _GETWORKSPACEBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=95,
-  serialized_end=125,
+  serialized_start=117,
+  serialized_end=147,
 )
 
 
@@ -84,8 +85,8 @@ _GETWORKSPACEBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=127,
-  serialized_end=161,
+  serialized_start=149,
+  serialized_end=183,
 )
 
 
@@ -122,8 +123,8 @@ _GETWORKSPACEBYLEGACYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=163,
-  serialized_end=273,
+  serialized_start=185,
+  serialized_end=295,
 )
 
 
@@ -169,6 +170,20 @@ _WORKSPACE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='container_registries', full_name='ai.verta.uac.Workspace.container_registries', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='namespace', full_name='ai.verta.uac.Workspace.namespace', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -187,18 +202,53 @@ _WORKSPACE = _descriptor.Descriptor(
       name='name', full_name='ai.verta.uac.Workspace.name',
       index=1, containing_type=None, fields=[]),
   ],
-  serialized_start=275,
-  serialized_end=398,
+  serialized_start=298,
+  serialized_end=525,
 )
 
 
-_GETVISIBLEWORKSPACES = _descriptor.Descriptor(
-  name='GetVisibleWorkspaces',
-  full_name='ai.verta.uac.GetVisibleWorkspaces',
+_WORKSPACECONTAINERREGISTRYCONFIGURATION = _descriptor.Descriptor(
+  name='WorkspaceContainerRegistryConfiguration',
+  full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='base', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.base', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='username', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.username', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='secret_key', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.secret_key', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workspace_id', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.workspace_id', index=4,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -211,8 +261,39 @@ _GETVISIBLEWORKSPACES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=400,
-  serialized_end=422,
+  serialized_start=527,
+  serialized_end=654,
+)
+
+
+_GETVISIBLEWORKSPACES = _descriptor.Descriptor(
+  name='GetVisibleWorkspaces',
+  full_name='ai.verta.uac.GetVisibleWorkspaces',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.GetVisibleWorkspaces.pagination', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=656,
+  serialized_end=727,
 )
 
 
@@ -230,6 +311,13 @@ _WORKSPACES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.Workspaces.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -242,11 +330,12 @@ _WORKSPACES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=424,
-  serialized_end=480,
+  serialized_start=729,
+  serialized_end=808,
 )
 
 _GETWORKSPACEBYLEGACYID.fields_by_name['workspace_type'].enum_type = common_dot_CommonService__pb2._WORKSPACETYPEENUM_WORKSPACETYPE
+_WORKSPACE.fields_by_name['container_registries'].message_type = _WORKSPACECONTAINERREGISTRYCONFIGURATION
 _WORKSPACE.oneofs_by_name['internal_id'].fields.append(
   _WORKSPACE.fields_by_name['user_id'])
 _WORKSPACE.fields_by_name['user_id'].containing_oneof = _WORKSPACE.oneofs_by_name['internal_id']
@@ -259,11 +348,13 @@ _WORKSPACE.fields_by_name['username'].containing_oneof = _WORKSPACE.oneofs_by_na
 _WORKSPACE.oneofs_by_name['name'].fields.append(
   _WORKSPACE.fields_by_name['org_name'])
 _WORKSPACE.fields_by_name['org_name'].containing_oneof = _WORKSPACE.oneofs_by_name['name']
+_GETVISIBLEWORKSPACES.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _WORKSPACES.fields_by_name['workspace'].message_type = _WORKSPACE
 DESCRIPTOR.message_types_by_name['GetWorkspaceById'] = _GETWORKSPACEBYID
 DESCRIPTOR.message_types_by_name['GetWorkspaceByName'] = _GETWORKSPACEBYNAME
 DESCRIPTOR.message_types_by_name['GetWorkspaceByLegacyId'] = _GETWORKSPACEBYLEGACYID
 DESCRIPTOR.message_types_by_name['Workspace'] = _WORKSPACE
+DESCRIPTOR.message_types_by_name['WorkspaceContainerRegistryConfiguration'] = _WORKSPACECONTAINERREGISTRYCONFIGURATION
 DESCRIPTOR.message_types_by_name['GetVisibleWorkspaces'] = _GETVISIBLEWORKSPACES
 DESCRIPTOR.message_types_by_name['Workspaces'] = _WORKSPACES
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -296,6 +387,13 @@ Workspace = _reflection.GeneratedProtocolMessageType('Workspace', (_message.Mess
   })
 _sym_db.RegisterMessage(Workspace)
 
+WorkspaceContainerRegistryConfiguration = _reflection.GeneratedProtocolMessageType('WorkspaceContainerRegistryConfiguration', (_message.Message,), {
+  'DESCRIPTOR' : _WORKSPACECONTAINERREGISTRYCONFIGURATION,
+  '__module__' : 'uac.Workspace_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.WorkspaceContainerRegistryConfiguration)
+  })
+_sym_db.RegisterMessage(WorkspaceContainerRegistryConfiguration)
+
 GetVisibleWorkspaces = _reflection.GeneratedProtocolMessageType('GetVisibleWorkspaces', (_message.Message,), {
   'DESCRIPTOR' : _GETVISIBLEWORKSPACES,
   '__module__' : 'uac.Workspace_pb2'
@@ -319,8 +417,8 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=483,
-  serialized_end=1008,
+  serialized_start=811,
+  serialized_end=1746,
   methods=[
   _descriptor.MethodDescriptor(
     name='getWorkspaceById',
@@ -357,6 +455,24 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
     input_type=_GETVISIBLEWORKSPACES,
     output_type=_WORKSPACES,
     serialized_options=b'\202\323\344\223\002$\022\"/v1/workspace/getVisibleWorkspaces',
+  ),
+  _descriptor.MethodDescriptor(
+    name='createOrUpdateContainerRegistryConfiguration',
+    full_name='ai.verta.uac.WorkspaceService.createOrUpdateContainerRegistryConfiguration',
+    index=4,
+    containing_service=None,
+    input_type=_WORKSPACECONTAINERREGISTRYCONFIGURATION,
+    output_type=_WORKSPACECONTAINERREGISTRYCONFIGURATION,
+    serialized_options=b'\202\323\344\223\002?\":/v1/workspace/createOrUpdateContainerRegistryConfiguration:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='deleteContainerRegistryConfiguration',
+    full_name='ai.verta.uac.WorkspaceService.deleteContainerRegistryConfiguration',
+    index=5,
+    containing_service=None,
+    input_type=_WORKSPACECONTAINERREGISTRYCONFIGURATION,
+    output_type=uac_dot_UACService__pb2._EMPTY,
+    serialized_options=b'\202\323\344\223\0027\"2/v1/workspace/deleteContainerRegistryConfiguration:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_WORKSPACESERVICE)

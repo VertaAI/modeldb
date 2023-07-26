@@ -1,0 +1,668 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "registry/ChecklistService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/checklist_item_values": {
+      "post": {
+        "operationId": "ChecklistService_setChecklistItemValues",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValuesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValues"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/checklist_item_values/search": {
+      "post": {
+        "operationId": "ChecklistService_searchChecklistItemValues",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValuesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValues"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/checklist_templates": {
+      "post": {
+        "operationId": "ChecklistService_setChecklistTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistTemplate"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/checklist_templates/search": {
+      "post": {
+        "operationId": "ChecklistService_searchChecklistTemplatesV1",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistTemplates"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/checklist_templates/{checklist_template_id}": {
+      "delete": {
+        "operationId": "ChecklistService_deleteChecklistTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertacommonEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "checklist_template_id",
+            "description": "internal id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/model_versions/{model_version_id}/checklist_item_values/search": {
+      "post": {
+        "operationId": "ChecklistService_searchChecklistItemValues2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValuesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "description": "identity of parent registered model version",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValues"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/v2/registry/checklist_templates/search": {
+      "post": {
+        "operationId": "ChecklistService_searchChecklistTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistTemplates"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ChecklistTemplateItemTypeEnumChecklistTemplateItemType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SYSTEM",
+        "CHECKBOX",
+        "WORKFLOW"
+      ],
+      "default": "UNKNOWN"
+    },
+    "CustomAttributeTargetTypeEnumCustomAttributeTargetType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "REGISTERED_MODEL",
+        "REGISTERED_MODEL_VERSION",
+        "CHECKLIST_TEMPLATE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "EditableEnumEditable": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "NOT_EDITABLE",
+        "PARTIAL_EDITABLE",
+        "EDITABLE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RiskLevelEnumRiskLevel": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "default": "UNKNOWN"
+    },
+    "StageEnumStage": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DEVELOPMENT",
+        "STAGING",
+        "PRODUCTION",
+        "ARCHIVED",
+        "UNASSIGNED"
+      ],
+      "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "registryChecklistItemValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "completed": {
+          "type": "boolean",
+          "title": "value corresponds to if the item was marked as completed"
+        },
+        "evidence": {
+          "type": "string",
+          "title": "value corresponds to user given evidence"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model version this belongs to"
+        },
+        "checklist_template_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template(UAC) this is related to"
+        },
+        "checklist_template_item_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template item (UAC) this is related to"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when this entity was created"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when metadata for this entity was last updated"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that created this entity"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that updated this entity"
+        }
+      }
+    },
+    "registryChecklistTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "name": {
+          "type": "string",
+          "title": "name"
+        },
+        "blocks_deployment": {
+          "type": "boolean",
+          "title": "flag for blocking deploy without all requiments satisfied"
+        },
+        "desired_stage": {
+          "$ref": "#/definitions/StageEnumStage",
+          "title": "apply checklist a certain stage change of model version"
+        },
+        "apply_to_risk_level": {
+          "$ref": "#/definitions/RiskLevelEnumRiskLevel",
+          "title": "apply checklist a certain risk level of model version"
+        },
+        "organization_id": {
+          "type": "string",
+          "title": "ID of organization that template belongs"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when this entity was created"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when metadata for this entity was last updated"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that created this entity"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that updated this entity"
+        },
+        "sort": {
+          "type": "string",
+          "format": "int64",
+          "title": "Sort value to be used in the UI"
+        },
+        "checklist_template_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistTemplateItem"
+          },
+          "title": "Checklist template item"
+        },
+        "custom_attribute_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryCustomAttributeValue"
+          },
+          "description": "Checklist template value. This is used to apply checklists to only RMVs that have the values. optional."
+        }
+      }
+    },
+    "registryChecklistTemplateItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "name": {
+          "type": "string",
+          "title": "name"
+        },
+        "description": {
+          "type": "string",
+          "title": "description"
+        },
+        "item_type": {
+          "$ref": "#/definitions/ChecklistTemplateItemTypeEnumChecklistTemplateItemType",
+          "title": "item type"
+        },
+        "editable": {
+          "$ref": "#/definitions/EditableEnumEditable",
+          "title": "editable"
+        },
+        "required": {
+          "type": "boolean",
+          "title": "flag for item as required"
+        },
+        "require_evidence": {
+          "type": "boolean",
+          "title": "flag for asking for evidence"
+        },
+        "user_group_id": {
+          "type": "string",
+          "title": "User group id"
+        },
+        "checklist_template_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "checklist template id"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when this entity was created"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when metadata for this entity was last updated"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that created this entity"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that updated this entity"
+        },
+        "sort": {
+          "type": "string",
+          "format": "int64",
+          "title": "Sort value to be used in the UI"
+        }
+      }
+    },
+    "registryCustomAttributeValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "custom_attribute_definition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "target_type": {
+          "$ref": "#/definitions/CustomAttributeTargetTypeEnumCustomAttributeTargetType"
+        },
+        "selected_value": {
+          "type": "string"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "registrySearchChecklistItemValues": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "identity of parent registered model version"
+        }
+      }
+    },
+    "registrySearchChecklistItemValuesResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          }
+        }
+      }
+    },
+    "registrySearchChecklistTemplates": {
+      "type": "object",
+      "properties": {
+        "checklist_template_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "workspace id"
+        },
+        "workspace_name": {
+          "type": "string",
+          "title": "workspace name"
+        },
+        "organization_id": {
+          "type": "string",
+          "title": "organization id"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "model version id.  optional"
+        }
+      }
+    },
+    "registrySearchChecklistTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistTemplate"
+          }
+        }
+      }
+    },
+    "registrySetChecklistItemValues": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          }
+        }
+      }
+    },
+    "registrySetChecklistItemValuesResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          }
+        }
+      }
+    },
+    "registrySetChecklistTemplate": {
+      "type": "object",
+      "properties": {
+        "checklist_template": {
+          "$ref": "#/definitions/registryChecklistTemplate"
+        }
+      }
+    },
+    "registrySetChecklistTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_template": {
+          "$ref": "#/definitions/registryChecklistTemplate"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "vertacommonEmpty": {
+      "type": "object"
+    }
+  },
+  "basePath": "/v1"
+}

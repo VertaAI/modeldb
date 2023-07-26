@@ -24,6 +24,11 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.FromString,
         )
+    self.GetRegisteredModelCount = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/GetRegisteredModelCount',
+        request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.FromString,
+        )
     self.CreateRegisteredModel = channel.unary_unary(
         '/ai.verta.registry.RegistryService/CreateRegisteredModel',
         request_serializer=registry_dot_RegistryService__pb2.SetRegisteredModel.SerializeToString,
@@ -89,6 +94,51 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.Response.FromString,
         )
+    self.DeleteModelVersionArtifact = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/DeleteModelVersionArtifact',
+        request_serializer=registry_dot_RegistryService__pb2.DeleteModelVersionArtifactRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.Empty.FromString,
+        )
+    self.logDatasetsInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logDatasetsInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.FromString,
+        )
+    self.logCodeBlobInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logCodeBlobInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.FromString,
+        )
+    self.logAttributesInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logAttributesInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.FromString,
+        )
+    self.logDockerMetadataInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logDockerMetadataInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.FromString,
+        )
+    self.GetExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/GetExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.FromString,
+        )
+    self.CreateExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/CreateExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.ExternalDeployment.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.FromString,
+        )
+    self.UpdateExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/UpdateExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.ExternalDeployment.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.FromString,
+        )
+    self.DeleteExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/DeleteExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.Empty.FromString,
+        )
 
 
 class RegistryServiceServicer(object):
@@ -103,6 +153,13 @@ class RegistryServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def GetRegisteredModel(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetRegisteredModelCount(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -200,6 +257,69 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def DeleteModelVersionArtifact(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logDatasetsInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logCodeBlobInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logAttributesInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logDockerMetadataInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CreateExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def UpdateExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -212,6 +332,11 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.GetRegisteredModel,
           request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.FromString,
           response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.SerializeToString,
+      ),
+      'GetRegisteredModelCount': grpc.unary_unary_rpc_method_handler(
+          servicer.GetRegisteredModelCount,
+          request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.SerializeToString,
       ),
       'CreateRegisteredModel': grpc.unary_unary_rpc_method_handler(
           servicer.CreateRegisteredModel,
@@ -277,6 +402,51 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.commitMultipartArtifact,
           request_deserializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.FromString,
           response_serializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.Response.SerializeToString,
+      ),
+      'DeleteModelVersionArtifact': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteModelVersionArtifact,
+          request_deserializer=registry_dot_RegistryService__pb2.DeleteModelVersionArtifactRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.Empty.SerializeToString,
+      ),
+      'logDatasetsInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logDatasetsInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.SerializeToString,
+      ),
+      'logCodeBlobInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logCodeBlobInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.SerializeToString,
+      ),
+      'logAttributesInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logAttributesInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.SerializeToString,
+      ),
+      'logDockerMetadataInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logDockerMetadataInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.SerializeToString,
+      ),
+      'GetExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.GetExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.SerializeToString,
+      ),
+      'CreateExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.CreateExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.ExternalDeployment.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.SerializeToString,
+      ),
+      'UpdateExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.ExternalDeployment.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.Response.SerializeToString,
+      ),
+      'DeleteExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.Empty.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

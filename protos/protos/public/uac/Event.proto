@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "google/protobuf/any.proto";
+
+/**
+ * DEPRECATED. Use ai.verta.events package instead.
+ */
+
+// TODO delete me when we figure out why deleting this file removes swagger descriptions on everything.

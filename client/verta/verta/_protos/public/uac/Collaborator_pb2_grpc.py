@@ -2,6 +2,7 @@
 import grpc
 
 from ..uac import Collaborator_pb2 as uac_dot_Collaborator__pb2
+from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 class CollaboratorServiceStub(object):
@@ -33,6 +34,21 @@ class CollaboratorServiceStub(object):
         '/ai.verta.uac.CollaboratorService/deleteResources',
         request_serializer=uac_dot_Collaborator__pb2.DeleteResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.DeleteResources.Response.FromString,
+        )
+    self.getResourceAdmins = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getResourceAdmins',
+        request_serializer=uac_dot_Collaborator__pb2.GetResourceAdmins.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.ResourceAdmins.FromString,
+        )
+    self.addResourceAdmins = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addResourceAdmins',
+        request_serializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
+        )
+    self.removeResourceAdmins = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeResourceAdmins',
+        request_serializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
         )
     self.addOrUpdateProjectCollaborator = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/addOrUpdateProjectCollaborator',
@@ -94,6 +110,21 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
+    self.addOrUpdateEndpointCollaboratorCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateEndpointCollaboratorCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeEndpointCollaboratorCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeEndpointCollaboratorCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getEndpointCollaboratorsCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getEndpointCollaboratorsCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
     self.addOrUpdateRegisteredModelCollaborator = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/addOrUpdateRegisteredModelCollaborator',
         request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
@@ -106,6 +137,21 @@ class CollaboratorServiceStub(object):
         )
     self.getRegisteredModelCollaborators = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/getRegisteredModelCollaborators',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
+    self.addOrUpdateMonitoredEntityCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateMonitoredEntityCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeMonitoredEntityCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeMonitoredEntityCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getMonitoredEntityCollaborators = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getMonitoredEntityCollaborators',
         request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
@@ -140,6 +186,27 @@ class CollaboratorServiceServicer(object):
   def deleteResources(self, request, context):
     """The caller must have permission to DELETE the resource accordingly
     """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getResourceAdmins(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def addResourceAdmins(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeResourceAdmins(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -228,6 +295,27 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def addOrUpdateEndpointCollaboratorCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeEndpointCollaboratorCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getEndpointCollaboratorsCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def addOrUpdateRegisteredModelCollaborator(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -243,6 +331,27 @@ class CollaboratorServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getRegisteredModelCollaborators(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def addOrUpdateMonitoredEntityCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeMonitoredEntityCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getMonitoredEntityCollaborators(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -271,6 +380,21 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
           servicer.deleteResources,
           request_deserializer=uac_dot_Collaborator__pb2.DeleteResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.DeleteResources.Response.SerializeToString,
+      ),
+      'getResourceAdmins': grpc.unary_unary_rpc_method_handler(
+          servicer.getResourceAdmins,
+          request_deserializer=uac_dot_Collaborator__pb2.GetResourceAdmins.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.ResourceAdmins.SerializeToString,
+      ),
+      'addResourceAdmins': grpc.unary_unary_rpc_method_handler(
+          servicer.addResourceAdmins,
+          request_deserializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.FromString,
+          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
+      ),
+      'removeResourceAdmins': grpc.unary_unary_rpc_method_handler(
+          servicer.removeResourceAdmins,
+          request_deserializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.FromString,
+          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
       ),
       'addOrUpdateProjectCollaborator': grpc.unary_unary_rpc_method_handler(
           servicer.addOrUpdateProjectCollaborator,
@@ -332,6 +456,21 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
           request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),
+      'addOrUpdateEndpointCollaboratorCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateEndpointCollaboratorCommonService,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeEndpointCollaboratorCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.removeEndpointCollaboratorCommonService,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getEndpointCollaboratorsCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.getEndpointCollaboratorsCommonService,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
       'addOrUpdateRegisteredModelCollaborator': grpc.unary_unary_rpc_method_handler(
           servicer.addOrUpdateRegisteredModelCollaborator,
           request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
@@ -344,6 +483,21 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
       ),
       'getRegisteredModelCollaborators': grpc.unary_unary_rpc_method_handler(
           servicer.getRegisteredModelCollaborators,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
+      'addOrUpdateMonitoredEntityCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateMonitoredEntityCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeMonitoredEntityCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.removeMonitoredEntityCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getMonitoredEntityCollaborators': grpc.unary_unary_rpc_method_handler(
+          servicer.getMonitoredEntityCollaborators,
           request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),

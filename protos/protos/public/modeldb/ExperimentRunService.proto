@@ -28,7 +28,7 @@ message ExperimentRun {
     int64 end_time = 9;
 
     string code_version = 10;
-    CodeVersion code_version_snapshot = 11;
+    common.CodeVersion code_version_snapshot = 11;
     string parent_id = 12;
 
     //Requirement
@@ -44,8 +44,14 @@ message ExperimentRun {
     repeated Feature features = 27;
     string job_id = 28;
     string owner = 29;
+    oneof owner_tracking {
+        uint64 owner_id = 33;
+        common.GroupId group_owner_id = 34;
+    }
     VersioningEntry versioned_inputs = 30;
-    map<string, CodeVersion> code_version_from_blob = 31;
+    map<string, common.CodeVersion> code_version_from_blob = 31;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 32;
 }
 
 message VersioningEntry {
@@ -92,7 +98,7 @@ message CreateExperimentRun {
     int64 start_time = 8;
     int64 end_time = 9;
     string code_version = 10;
-    CodeVersion code_version_snapshot = 11;
+    common.CodeVersion code_version_snapshot = 11;
     string parent_id = 12;
 
     repeated string tags = 20;
@@ -237,7 +243,7 @@ message DeleteExperimentRunAttributes {
 // code version
 message LogExperimentRunCodeVersion {
     string id = 1;
-    CodeVersion code_version = 2;
+    common.CodeVersion code_version = 2;
     bool overwrite = 3;
 
     message Response {
@@ -248,7 +254,7 @@ message GetExperimentRunCodeVersion {
     string id = 1;
 
     message Response {
-        CodeVersion code_version = 1;
+        common.CodeVersion code_version = 1;
     }
 }
 

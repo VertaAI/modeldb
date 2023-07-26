@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option java_package = "ai.verta.deployment";
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/deployment";
+
+message CommitObjectUpdate {
+  string id = 1;
+  string object = 2;
+}
+
+message UpdateStatus {
+  string id = 1;
+  string object = 2;
+}
+
+message DeleteStatus {
+  string id = 1;
+}
+
+message APISyncRequest {
+  oneof request {
+    CommitObjectUpdate commitObjectUpdate = 1;
+    UpdateStatus updateStatus = 2;
+    DeleteStatus deleteStatus = 3;
+  }
+  string packageType = 4;
+}
+
+message ObjectUpdated {
+  string id = 1;
+  string object = 2;
+}
+
+message ObjectDeleted {
+  string id = 1;
+  string object = 2;
+}
+
+message APISyncResponse {
+  oneof response {
+    ObjectUpdated objectUpdated = 1;
+    ObjectDeleted objectDeleted = 2;
+  }
+  string error = 3;
+  string packageType = 4;
+}
+
+service APISync {
+  rpc Sync(stream APISyncRequest) returns (stream APISyncResponse);
+}

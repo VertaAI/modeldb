@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n\x1bregistry/StageService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a google/protobuf/field_mask.proto\"]\n\tStageEnum\"P\n\x05Stage\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0f\n\x0b\x44\x45VELOPMENT\x10\x01\x12\x0b\n\x07STAGING\x10\x02\x12\x0e\n\nPRODUCTION\x10\x03\x12\x0c\n\x08\x41RCHIVED\x10\x04\"y\n\x13TransitionStateEnum\"b\n\x0fTransitionState\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0c\n\x08\x41PPROVED\x10\x01\x12\x0c\n\x08REJECTED\x10\x02\x12\x0b\n\x07PENDING\x10\x03\x12\n\n\x06\x43LOSED\x10\x04\x12\r\n\tCOMMITTED\x10\x05\"\xd4\x01\n\nTransition\x12\x38\n\x0csource_stage\x18\x01 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x39\n\rdesired_stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x45\n\x05state\x18\x03 \x01(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\x12\n\n\x02id\x18\x04 \x01(\x04\"\x16\n\x14\x41pprovalOfTransition\"\x17\n\x15RejectionOfTransition\"\x13\n\x11\x43loseOfTransition\"@\n\x0bStageUpdate\x12\x31\n\x05stage\x18\x01 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\"\xca\x03\n\x08\x41\x63tivity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x12\x11\n\tauthor_id\x18\x03 \x01(\t\x12\x14\n\x0ctime_created\x18\x04 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x31\n\ntransition\x18\x06 \x01(\x0b\x32\x1d.ai.verta.registry.Transition\x12\x39\n\x08\x61pproval\x18\x07 \x01(\x0b\x32\'.ai.verta.registry.ApprovalOfTransition\x12;\n\trejection\x18\x08 \x01(\x0b\x32(.ai.verta.registry.RejectionOfTransition\x12\x33\n\x05\x63lose\x18\t \x01(\x0b\x32$.ai.verta.registry.CloseOfTransition\x12.\n\x06update\x18\n \x01(\x0b\x32\x1e.ai.verta.registry.StageUpdate\x12N\n\x0e\x61\x63tivity_state\x18\x0b \x01(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\"\x7f\n\x17\x43reateTransitionRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x39\n\rdesired_stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\"B\n\x18\x41pproveTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x17RejectTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"@\n\x16\x43loseTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x17\x43ommitTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x14\x43reateCommentRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"\x8b\x01\n\x15\x46indActivitiesRequest\x12\x1b\n\x13registered_model_id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x1a;\n\x08Response\x12/\n\nactivities\x18\x01 \x03(\x0b\x32\x1b.ai.verta.registry.Activity\"\xd3\x01\n\x16\x46indTransitionsRequest\x12\x1b\n\x13registered_model_id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x12\x45\n\x05state\x18\x03 \x03(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\x1a;\n\x08Response\x12/\n\nactivities\x18\x01 \x03(\x0b\x32\x1b.ai.verta.registry.Activity\"r\n\x12UpdateStageRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x31\n\x05stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t2\x97\n\n\x0cStageService\x12\x8b\x01\n\x10\x43reateTransition\x12*.ai.verta.registry.CreateTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/createTransition:\x01*\x12\x8e\x01\n\x11\x41pproveTransition\x12+.ai.verta.registry.ApproveTransitionRequest\x1a\x1b.ai.verta.registry.Activity\"/\x82\xd3\xe4\x93\x02)\"$/v1/registry/stage/approveTransition:\x01*\x12\x8b\x01\n\x10RejectTransition\x12*.ai.verta.registry.RejectTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/rejectTransition:\x01*\x12\x88\x01\n\x0f\x43loseTransition\x12).ai.verta.registry.CloseTransitionRequest\x1a\x1b.ai.verta.registry.Activity\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/stage/closeTransition:\x01*\x12\x82\x01\n\rCreateComment\x12\'.ai.verta.registry.CreateCommentRequest\x1a\x1b.ai.verta.registry.Activity\"+\x82\xd3\xe4\x93\x02%\" /v1/registry/stage/createComment:\x01*\x12\x8b\x01\n\x10\x43ommitTransition\x12*.ai.verta.registry.CommitTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/commitTransition:\x01*\x12|\n\x0bUpdateStage\x12%.ai.verta.registry.UpdateStageRequest\x1a\x1b.ai.verta.registry.Activity\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/registry/stage/updateStage:\x01*\x12\x9b\x01\n\x0e\x46indActivities\x12(.ai.verta.registry.FindActivitiesRequest\x1a\x31.ai.verta.registry.FindActivitiesRequest.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/registry/stage/findActivities:\x01*\x12\x9f\x01\n\x0f\x46indTransitions\x12).ai.verta.registry.FindTransitionsRequest\x1a\x32.ai.verta.registry.FindTransitionsRequest.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/stage/findTransitions:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_pb=b'\n\x1bregistry/StageService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a google/protobuf/field_mask.proto\"m\n\tStageEnum\"`\n\x05Stage\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0f\n\x0b\x44\x45VELOPMENT\x10\x01\x12\x0b\n\x07STAGING\x10\x02\x12\x0e\n\nPRODUCTION\x10\x03\x12\x0c\n\x08\x41RCHIVED\x10\x04\x12\x0e\n\nUNASSIGNED\x10\x05\"y\n\x13TransitionStateEnum\"b\n\x0fTransitionState\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0c\n\x08\x41PPROVED\x10\x01\x12\x0c\n\x08REJECTED\x10\x02\x12\x0b\n\x07PENDING\x10\x03\x12\n\n\x06\x43LOSED\x10\x04\x12\r\n\tCOMMITTED\x10\x05\"\xd4\x01\n\nTransition\x12\x38\n\x0csource_stage\x18\x01 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x39\n\rdesired_stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x45\n\x05state\x18\x03 \x01(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\x12\n\n\x02id\x18\x04 \x01(\x04\"\x16\n\x14\x41pprovalOfTransition\"\x17\n\x15RejectionOfTransition\"\x13\n\x11\x43loseOfTransition\"@\n\x0bStageUpdate\x12\x31\n\x05stage\x18\x01 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\"\xca\x03\n\x08\x41\x63tivity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x12\x11\n\tauthor_id\x18\x03 \x01(\t\x12\x14\n\x0ctime_created\x18\x04 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x31\n\ntransition\x18\x06 \x01(\x0b\x32\x1d.ai.verta.registry.Transition\x12\x39\n\x08\x61pproval\x18\x07 \x01(\x0b\x32\'.ai.verta.registry.ApprovalOfTransition\x12;\n\trejection\x18\x08 \x01(\x0b\x32(.ai.verta.registry.RejectionOfTransition\x12\x33\n\x05\x63lose\x18\t \x01(\x0b\x32$.ai.verta.registry.CloseOfTransition\x12.\n\x06update\x18\n \x01(\x0b\x32\x1e.ai.verta.registry.StageUpdate\x12N\n\x0e\x61\x63tivity_state\x18\x0b \x01(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\"\x7f\n\x17\x43reateTransitionRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x39\n\rdesired_stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\"B\n\x18\x41pproveTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x17RejectTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"@\n\x16\x43loseTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x17\x43ommitTransitionRequest\x12\x15\n\rtransition_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"A\n\x14\x43reateCommentRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\"\x8b\x01\n\x15\x46indActivitiesRequest\x12\x1b\n\x13registered_model_id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x1a;\n\x08Response\x12/\n\nactivities\x18\x01 \x03(\x0b\x32\x1b.ai.verta.registry.Activity\"\xd3\x01\n\x16\x46indTransitionsRequest\x12\x1b\n\x13registered_model_id\x18\x01 \x01(\x04\x12\x18\n\x10model_version_id\x18\x02 \x01(\x04\x12\x45\n\x05state\x18\x03 \x03(\x0e\x32\x36.ai.verta.registry.TransitionStateEnum.TransitionState\x1a;\n\x08Response\x12/\n\nactivities\x18\x01 \x03(\x0b\x32\x1b.ai.verta.registry.Activity\"r\n\x12UpdateStageRequest\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x31\n\x05stage\x18\x02 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t2\x97\n\n\x0cStageService\x12\x8b\x01\n\x10\x43reateTransition\x12*.ai.verta.registry.CreateTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/createTransition:\x01*\x12\x8e\x01\n\x11\x41pproveTransition\x12+.ai.verta.registry.ApproveTransitionRequest\x1a\x1b.ai.verta.registry.Activity\"/\x82\xd3\xe4\x93\x02)\"$/v1/registry/stage/approveTransition:\x01*\x12\x8b\x01\n\x10RejectTransition\x12*.ai.verta.registry.RejectTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/rejectTransition:\x01*\x12\x88\x01\n\x0f\x43loseTransition\x12).ai.verta.registry.CloseTransitionRequest\x1a\x1b.ai.verta.registry.Activity\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/stage/closeTransition:\x01*\x12\x82\x01\n\rCreateComment\x12\'.ai.verta.registry.CreateCommentRequest\x1a\x1b.ai.verta.registry.Activity\"+\x82\xd3\xe4\x93\x02%\" /v1/registry/stage/createComment:\x01*\x12\x8b\x01\n\x10\x43ommitTransition\x12*.ai.verta.registry.CommitTransitionRequest\x1a\x1b.ai.verta.registry.Activity\".\x82\xd3\xe4\x93\x02(\"#/v1/registry/stage/commitTransition:\x01*\x12|\n\x0bUpdateStage\x12%.ai.verta.registry.UpdateStageRequest\x1a\x1b.ai.verta.registry.Activity\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/registry/stage/updateStage:\x01*\x12\x9b\x01\n\x0e\x46indActivities\x12(.ai.verta.registry.FindActivitiesRequest\x1a\x31.ai.verta.registry.FindActivitiesRequest.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/registry/stage/findActivities:\x01*\x12\x9f\x01\n\x0f\x46indTransitions\x12).ai.verta.registry.FindTransitionsRequest\x1a\x32.ai.verta.registry.FindTransitionsRequest.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/stage/findTransitions:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_field__mask__pb2.DESCRIPTOR,])
 
@@ -52,11 +52,15 @@ _STAGEENUM_STAGE = _descriptor.EnumDescriptor(
       name='ARCHIVED', index=4, number=4,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UNASSIGNED', index=5, number=5,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=127,
-  serialized_end=207,
+  serialized_end=223,
 )
 _sym_db.RegisterEnumDescriptor(_STAGEENUM_STAGE)
 
@@ -93,8 +97,8 @@ _TRANSITIONSTATEENUM_TRANSITIONSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=232,
-  serialized_end=330,
+  serialized_start=248,
+  serialized_end=346,
 )
 _sym_db.RegisterEnumDescriptor(_TRANSITIONSTATEENUM_TRANSITIONSTATE)
 
@@ -120,7 +124,7 @@ _STAGEENUM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=114,
-  serialized_end=207,
+  serialized_end=223,
 )
 
 
@@ -144,8 +148,8 @@ _TRANSITIONSTATEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=209,
-  serialized_end=330,
+  serialized_start=225,
+  serialized_end=346,
 )
 
 
@@ -196,8 +200,8 @@ _TRANSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=333,
-  serialized_end=545,
+  serialized_start=349,
+  serialized_end=561,
 )
 
 
@@ -220,8 +224,8 @@ _APPROVALOFTRANSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=547,
-  serialized_end=569,
+  serialized_start=563,
+  serialized_end=585,
 )
 
 
@@ -244,8 +248,8 @@ _REJECTIONOFTRANSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=571,
-  serialized_end=594,
+  serialized_start=587,
+  serialized_end=610,
 )
 
 
@@ -268,8 +272,8 @@ _CLOSEOFTRANSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=596,
-  serialized_end=615,
+  serialized_start=612,
+  serialized_end=631,
 )
 
 
@@ -299,8 +303,8 @@ _STAGEUPDATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=617,
-  serialized_end=681,
+  serialized_start=633,
+  serialized_end=697,
 )
 
 
@@ -400,8 +404,8 @@ _ACTIVITY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=684,
-  serialized_end=1142,
+  serialized_start=700,
+  serialized_end=1158,
 )
 
 
@@ -445,8 +449,8 @@ _CREATETRANSITIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1144,
-  serialized_end=1271,
+  serialized_start=1160,
+  serialized_end=1287,
 )
 
 
@@ -483,8 +487,8 @@ _APPROVETRANSITIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1273,
-  serialized_end=1339,
+  serialized_start=1289,
+  serialized_end=1355,
 )
 
 
@@ -521,8 +525,8 @@ _REJECTTRANSITIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1341,
-  serialized_end=1406,
+  serialized_start=1357,
+  serialized_end=1422,
 )
 
 
@@ -559,8 +563,8 @@ _CLOSETRANSITIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1408,
-  serialized_end=1472,
+  serialized_start=1424,
+  serialized_end=1488,
 )
 
 
@@ -597,8 +601,8 @@ _COMMITTRANSITIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1474,
-  serialized_end=1539,
+  serialized_start=1490,
+  serialized_end=1555,
 )
 
 
@@ -635,8 +639,8 @@ _CREATECOMMENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1541,
-  serialized_end=1606,
+  serialized_start=1557,
+  serialized_end=1622,
 )
 
 
@@ -666,8 +670,8 @@ _FINDACTIVITIESREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1689,
-  serialized_end=1748,
+  serialized_start=1705,
+  serialized_end=1764,
 )
 
 _FINDACTIVITIESREQUEST = _descriptor.Descriptor(
@@ -703,8 +707,8 @@ _FINDACTIVITIESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1609,
-  serialized_end=1748,
+  serialized_start=1625,
+  serialized_end=1764,
 )
 
 
@@ -734,8 +738,8 @@ _FINDTRANSITIONSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1689,
-  serialized_end=1748,
+  serialized_start=1705,
+  serialized_end=1764,
 )
 
 _FINDTRANSITIONSREQUEST = _descriptor.Descriptor(
@@ -778,8 +782,8 @@ _FINDTRANSITIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1751,
-  serialized_end=1962,
+  serialized_start=1767,
+  serialized_end=1978,
 )
 
 
@@ -823,8 +827,8 @@ _UPDATESTAGEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1964,
-  serialized_end=2078,
+  serialized_start=1980,
+  serialized_end=2094,
 )
 
 _STAGEENUM_STAGE.containing_type = _STAGEENUM
@@ -1009,8 +1013,8 @@ _STAGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2081,
-  serialized_end=3384,
+  serialized_start=2097,
+  serialized_end=3400,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateTransition',

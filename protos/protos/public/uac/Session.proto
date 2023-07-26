@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "common/CommonService.proto";
+
+message Session {
+    uint64 id = 1;
+    string verta_user_id = 2;
+    string name = 3;
+    // Time after which the session is invalid, in seconds since epoch in GMT
+    uint64 ttl_epoch = 4;
+    // Equivalent of a developer key
+    string session_secret_key = 5;
+}
+
+message CreateSessionRequest {
+    string verta_user_id = 1;
+    // Session names must be unique. If we create another session with the same name, the original one will be invalidated.
+    string session_name = 2;
+    // Number of seconds to keep this session active from the moment of creation.
+    uint64 ttl_seconds = 3;
+}
+
+message FindSessionRequest {
+    repeated uint64 ids = 1;
+    repeated string verta_user_id = 2;
+    repeated string name = 3;
+    common.Pagination pagination = 4;
+
+    message Response {
+        repeated Session sessions = 1;
+        int64 total_records = 2;
+    }
+}
+
+message DeleteSessionRequest {
+    repeated uint64 ids = 1;
+}
+
+service SessionService {
+    rpc createSession(CreateSessionRequest) returns (Session) {
+        option (google.api.http) = {
+            post: "/v1/session/createSession"
+            body: "*"
+        };
+    };
+
+    rpc findSession(FindSessionRequest) returns (FindSessionRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/session/findSession"
+            body: "*"
+        };
+    };
+
+    rpc deleteSession(DeleteSessionRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/session/deleteSession"
+            body: "*"
+        };
+    };
+}

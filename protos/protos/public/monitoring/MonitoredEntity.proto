@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "uac/Collaborator.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "common/CommonService.proto";
+
+// Common
+
+message Empty {}
+
+// Monitored entity
+
+message MonitoredEntity {
+  reserved 3, 4;  // Previously deleted fields
+  uint64 id = 1;
+  string name = 2;
+  uint64 workspace_id = 5;
+  uint64 created_at_timestamp_millis = 6;
+  uint64 updated_at_timestamp_millis = 7;
+  map<string, string> attributes = 8;
+  //owner's verta_id
+  string owner = 9;
+  oneof owner_tracking {
+    uint64 owner_id = 16;
+    common.GroupId group_owner_id = 17;
+  }
+  uac.ResourceVisibility resource_visibility = 10;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 11;
+  uint64 version_number = 12;
+  uint64 endpoint_id = 13;
+  string datasource_name = 14;
+  // a tag that says where the data for this monitored entity comes from. eg. "endpoint" or "batch"
+  string origin = 15;
+}
+
+message CreateMonitoredEntityRequest {
+  reserved 2, 3;  // Previously deleted fields
+  string name = 1;
+
+  oneof workspace_identifier {
+    uint64 workspace_id = 4;
+    string workspace_name = 5;
+  }
+
+  map<string, string> attributes = 6;
+  uac.ResourceVisibility resource_visibility = 7;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 8;
+  // Optional.  If the data originates from a Verta endpoint, set this to the endpoint id.
+  uint64 endpoint_id = 9;
+  // a tag that says where the data for this monitored entity comes from. eg. "endpoint" or "batch"
+  string origin = 10;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message UpdateMonitoredEntityRequest {
+  reserved 4 to 6;  // Previously deleted fields
+  uint64 id = 1;
+  string name = 2;
+
+  map<string, string> attributes = 7;
+  uac.ResourceVisibility resource_visibility = 8;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 9;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message FindMonitoredEntityRequest {
+  repeated uint64 ids = 1;
+  repeated string names = 2;
+  // Add names to find with a fuzzy (non-exact) search
+  repeated string fuzzy_names = 7;
+  repeated uint64 endpoint_ids = 8;
+  repeated string model_version_ids = 9;
+
+  oneof workspace_identifier {
+    uint64 workspace_id = 3;
+    string workspace_name = 6;
+  }
+
+  // Pagination
+  int32 page_number = 4;
+  int32 page_limit = 5;
+
+  message Response {
+    repeated MonitoredEntity monitored_entities = 1;
+    int32 total_records = 2;
+  }
+}
+
+message DeleteMonitoredEntityRequest {
+  uint64 id = 1;
+
+  message Response {
+  }
+}
+
+// Service definitions
+service MonitoredEntityService {
+  rpc createMonitoredEntity(CreateMonitoredEntityRequest) returns (CreateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/monitored_entity/createMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc updateMonitoredEntity(UpdateMonitoredEntityRequest) returns (UpdateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      patch: "/api/v1/monitoring/monitored_entity/updateMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/monitored_entity/findMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc deleteMonitoredEntity(DeleteMonitoredEntityRequest) returns (DeleteMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitoring/monitored_entity/deleteMonitoredEntity"
+      body: "*"
+    };
+  };
+}

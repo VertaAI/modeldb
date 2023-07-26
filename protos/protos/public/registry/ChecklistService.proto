@@ -1,0 +1,257 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "registry/StageService.proto";
+import "registry/CustomAttributeService.proto";
+import "common/CommonService.proto";
+
+message RiskLevelEnum {
+  enum RiskLevel {
+    UNKNOWN = 0;
+    LOW = 1;
+    MEDIUM = 2;
+    HIGH = 3;
+  }
+}
+
+message ChecklistTemplateItemTypeEnum {
+  enum ChecklistTemplateItemType {
+    UNKNOWN = 0;  // error
+    SYSTEM = 1;
+    CHECKBOX = 2;
+    WORKFLOW = 3;
+  }
+}
+
+message EditableEnum {
+  enum Editable {
+    UNKNOWN = 0;  // error
+    NOT_EDITABLE = 1;
+    PARTIAL_EDITABLE = 2;
+    EDITABLE = 3;
+  }
+}
+
+message ChecklistTemplate {
+  // internal id
+  uint64 id = 1;
+
+  // name
+  string name = 2;
+
+  // flag for blocking deploy without all requiments satisfied
+  bool blocks_deployment = 3;
+
+  // apply checklist a certain stage change of model version
+  StageEnum.Stage desired_stage = 4;
+
+  // apply checklist a certain risk level of model version
+  RiskLevelEnum.RiskLevel apply_to_risk_level = 5;
+
+  // ID of organization that template belongs
+  string organization_id = 6;
+
+  // Timestamp recorded when this entity was created
+  int64 time_created = 7;
+
+  // Timestamp recorded when metadata for this entity was last updated
+  int64 time_updated = 8;
+
+  // id of user(UAC) that created this entity
+  uint64 created_by_id = 9;
+
+  // id of user(UAC) that updated this entity
+  uint64 updated_by_id = 10;
+
+  // Sort value to be used in the UI
+  int64 sort = 11;
+
+  // Checklist template item
+  repeated ChecklistTemplateItem checklist_template_items = 12;
+
+  // Checklist template value. This is used to apply checklists to only RMVs that have the values. optional.
+  repeated CustomAttributeValue custom_attribute_values = 13;
+
+}
+
+message ChecklistTemplateItem {
+  // internal id
+  uint64 id = 1;
+
+  // name
+  string name = 2;
+
+  // description
+  string description = 3;
+
+  // item type
+  ChecklistTemplateItemTypeEnum.ChecklistTemplateItemType item_type = 4;
+
+  // editable
+  EditableEnum.Editable editable = 5;
+
+  // flag for item as required
+  bool required = 6;
+
+  // flag for asking for evidence
+  bool require_evidence = 7;
+
+  // User group id
+  string user_group_id = 8;
+
+  // checklist template id
+  uint64 checklist_template_id = 9;
+
+  // Timestamp recorded when this entity was created
+  int64 time_created = 10;
+
+  // Timestamp recorded when metadata for this entity was last updated
+  int64 time_updated = 11;
+
+  // id of user(UAC) that created this entity
+  uint64 created_by_id = 12;
+
+  // id of user(UAC) that updated this entity
+  uint64 updated_by_id = 13;
+
+  // Sort value to be used in the UI
+  int64 sort = 14;
+}
+
+message ChecklistItemValue {
+  // internal id
+  uint64 id = 1;
+
+  // value corresponds to if the item was marked as completed
+  bool completed = 2;
+
+  // value corresponds to user given evidence
+  string evidence = 3;
+
+  // id of the model version this belongs to
+  uint64 model_version_id = 4;
+
+  // id of the template(UAC) this is related to
+  uint64 checklist_template_id = 5;
+
+  // id of the template item (UAC) this is related to
+  uint64 checklist_template_item_id = 6;
+
+  // Timestamp recorded when this entity was created
+  int64 time_created = 7;
+
+  // Timestamp recorded when metadata for this entity was last updated
+  int64 time_updated = 8;
+
+  // id of user(UAC) that created this entity
+  uint64 created_by_id = 9;
+
+  // id of user(UAC) that updated this entity
+  uint64 updated_by_id = 10;
+}
+
+message SetChecklistItemValues {
+  uint64 model_version_id = 1;
+
+  repeated ChecklistItemValue checklist_item_values = 2;
+
+  message Response {
+    repeated ChecklistItemValue checklist_item_values = 1;
+  }
+}
+
+message SearchChecklistItemValues {
+  // identity of parent registered model version
+  uint64 model_version_id = 1;
+
+  message Response {
+    repeated ChecklistItemValue checklist_item_values = 1;
+  }
+}
+
+message SearchChecklistTemplates {
+  // internal id
+  uint64 checklist_template_id = 1;
+
+  // workspace id
+  uint64 workspace_id = 2;
+
+  // workspace name
+  string workspace_name = 3;
+
+  // organization id
+  string organization_id = 4;
+
+  // model version id.  optional
+  uint64 model_version_id = 5;
+
+  message Response {
+    repeated ChecklistTemplate checklist_templates = 1;
+  }
+}
+
+message SetChecklistTemplate {
+  ChecklistTemplate checklist_template = 1;
+
+  message Response {
+    ChecklistTemplate checklist_template = 1;
+  }
+}
+
+message DeleteChecklistTemplate {
+  // internal id
+  uint64 checklist_template_id = 1;
+}
+
+service ChecklistService {
+  rpc searchChecklistItemValues(SearchChecklistItemValues) returns (SearchChecklistItemValues.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/checklist_item_values/search"
+      body: "*"
+      additional_bindings {
+        post: "/v1/registry/model_versions/{model_version_id}/"
+              "checklist_item_values/search"
+        body: "*"
+      }
+    };
+  };
+
+  rpc searchChecklistTemplates(SearchChecklistTemplates) returns (SearchChecklistTemplates.Response) {
+    option (google.api.http) = {
+      post: "/v2/registry/checklist_templates/search"
+      body: "*"
+    };
+  };
+
+  rpc searchChecklistTemplatesV1(SearchChecklistTemplates) returns (SearchChecklistTemplates.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/checklist_templates/search"
+      body: "*"
+    };
+  };
+
+  rpc setChecklistItemValues(SetChecklistItemValues) returns (SetChecklistItemValues.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/checklist_item_values"
+      body: "*"
+    };
+  };
+
+  rpc setChecklistTemplate(SetChecklistTemplate) returns (SetChecklistTemplate.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/checklist_templates"
+      body: "*"
+    };
+  };
+
+  rpc deleteChecklistTemplate(DeleteChecklistTemplate) returns (common.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/registry/checklist_templates/{checklist_template_id}"
+    };
+  };
+}

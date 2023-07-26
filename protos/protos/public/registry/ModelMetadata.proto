@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+
+// string value set as attribute "__verta_reserved__model_language"
+// https://github.com/VertaAI/modeldb/blob/client-v0.19.1/client/verta/verta/registry/entities/_model.py#L185
+message ModelLanguageEnum {
+    enum ModelLanguage {
+        Unknown = 0;
+        Python = 1;
+    }
+}
+
+// string value set as attribute "__verta_reserved__model_type"
+// https://github.com/VertaAI/modeldb/blob/client-v0.19.1/client/verta/verta/registry/entities/_model.py#L186
+message ModelTypeEnum {
+    enum ModelType {
+        Custom = 0;
+        StandardVertaModel = 1;
+        UserContainerizedModel = 2;
+    }
+}

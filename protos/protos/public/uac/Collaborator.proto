@@ -15,6 +15,7 @@ import "common/CommonService.proto";
 message CollaboratorPermissions {
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 1;
     common.TernaryEnum.Ternary can_deploy = 2;
+    common.TernaryEnum.Ternary can_predict = 3;
 }
 
 message AddCollaboratorRequest {
@@ -26,6 +27,7 @@ message AddCollaboratorRequest {
     uint64 date_updated = 6; // CollaboratorType updated on
 
     common.TernaryEnum.Ternary can_deploy = 7;
+    common.TernaryEnum.Ternary can_predict = 10;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
 
     CollaboratorPermissions permission = 9;
@@ -65,15 +67,18 @@ message GetCollaboratorResponseItem {
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
     common.TernaryEnum.Ternary can_deploy = 5;
+    common.TernaryEnum.Ternary can_predict = 8;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
     CollaboratorPermissions permission = 7;
 }
 
 message GetCollaborator {
     string entity_id = 1;
+    common.Pagination pagination = 2;
 
     message Response {
         repeated GetCollaboratorResponseItem shared_users = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -95,9 +100,12 @@ message GetResources {
     }
     // Optional. If Provided, workspace, resource service, type should be provided
     string resource_name = 4;
+    common.Pagination pagination = 5;
+    repeated uint64 owner_ids = 6;
 
     message Response {
         repeated GetResourcesResponseItem item = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -109,7 +117,10 @@ message GetResourcesResponseItem {
 
     uint64 workspace_id = 2;
     // Owner of the resource
-    uint64 owner_id = 3;
+    oneof owner_tracking {
+        uint64 owner_id = 3;
+        common.GroupId group_owner_id = 14;
+    }
     // Type of the visibility
     ResourceVisibility visibility = 4;
 
@@ -134,7 +145,10 @@ message SetResource {
         string workspace_name = 3;
     }
     // Owner of the resource
-    uint64 owner_id = 4;
+    oneof owner_tracking {
+        uint64 owner_id = 4;
+        common.GroupId group_owner_id = 12;
+    }
     // Type of the visibility
     ResourceVisibility visibility = 5;
 
@@ -142,6 +156,7 @@ message SetResource {
     // otherwise
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 6;
     common.TernaryEnum.Ternary can_deploy = 7;
+    common.TernaryEnum.Ternary can_predict = 11;
 
     message Response{}
 }
@@ -151,6 +166,28 @@ message DeleteResources {
     Resources resources = 1;
 
     message Response{}
+}
+
+message ResourceAdmins {
+    repeated string user_ids = 1;
+    repeated string team_ids = 2;
+    int64 total_records = 3;
+}
+
+message GetResourceAdmins {
+    ServiceEnum.Service service = 1;
+    string resource_id = 2;
+    ResourceType resource_type = 3;
+    common.Pagination pagination = 4;
+}
+
+message ModifyResourceAdmins {
+    ServiceEnum.Service service = 1;
+    string resource_id = 2;
+    ResourceType resource_type = 3;
+
+    repeated string user_ids = 4;
+    repeated string team_ids = 5;
 }
 
 service CollaboratorService {
@@ -179,6 +216,26 @@ service CollaboratorService {
 
     // The caller must have permission to DELETE the resource accordingly
     rpc deleteResources (DeleteResources) returns (DeleteResources.Response) {
+    };
+
+    rpc getResourceAdmins (GetResourceAdmins) returns (ResourceAdmins) {
+        option (google.api.http) = {
+            get: "/v1/collaborator/getResourceAdmins"
+        };
+    };
+
+    rpc addResourceAdmins (ModifyResourceAdmins) returns (Empty) {
+        option (google.api.http) = {
+            post: "/v1/collaborator/addResourceAdmins"
+            body: "*"
+        };
+    };
+
+    rpc removeResourceAdmins (ModifyResourceAdmins) returns (Empty) {
+        option (google.api.http) = {
+            post: "/v1/collaborator/removeResourceAdmins"
+            body: "*"
+        };
     };
 
     rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
@@ -257,6 +314,25 @@ service CollaboratorService {
         };
     };
 
+    rpc addOrUpdateEndpointCollaboratorCommonService (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateEndpointCollaboratorCommonService"
+            body: "*"
+        };
+    };
+
+    rpc removeEndpointCollaboratorCommonService (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeEndpointCollaboratorCommonService"
+        };
+    };
+
+    rpc getEndpointCollaboratorsCommonService (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getEndpointCollaboratorsCommonService"
+        };
+    };
+
     rpc addOrUpdateRegisteredModelCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateRegisteredModelCollaborator"
@@ -273,6 +349,25 @@ service CollaboratorService {
     rpc getRegisteredModelCollaborators (GetCollaborator) returns (GetCollaborator.Response){
         option (google.api.http) = {
             get: "/v1/collaborator/getRegisteredModelCollaborators"
+        };
+    };
+
+    rpc addOrUpdateMonitoredEntityCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateMonitoredEntityCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeMonitoredEntityCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeMonitoredEntityCollaborator"
+        };
+    };
+
+    rpc getMonitoredEntityCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getMonitoredEntityCollaborators"
         };
     };
 }

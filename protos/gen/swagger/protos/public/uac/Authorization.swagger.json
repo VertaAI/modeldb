@@ -22,7 +22,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -43,102 +43,6 @@
         ]
       }
     },
-    "/authz/getAllowedEntitiesWithActions": {
-      "post": {
-        "operationId": "AuthzService_getAllowedEntitiesWithActions",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedEntitiesWithActions"
-            }
-          }
-        ],
-        "tags": [
-          "AuthzService"
-        ]
-      }
-    },
-    "/authz/getAllowedResources": {
-      "post": {
-        "operationId": "AuthzService_getAllowedResources",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedResourcesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedResources"
-            }
-          }
-        ],
-        "tags": [
-          "AuthzService"
-        ]
-      }
-    },
-    "/authz/getDirectlyAllowedResources": {
-      "post": {
-        "operationId": "AuthzService_getDireclyAllowedResources",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedResourcesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacGetAllowedResources"
-            }
-          }
-        ],
-        "tags": [
-          "AuthzService"
-        ]
-      }
-    },
     "/authz/getSelfAllowedActionsBatch": {
       "post": {
         "operationId": "AuthzService_getSelfAllowedActionsBatch",
@@ -150,7 +54,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -182,7 +86,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -195,70 +99,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacGetSelfAllowedResources"
-            }
-          }
-        ],
-        "tags": [
-          "AuthzService"
-        ]
-      }
-    },
-    "/authz/getSelfDirectlyAllowedResources": {
-      "post": {
-        "operationId": "AuthzService_getSelfDirectlyAllowedResources",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetSelfAllowedResourcesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacGetSelfAllowedResources"
-            }
-          }
-        ],
-        "tags": [
-          "AuthzService"
-        ]
-      }
-    },
-    "/authz/isAllowed": {
-      "post": {
-        "operationId": "AuthzService_isAllowed",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacIsAllowedResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacIsAllowed"
             }
           }
         ],
@@ -278,7 +118,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -311,7 +151,12 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "CREATE_WEBHOOK",
+        "CREATE_GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -323,7 +168,16 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER"
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "EVENT",
+        "WEBHOOK",
+        "SYSTEM_ADMIN",
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION",
+        "SCIM_CONFIGURATION",
+        "GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -336,7 +190,9 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -345,7 +201,8 @@
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ENDPOINT"
+        "ENDPOINT",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
@@ -363,7 +220,16 @@
         "UPDATE_PERMISSIONS",
         "LOCK",
         "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_REDACT",
+        "ALERTER",
+        "PREDICT",
+        "CONTROL",
+        "IS_ALLOWED",
+        "GET",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "PROMOTE"
       ],
       "default": "UNKNOWN"
     },
@@ -381,7 +247,18 @@
         "REPOSITORY",
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY"
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL",
+        "ENDPOINT",
+        "BUILD",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "STAGE",
+        "PROFILER"
       ],
       "default": "UNKNOWN"
     },
@@ -417,21 +294,40 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
       "properties": {
         "type_url": {
-          "type": "string"
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
         "value": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
-      }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "runtimeError": {
       "type": "object",
@@ -506,6 +402,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "group_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "description": "Entities that can be bound to a role. All users in all scopes given are considered a match."
@@ -524,9 +426,12 @@
           "items": {
             "$ref": "#/definitions/uacResources"
           }
+        },
+        "pagination": {
+          "$ref": "#/definitions/commonPagination"
         }
       },
-      "title": "Same as above, but lists all entities that are allowed to perform a certain action on certain resources"
+      "title": "Answers the question \"what `entities` are allowed to perform any of `actions` on any of `resources`?\"\nLists all entities that are allowed to perform a certain action on certain resources"
     },
     "uacGetAllowedEntitiesResponse": {
       "type": "object",
@@ -536,83 +441,10 @@
           "items": {
             "$ref": "#/definitions/uacEntities"
           }
-        }
-      }
-    },
-    "uacGetAllowedEntitiesWithActions": {
-      "type": "object",
-      "properties": {
-        "actions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacAction"
-          }
         },
-        "resources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacResources"
-          }
-        }
-      }
-    },
-    "uacGetAllowedEntitiesWithActionsResponse": {
-      "type": "object",
-      "properties": {
-        "entitiesWithActions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponseItem"
-          }
-        }
-      }
-    },
-    "uacGetAllowedEntitiesWithActionsResponseItem": {
-      "type": "object",
-      "properties": {
-        "entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacEntities"
-          }
-        },
-        "actions": {
-          "$ref": "#/definitions/uacAction"
-        }
-      }
-    },
-    "uacGetAllowedResources": {
-      "type": "object",
-      "properties": {
-        "entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacEntities"
-          }
-        },
-        "actions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacAction"
-          }
-        },
-        "resource_type": {
-          "$ref": "#/definitions/uacResourceType"
-        },
-        "service": {
-          "$ref": "#/definitions/ServiceEnumService"
-        }
-      },
-      "title": "Same as above, but lists the resources on which actions can be performed by entities\nIf all possible resources combinations are allowed returns:\nResources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})"
-    },
-    "uacGetAllowedResourcesResponse": {
-      "type": "object",
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacResources"
-          }
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -649,6 +481,9 @@
         },
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
+        },
+        "pagination": {
+          "$ref": "#/definitions/commonPagination"
         }
       },
       "title": "Same as GetAllowedResources, but infers entities from the current logged user"
@@ -661,39 +496,10 @@
           "items": {
             "$ref": "#/definitions/uacResources"
           }
-        }
-      }
-    },
-    "uacIsAllowed": {
-      "type": "object",
-      "properties": {
-        "entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacEntities"
-          }
         },
-        "actions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacAction"
-          }
-        },
-        "resources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacResources"
-          }
-        }
-      },
-      "title": "Answers the question \"is any of `entities` allowed to perform any of `actions` on any of `resources`?\"\nThis allows sending a single query for a user+his teams and a resource+parents\nIf the user wants more granularity, they should make multiple requests"
-    },
-    "uacIsAllowedResponse": {
-      "type": "object",
-      "properties": {
-        "allowed": {
-          "type": "boolean",
-          "format": "boolean"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -719,8 +525,7 @@
       "type": "object",
       "properties": {
         "allowed": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -756,8 +561,7 @@
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"

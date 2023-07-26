@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/registry/stage/approveTransition": {
+    "/stage/approveTransition": {
       "post": {
         "operationId": "StageService_ApproveTransition",
         "responses": {
@@ -22,7 +22,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/registry/stage/closeTransition": {
+    "/stage/closeTransition": {
       "post": {
         "operationId": "StageService_CloseTransition",
         "responses": {
@@ -54,7 +54,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/registry/stage/commitTransition": {
+    "/stage/commitTransition": {
       "post": {
         "summary": "Only a transition that has been approved can be commited. The user must have RW permission\nSimilar to merging a PR",
         "operationId": "StageService_CommitTransition",
@@ -87,7 +87,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -108,7 +108,7 @@
         ]
       }
     },
-    "/registry/stage/createComment": {
+    "/stage/createComment": {
       "post": {
         "operationId": "StageService_CreateComment",
         "responses": {
@@ -119,7 +119,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -140,7 +140,7 @@
         ]
       }
     },
-    "/registry/stage/createTransition": {
+    "/stage/createTransition": {
       "post": {
         "summary": "Anyone with RW permission on the model version can do any of these\nNote that the author of the transition cannot approve or reject it themselves (like in github)",
         "operationId": "StageService_CreateTransition",
@@ -152,7 +152,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -173,7 +173,7 @@
         ]
       }
     },
-    "/registry/stage/findActivities": {
+    "/stage/findActivities": {
       "post": {
         "summary": "List objects from the db. Similar to the PR history",
         "operationId": "StageService_FindActivities",
@@ -185,7 +185,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -206,7 +206,7 @@
         ]
       }
     },
-    "/registry/stage/findTransitions": {
+    "/stage/findTransitions": {
       "post": {
         "summary": "Similar to listing PRs by state",
         "operationId": "StageService_FindTransitions",
@@ -218,7 +218,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -239,7 +239,7 @@
         ]
       }
     },
-    "/registry/stage/rejectTransition": {
+    "/stage/rejectTransition": {
       "post": {
         "operationId": "StageService_RejectTransition",
         "responses": {
@@ -250,7 +250,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -271,7 +271,7 @@
         ]
       }
     },
-    "/registry/stage/updateStage": {
+    "/stage/updateStage": {
       "post": {
         "summary": "Directly update the stage without going through approval. The user must have RW permission\nSimilar to merging to master directly",
         "operationId": "StageService_UpdateStage",
@@ -283,7 +283,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -313,7 +313,8 @@
         "DEVELOPMENT",
         "STAGING",
         "PRODUCTION",
-        "ARCHIVED"
+        "ARCHIVED",
+        "UNASSIGNED"
       ],
       "default": "UNKNOWN"
     },

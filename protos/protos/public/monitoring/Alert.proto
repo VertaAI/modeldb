@@ -1,0 +1,334 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+import "common/CommonService.proto";
+
+import "monitoring/MonitoredEntity.proto";
+
+/************************
+ * Notification channel *
+ ************************/
+
+message NotificationChannelTypeEnum {
+    enum NotificationChannelType {
+        UNKNOWN = 0;
+        SLACK = 1;
+    }
+}
+
+// Content of an notification channel
+message NotificationChannel {
+    uint64 id = 1;
+    string name = 2;
+    uint64 created_at_millis = 3;
+    uint64 updated_at_millis = 4;
+
+    NotificationChannelTypeEnum.NotificationChannelType type = 5;
+    oneof channel {
+        NotificationChannelSlackWebhook slack_webhook = 6;
+    }
+    uint64 workspace_id = 7;
+}
+
+// Configuration for an notification channel for slack webhooks
+message NotificationChannelSlackWebhook {
+    string url = 1;
+}
+
+// Create a new notification channel. Names must be unique
+message CreateNotificationChannelRequest {
+    NotificationChannel channel = 1; // Deprecated. But keeping for now for compatibility
+
+    string name = 2;
+    uint64 created_at_millis = 3;
+    uint64 updated_at_millis = 4;
+
+    oneof workspace_identifier {
+        uint64 workspace_id = 7;
+        string workspace_name = 8;
+    }
+
+    NotificationChannelTypeEnum.NotificationChannelType type = 5;
+    oneof notification_channel {
+        NotificationChannelSlackWebhook slack_webhook = 6;
+    }
+
+}
+
+// Updates an notification channel. The matching with a previous one happens from the id being the same
+message UpdateNotificationChannelRequest {
+    NotificationChannel channel = 1;
+}
+
+// Find an notification channel based on the different fields
+message FindNotificationChannelRequest {
+    repeated uint64 ids = 1;
+    repeated string names = 2;
+    repeated NotificationChannelTypeEnum types = 3;
+
+    // Pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+
+    oneof workspace_identifier {
+        uint64 workspace_id = 6;
+        string workspace_name = 7;
+    }
+
+    message Response {
+        repeated NotificationChannel channels = 1;
+        int32 total_records = 2;
+    }
+}
+
+// Delete notification channels
+message DeleteNotificationChannelRequest {
+    repeated uint64 ids = 1;
+}
+
+/*********
+ * Alert *
+ *********/
+
+message AlerterTypeEnum {
+    enum AlerterType {
+        UNKNOWN = 0;
+        FIXED = 1;
+        REFERENCE = 2;
+        RANGE = 3;
+    }
+}
+
+message AlertStatusEnum {
+    enum AlertStatus {
+        UNKNOWN = 0;
+        OK = 1;
+        ALERTING = 2;
+        PAUSE = 3;
+        NODATA = 4;
+    }
+}
+
+message EvaluationFrequencyEnum {
+    enum EvaluationFrequency {
+        UNKNOWN = 0;
+        FIVE_MINUTES = 1;
+        HOUR = 2;
+        DAY = 3;
+    }
+}
+
+message AggregationWindowEnum {
+    enum AggregationWindow {
+        UNKNOWN = 0;
+        FIVE_MINUTES = 1;
+        HOUR = 2;
+        DAY = 3;
+    }
+}
+
+message Alert {
+    reserved 8; // removed
+    reserved 10; // removed
+
+    uint64 id = 1;
+    string name = 2; // Names are unique within a monitored entity
+    uint64 monitored_entity_id = 3;
+    uint64 created_at_millis = 4;
+    uint64 updated_at_millis = 5;
+
+    // Add some robustness in case the alert isn't evaluated in a while
+    uint64 last_evaluated_at_millis = 6;
+
+    // Use a map instead of a list to represent that this is a set
+    map<uint64,bool> notification_channels = 7;
+    // Current status of this alert
+    AlertStatusEnum.AlertStatus status = 9;
+
+    // Information about the alerter that should be used to evaluate this alert
+    AlerterTypeEnum.AlerterType alerter_type = 11;
+    oneof alerter {
+        AlertFixed alerter_fixed = 12;
+        AlertReference alerter_reference = 13;
+        AlertRange alerter_range = 14;
+    }
+    uint64 version_number = 15;
+
+    string feature = 16;
+    AggregationWindowEnum.AggregationWindow aggregation_window = 18;
+    EvaluationFrequencyEnum.EvaluationFrequency evaluation_frequency = 19;
+    string aggregation_type = 20;
+    string aggregation_algorithm = 21;
+    bool enabled = 22;
+}
+
+message AlertFixed {
+    // Alert is fired if value is $operator $threshold
+    float threshold = 1;
+    common.OperatorEnum.Operator operator = 2; // Default = GTE
+}
+
+message AlertRange {
+    float lower_bound = 1;
+    float upper_bound = 2;
+    bool alert_if_outside_range = 3; // if true, alert when value is outside the range.  If false, alert when value is inside the range.
+}
+
+message AlertReference {
+    reserved 2;
+    // Alert is fired if value $operator $threshold
+    float threshold = 1;
+    common.OperatorEnum.Operator operator = 3; // Default = GTE
+    // TODO: define the reference for comparison
+}
+
+message CreateAlertRequest {
+    Alert alert = 1; // ID must be empty
+}
+
+message UpdateAlertRequest {
+    Alert alert = 2;
+}
+
+message FindAlertRequest {
+    reserved 9; // Field removed
+    reserved 10; // Field removed
+    reserved 11; // Field removed
+    repeated uint64 ids = 1;
+    repeated string names = 2;
+    repeated uint64 monitored_entity_ids = 3;
+
+    // Find alerts based on when they were last evaluated
+    uint64 last_evaluated_at_millis_after = 4;
+
+    // Allow alerters to filter to only their own types
+    repeated AlerterTypeEnum.AlerterType alerter_types = 5;
+
+    // Allow filtering to see only failing alerts
+    repeated AlertStatusEnum.AlertStatus status = 6;
+
+    bool includeIfNoData = 12;
+
+    // Pagination
+    int32 page_number = 7;
+    int32 page_limit = 8;
+
+    message Response {
+        repeated Alert alerts = 1;
+        int32 total_records = 2;
+    }
+}
+
+message DeleteAlertRequest {
+    repeated uint64 ids = 1;
+}
+
+// Allow the alerter to trigger an alert or change the status (most likely to OK if was triggering before)
+// We provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically
+message UpdateAlertStatusRequest {
+    reserved 4; // Field removed
+    reserved 5; // Field removed
+    reserved 6; // Field removed
+    reserved 7; // Field removed
+    uint64 alert_id = 1;
+    uint64 event_time_millis = 2; // Optional field that the alerter can set to provide past events (backfill)
+    AlertStatusEnum.AlertStatus status = 3;
+}
+
+// History of the status of the alerts
+message ListAlertHistoryRequest {
+    uint64 id = 1;
+
+    message Response {
+        repeated ListAlertHistoryItem history = 1;
+    }
+}
+
+// Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments
+message ListAlertHistoryItem {
+    uint64 event_time_millis = 1;
+    AlertStatusEnum.AlertStatus status = 2;
+    reserved 3; // Removed
+    // Optional. ID of this item. Doesn't need to be output on the response
+    string event_id = 4;
+    Alert alert = 5; // Deep copy of the original alert to preserve history
+}
+
+service AlertService {
+    rpc createNotificationChannel(CreateNotificationChannelRequest) returns (NotificationChannel) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/createNotificationChannel"
+            body: "*"
+        };
+    };
+
+    rpc updateNotificationChannel(UpdateNotificationChannelRequest) returns (NotificationChannel) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/updateNotificationChannel"
+            body: "*"
+        };
+    };
+
+    rpc findNotificationChannel(FindNotificationChannelRequest) returns (FindNotificationChannelRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/findNotificationChannel"
+            body: "*"
+        };
+    };
+
+    rpc deleteNotificationChannel(DeleteNotificationChannelRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/monitoring/alerts/deleteNotificationChannel"
+            body: "*"
+        };
+    };
+
+    rpc createAlert(CreateAlertRequest) returns (Alert) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/createAlert"
+            body: "*"
+        };
+    };
+
+    rpc updateAlert(UpdateAlertRequest) returns (Alert) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/updateAlert"
+            body: "*"
+        };
+    };
+
+    rpc updateAlertStatus(UpdateAlertStatusRequest) returns (Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/updateAlertStatus"
+            body: "*"
+        };
+    };
+
+    rpc findAlert(FindAlertRequest) returns (FindAlertRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/findAlert"
+            body: "*"
+        };
+    };
+
+    rpc listAlertHistory(ListAlertHistoryRequest) returns (ListAlertHistoryRequest.Response) {
+    option (google.api.http) = {
+            post: "/api/v1/monitoring/alerts/listAlertHistory"
+            body: "*"
+        };
+    };
+
+    rpc deleteAlert(DeleteAlertRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/monitoring/alerts/deleteAlert"
+            body: "*"
+        };
+    };
+}
