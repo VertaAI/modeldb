@@ -65,7 +65,7 @@ class VertaModelBase(object):
 
             The `headers` parameter is optional: overriding `predict` methods
             do not need to include this parameter. For usage details, see
-            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict
+            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict.
 
         .. note::
 
@@ -115,7 +115,7 @@ class VertaModelBase(object):
 
             The `headers` parameter is optional: overriding `batch_predict` methods
             do not need to include this parameter. For usage details, see
-            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict
+            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict.
 
         .. note::
 
