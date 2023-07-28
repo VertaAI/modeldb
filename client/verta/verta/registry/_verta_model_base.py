@@ -63,6 +63,12 @@ class VertaModelBase(object):
 
         .. note::
 
+            The `headers` parameter is optional: overriding `predict` methods
+            do not need to include this parameter. For usage details, see
+            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict.
+
+        .. note::
+
             **It is recommended** to use the :func:`~verta.registry.verify_io`
             decorator to help ensure that your model's input and output types
             will be fully compatible with the Verta platform as you iterate
@@ -104,6 +110,12 @@ class VertaModelBase(object):
         See `our product documentation on batch prediction
         <https://docs.verta.ai/verta/deployment/guides/batch-predictions>`__
         for more information about how this method is used.
+
+        .. note::
+
+            The `headers` parameter is optional: overriding `batch_predict` methods
+            do not need to include this parameter. For usage details, see
+            https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict.
 
         .. note::
 
