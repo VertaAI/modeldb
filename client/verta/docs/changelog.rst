@@ -51,18 +51,18 @@ New Features
   (`#3910 <https://github.com/VertaAI/modeldb/pull/3910>`__,
   `#3928 <https://github.com/VertaAI/modeldb/pull/3928>`__,
   `#3947 <https://github.com/VertaAI/modeldb/pull/3947>`__)
-- add support for `accessing request headers during predictions <https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict>__`
-  (`#3957 <https://github.com/VertaAI/modeldb/pull/3957>`)
+- add support for `accessing request headers during predictions <https://docs.verta.ai/verta/deployment/guides/accessing-headers-from-predict>`__
+  (`#3957 <https://github.com/VertaAI/modeldb/pull/3957>`__)
 - add :meth:`RegisteredModelVersion.get_dataset_versions() <verta.registry.entities.RegisteredModelVersion.get_dataset_versions>`
   (`#3802 <https://github.com/VertaAI/modeldb/pull/3802>`__)
-- add :meth:`RegisteredModelVersion.set_pii() <verta.registry.entities.RegistereredModelVersion.set_pii>`
-  and :meth:`RegisteredModelVersion.get_pii() <verta.registry.entities.RegistereredModelVersion.get_pii>`
+- add :meth:`RegisteredModel.set_pii() <verta.registry.entities.RegisteredModel.set_pii>`
+  and :meth:`RegisteredModel.get_pii() <verta.registry.entities.RegisteredModel.get_pii>`
   (`#3835 <https://github.com/VertaAI/modeldb/pull/3835>`__,
   `#3839 <https://github.com/VertaAI/modeldb/pull/3839>`__)
-- add :attr:`Python.python_version <verta.environment.Python.python_version>`
+- add :obj:`Python.python_version <verta.environment.Python>`
   (`#3945 <https://github.com/VertaAI/modeldb/pull/3945>`__)
-- add :attr:`RegisteredModelVersion.experiment_run_id <verta.registry.entities.RegistereredModelVersion.experiment_run_id>`
-  (`#3950 <https://github.com/VertaAI/modeldb/pull/3950>`)
+- add :obj:`RegisteredModelVersion.experiment_run_id <verta.registry.entities.RegisteredModelVersion>`
+  (`#3950 <https://github.com/VertaAI/modeldb/pull/3950>`__)
 - (alpha) allow passing organization by ID or name to disambiguate workspaces
   (`#3878 <https://github.com/VertaAI/modeldb/pull/3878>`__,
   `#3940 <https://github.com/VertaAI/modeldb/pull/3940>`__)
@@ -71,7 +71,7 @@ Internal Changes
 ^^^^^^^^^^^^^^^^
 - remove header caching
   (`#3941 <https://github.com/VertaAI/modeldb/pull/3941>`__)
-- remove `model_packaging` from model API
+- remove ``model_packaging`` from model API
   (`#3881 <https://github.com/VertaAI/modeldb/pull/3881>`__)
 
 
