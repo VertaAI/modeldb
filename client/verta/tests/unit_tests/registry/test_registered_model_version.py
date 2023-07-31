@@ -145,6 +145,12 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
 
 
 @patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
+@hypothesis.settings(  # RMVs are massive
+    suppress_health_check=[
+        hypothesis.HealthCheck.data_too_large,
+        hypothesis.HealthCheck.too_slow,
+    ]
+)
 @hypothesis.given(
     model_ver_proto=model_ver_proto(with_experiment_run_id=False),
     model_ver_from_run_proto=model_ver_proto(with_experiment_run_id=True),
