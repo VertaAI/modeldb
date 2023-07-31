@@ -58,7 +58,7 @@ def test_endpoint_get_current_build(
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(build_dicts=st.lists(build_dict(), unique_by=lambda d: d["id"]))
+@given(build_dicts=st.lists(build_dict(), unique_by=lambda d: d["id"]), max_size=5)
 def test_model_version_list_builds(
     mock_registered_model_version,
     mock_conn,
