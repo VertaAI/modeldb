@@ -1092,6 +1092,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         Updates the PII value of this registered model.
 
+        .. versionadded:: 0.24.0
 
         Parameters
         ----------
@@ -1110,6 +1111,8 @@ class RegisteredModel(_entity._ModelDBEntity):
     def get_pii(self):
         """
         Returns the PII value of this registered model.
+
+        .. versionadded:: 0.24.0
 
         Returns
         -------

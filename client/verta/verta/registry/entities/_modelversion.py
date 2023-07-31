@@ -52,6 +52,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     """
     Object representing a version of a registered model.
 
+    .. versionadded:: 0.24.0
+        ``experiment_run_id`` attribute.
+
     There should not be a need to instantiate this class directly; please use
     :meth:`RegisteredModel.get_or_create_version()
     <verta.registry.entities.RegisteredModel.get_or_create_version>`.
@@ -1670,6 +1673,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def get_dataset_versions(self):
         """
         Gets all DatasetVersions associated with this model version.
+
+        .. versionadded:: 0.24.0
 
         Returns
         -------

@@ -71,6 +71,8 @@ class Client(object):
        The ``VERTA_DISABLE_CLIENT_CONFIG`` environment variable, when set to
        a non-empty value, disables discovery of client config files for use in
        protected filesystems.
+    .. versionadded:: 0.24.0
+        `organization_id` and `organization_name` parameters.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
 

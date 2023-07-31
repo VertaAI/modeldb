@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 class Python(_environment._Environment):
     """Capture metadata about Python, installed packages, and system environment variables.
 
+    .. versionadded:: 0.24.0
+        ``python_version`` attribute.
+
     .. note::
 
         Comments and blank lines will not be captured during parsing.
