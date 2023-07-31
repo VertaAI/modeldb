@@ -1,11 +1,57 @@
 from datetime import timedelta
 
 import hypothesis
+import hypothesis.strategies as st
 import pytest
 from jsonschema import ValidationError
 
-from tests.strategies import generate_object, generate_another_object
 from verta.registry import validate_schema, verify_io
+
+from .pydantic_models import AnInnerClass, InputClass, OutputClass
+
+
+@st.composite
+def generate_inner_object(draw):
+    h_dict = draw(st.dictionaries(st.text(), st.integers()))
+    i_list_str = draw(st.lists(st.text()))
+    return AnInnerClass(
+        h_dict=h_dict,
+        i_list_str=i_list_str,
+    )
+
+
+@st.composite
+def generate_object(draw):
+    a_int = draw(st.integers())
+    b_str = draw(st.text())
+    c_float = draw(st.floats())
+    d_bool = draw(st.booleans())
+    e_list_int = draw(st.lists(st.integers()))
+    f_dict = draw(st.dictionaries(st.text(), st.text()))
+    g_inner_input_class = draw(generate_inner_object())
+
+    return InputClass(
+        a_int=a_int,
+        b_str=b_str,
+        c_float=c_float,
+        d_bool=d_bool,
+        e_list_int=e_list_int,
+        f_dict=f_dict,
+        g_inner=g_inner_input_class,
+    )
+
+
+@st.composite
+def generate_another_object(draw):
+    j_bool = draw(st.booleans())
+    k_list_list_int = draw(st.lists(st.lists(st.integers())))
+    l_str = draw(st.text())
+
+    return OutputClass(
+        j_bool=j_bool,
+        k_list_list_int=k_list_list_int,
+        l_str=l_str,
+    )
 
 
 class TestValidateSchema:
