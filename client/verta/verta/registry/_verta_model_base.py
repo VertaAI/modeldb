@@ -59,6 +59,9 @@ class VertaModelBase(object):
     def predict(self, input, headers: Dict[str, str]):
         """Produce an output from `input`.
 
+        .. versionadded:: 0.24.0
+            `headers` parameter.
+
         This method is called when requests are made against a Verta endpoint.
 
         .. note::
@@ -104,6 +107,9 @@ class VertaModelBase(object):
 
     def batch_predict(self, df, headers: Dict[str, str]):
         """Produce an output from `df`.
+
+        .. versionadded:: 0.24.0
+            `headers` parameter.
 
         This method is called when batch predictions are made against a Verta endpoint.
 

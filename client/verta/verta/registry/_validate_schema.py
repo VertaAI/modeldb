@@ -14,6 +14,8 @@ _MODEL_SCHEMA_PATH_ENV_VAR = "VERTA_MODEL_SCHEMA_PATH"
 def validate_schema(f):
     """Decorator to validate prediction input and output against previously provided schema.
 
+    .. versionadded:: 0.24.0
+
     Validation is done with the ``jsonschema`` library [#]_. If no schema has been provided via
     :meth:`RegisteredModelVersion.log_schema() <verta.registry.entities.RegisteredModelVersion.log_schema>`,
     an exception is raised.
