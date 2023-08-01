@@ -309,7 +309,7 @@
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
-                <version>9.5.0.jre11-preview</version>
+                <version>12.4.0.jre11-preview</version>
             </dependency>
             <!-- Snyk abatements -->
             <dependency>
