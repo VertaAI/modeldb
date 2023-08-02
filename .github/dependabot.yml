@@ -5,6 +5,11 @@
 
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every week
+      interval: "weekly"
   - package-ecosystem: "maven" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
@@ -19,10 +24,9 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 15
     rebase-strategy: "disabled"
-  - package-ecosystem: "pip" 
+  - package-ecosystem: "pip"
     directory: "/client/verta/" # Location of package manifests
     schedule:
       interval: "daily"
     open-pull-requests-limit: 15
     rebase-strategy: "disabled"
-
