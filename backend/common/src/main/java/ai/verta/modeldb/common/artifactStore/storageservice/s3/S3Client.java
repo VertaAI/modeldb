@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 // should not be used anymore.
 public class S3Client {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
+  private final ClientConfiguration defaultClientConfig;
 
   private final String bucketName;
 
@@ -38,6 +39,11 @@ public class S3Client {
     String minioEndpoint = s3Config.getMinioEndpoint();
     Regions awsRegion = Regions.fromName(s3Config.getAwsRegion());
     this.bucketName = s3Config.getCloudBucketName();
+    this.defaultClientConfig =
+        new ClientConfiguration()
+            .withMaxConnections(s3Config.getConnectionPoolSize())
+            .withRequestTimeout(s3Config.getRequestTimeoutMs())
+            .withClientExecutionTimeout(s3Config.getClientExecutionTimeout());
 
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
@@ -62,13 +68,17 @@ public class S3Client {
   }
 
   private void initializeWithEnvironment(Regions awsRegion) {
-    this.s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
+    this.s3Client =
+        AmazonS3ClientBuilder.standard()
+            .withClientConfiguration(defaultClientConfig)
+            .withRegion(awsRegion)
+            .build();
   }
 
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
     awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    var clientConfiguration = new ClientConfiguration();
+    var clientConfiguration = new ClientConfiguration(defaultClientConfig);
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
@@ -88,6 +98,7 @@ public class S3Client {
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withRegion(awsRegion)
+            .withClientConfiguration(defaultClientConfig)
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
@@ -96,7 +107,7 @@ public class S3Client {
     return new RefCountedS3Client(awsCredentials, s3Client, referenceCounter);
   }
 
-  private void initializeWithWebIdentity(Regions awsRegion) throws IOException {
+  private void initializeWithWebIdentity(Regions awsRegion) {
     /* While creating RoleCredentials we have set time (900 seconds (15 minutes))
     in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
     so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
