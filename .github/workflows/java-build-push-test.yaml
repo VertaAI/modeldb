@@ -161,7 +161,7 @@ jobs:
 
       - name: Jacoco Report Common to PR
         id: jacoco-common
-        uses: madrapps/jacoco-report@7ce0d588f6d00dd4a7b63a597383332e0c5c72d0 # Using specific commit until new release available
+        uses: madrapps/jacoco-report@94dfcf8dae9680be2cfa714ca37fb37790bd7663 # Using specific commit until new release available
         with:
           paths: ${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -173,7 +173,7 @@ jobs:
 
       - name: Jacoco Report Server to PR
         id: jacoco-server
-        uses: madrapps/jacoco-report@7ce0d588f6d00dd4a7b63a597383332e0c5c72d0 # Using specific commit until new release available
+        uses: madrapps/jacoco-report@94dfcf8dae9680be2cfa714ca37fb37790bd7663 # Using specific commit until new release available
         with:
           paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
