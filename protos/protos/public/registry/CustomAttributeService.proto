@@ -16,6 +16,8 @@ message CustomAttributeTypeEnum {
     CUSTOM_LIST = 2;
     GROUP = 3;
     TEXT = 4;
+    LONG_TEXT = 5;
+    NUMERIC = 6;
   }
 }
 
