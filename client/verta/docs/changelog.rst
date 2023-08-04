@@ -44,6 +44,8 @@ Backwards Incompatibilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - move vendored libraries from ``verta.external`` to ``verta._vendored``
   (`#3893 <https://github.com/VertaAI/modeldb/pull/3893>`__)
+- remove ``model_packaging`` from model API (client now requires Verta platform ``>=2023_07``)
+  (`#3881 <https://github.com/VertaAI/modeldb/pull/3881>`__)
 
 New Features
 ^^^^^^^^^^^^
@@ -71,8 +73,6 @@ Internal Changes
 ^^^^^^^^^^^^^^^^
 - remove header caching
   (`#3941 <https://github.com/VertaAI/modeldb/pull/3941>`__)
-- remove ``model_packaging`` from model API
-  (`#3881 <https://github.com/VertaAI/modeldb/pull/3881>`__)
 
 
 v0.23.0 (2023-05-05)
