@@ -158,7 +158,9 @@
         "USER",
         "CUSTOM_LIST",
         "GROUP",
-        "TEXT"
+        "TEXT",
+        "LONG_TEXT",
+        "NUMERIC"
       ],
       "default": "UNKNOWN"
     },
