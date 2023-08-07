@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
@@ -44,12 +43,6 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       boolean isServiceUser);
 
-  String buildRoleBindingName(
-      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName);
-
-  String buildRoleBindingName(
-      String roleName, String resourceId, String userId, String resourceTypeName);
-
   Collection<String> getAccessibleResourceIds(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Collection<String> requestedResourceIds);
@@ -67,14 +60,6 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedResourceIds);
-
-  void createRoleBinding(
-      String roleName,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames);
 
   List<Organization> listMyOrganizations();
 }
