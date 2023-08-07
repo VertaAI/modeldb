@@ -1,10 +1,7 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -21,7 +18,7 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 public class CreateExperimentRunHandler extends HandlerUtil {
 
-  private static Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
@@ -229,8 +226,6 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                         LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
                       }
 
-                      final var futureLogs = new LinkedList<InternalFuture<Void>>();
-
                       if (!builder.getTagsList().isEmpty()) {
                         tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
                       }
@@ -284,11 +279,6 @@ public class CreateExperimentRunHandler extends HandlerUtil {
             executor)
         .thenCompose(
             createdExperimentRun ->
-                createRoleBindingsForExperimentRun(createdExperimentRun)
-                    .thenApply(unused -> createdExperimentRun, executor),
-            executor)
-        .thenCompose(
-            createdExperimentRun ->
                 jdbi.useHandle(
                         handle ->
                             handle
@@ -318,52 +308,5 @@ public class CreateExperimentRunHandler extends HandlerUtil {
       long count = query.mapTo(Long.class).one();
       return count > 0;
     }
-  }
-
-  private String buildRoleBindingName(
-      String roleName, String resourceId, String vertaId, String resourceTypeName) {
-    return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
-  }
-
-  private InternalFuture<Void> createRoleBindingsForExperimentRun(
-      final ExperimentRun experimentRun) {
-    ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
-        ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
-    String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
-    return FutureUtil.clientRequest(
-            uac.getServiceAccountRoleServiceFutureStub()
-                .setRoleBinding(
-                    SetRoleBinding.newBuilder()
-                        .setRoleBinding(
-                            RoleBinding.newBuilder()
-                                .setName(
-                                    buildRoleBindingName(
-                                        roleName,
-                                        experimentRun.getId(),
-                                        experimentRun.getOwner(),
-                                        modelDBServiceResourceType.name()))
-                                .setScope(RoleScope.newBuilder().build())
-                                .setRoleName(roleName)
-                                .addEntities(
-                                    Entities.newBuilder()
-                                        .addUserIds(experimentRun.getOwner())
-                                        .build())
-                                .addResources(
-                                    Resources.newBuilder()
-                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    modelDBServiceResourceType))
-                                        .addResourceIds(experimentRun.getId())
-                                        .build())
-                                .build())
-                        .build()),
-            executor)
-        .thenAccept(
-            response -> {
-              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
-            },
-            executor);
   }
 }

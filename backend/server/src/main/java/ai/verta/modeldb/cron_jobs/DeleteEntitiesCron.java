@@ -21,7 +21,6 @@ import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
@@ -145,18 +144,6 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        deleteRoleBindingsForExperiments(experimentEntities);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.debug(
-            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: ",
-            ex);
-      }
-
-      try {
         var transaction = session.beginTransaction();
         var updateDeletedStatusExperimentRunQueryString =
             "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.experiment_id IN (:experimentIds)";
@@ -187,24 +174,6 @@ public class DeleteEntitiesCron extends TimerTask {
         "Experiment deleted successfully : Deleted experiments count {}", experimentIds.size());
   }
 
-  private void deleteRoleBindingsForExperiments(List<ExperimentEntity> experimentEntities) {
-    List<String> roleBindingNames = new LinkedList<>();
-    for (ExperimentEntity experimentEntity : experimentEntities) {
-      String ownerRoleBindingName =
-          mdbRoleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-              experimentEntity.getId(),
-              experimentEntity.getOwner(),
-              ModelDBServiceResourceTypes.EXPERIMENT.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-    }
-    if (!roleBindingNames.isEmpty()) {
-      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
-    }
-  }
-
   private void deleteExperimentRuns(Session session) {
     LOGGER.trace("ExperimentRun deleting");
     var experimentRunDeleteQuery =
@@ -217,17 +186,6 @@ public class DeleteEntitiesCron extends TimerTask {
     if (!experimentRunEntities.isEmpty()) {
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
         experimentRunIds.add(experimentRunEntity.getId());
-      }
-      try {
-        deleteRoleBindingsForExperimentRuns(experimentRunEntities);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.info(
-            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: ",
-            ex);
       }
 
       try {
@@ -259,25 +217,6 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug(
         "ExperimentRun deleted successfully : Deleted experimentRuns count {}",
         experimentRunIds.size());
-  }
-
-  private void deleteRoleBindingsForExperimentRuns(
-      List<ExperimentRunEntity> experimentRunEntities) {
-    List<String> roleBindingNames = new LinkedList<>();
-    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-      String ownerRoleBindingName =
-          mdbRoleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-              experimentRunEntity.getId(),
-              experimentRunEntity.getOwner(),
-              ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-    }
-    if (!roleBindingNames.isEmpty()) {
-      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
-    }
   }
 
   private void removeEntityComments(Session session, List<String> entityIds, String entityName) {

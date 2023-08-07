@@ -120,8 +120,7 @@ public class FutureExperimentDAO {
     sortingHandler = new SortingHandler(ModelDBConstants.EXPERIMENT_TABLE_NAME);
 
     createExperimentHandler =
-        new CreateExperimentHandler(
-            executor, jdbi, uac, attributeHandler, tagsHandler, artifactHandler);
+        new CreateExperimentHandler(executor, jdbi, attributeHandler, tagsHandler, artifactHandler);
   }
 
   public InternalFuture<Experiment> createExperiment(CreateExperiment request) {

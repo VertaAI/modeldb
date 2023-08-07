@@ -1,12 +1,7 @@
 package ai.verta.modeldb.batchProcess;
 
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
@@ -31,18 +26,15 @@ public class OwnerRoleBindingUtils {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static UACApisUtil uacApisUtil;
-  private static UAC uac;
-  private static MDBRoleService mdbRoleService;
 
   public static void execute() {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
-      uac = UAC.fromConfig(config, Optional.empty());
+      UAC uac = UAC.fromConfig(config, Optional.empty());
       var executor =
           FutureExecutor.initializeExecutor(
               config.getGrpcServer().getThreadCount(), "OwnerRoleBindingUtils");
       uacApisUtil = new UACApisUtil(executor, uac);
-      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -105,17 +97,7 @@ public class OwnerRoleBindingUtils {
               uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (ExperimentEntity experimentEntity : experimentEntities) {
             var userInfoValue = userInfoMap.get(experimentEntity.getOwner());
-            if (userInfoValue != null) {
-              try {
-                mdbRoleService.createRoleBinding(
-                    ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                    new CollaboratorUser(uacApisUtil, userInfoValue),
-                    experimentEntity.getId(),
-                    ModelDBServiceResourceTypes.EXPERIMENT);
-              } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-              }
-            } else {
+            if (userInfoValue == null) {
               LOGGER.warn(
                   "Experiment owner not found from UAC response list : experimentId - {} & userId - {}",
                   experimentEntity.getId(),
@@ -181,17 +163,7 @@ public class OwnerRoleBindingUtils {
             uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           var userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
-          if (userInfoValue != null) {
-            try {
-              mdbRoleService.createRoleBinding(
-                  ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                  new CollaboratorUser(uacApisUtil, userInfoValue),
-                  experimentRunEntity.getId(),
-                  ModelDBServiceResourceTypes.EXPERIMENT_RUN);
-            } catch (Exception e) {
-              LOGGER.error(e.getMessage(), e);
-            }
-          } else {
+          if (userInfoValue == null) {
             LOGGER.warn(
                 "ExperimentRun owner not found from UAC response list : ExperimentRunId - {} & userId - {}",
                 experimentRunEntity.getId(),
@@ -256,17 +228,7 @@ public class OwnerRoleBindingUtils {
               uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             var userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
-            if (userInfoValue != null) {
-              try {
-                mdbRoleService.createRoleBinding(
-                    ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-                    new CollaboratorUser(uacApisUtil, userInfoValue),
-                    datasetVersionEntity.getId(),
-                    ModelDBServiceResourceTypes.DATASET_VERSION);
-              } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-              }
-            } else {
+            if (userInfoValue == null) {
               LOGGER.warn(
                   "DatasetVersion owner not found from UAC response list : DatasetVersionId - {} & userId - {}",
                   datasetVersionEntity.getId(),
@@ -334,19 +296,7 @@ public class OwnerRoleBindingUtils {
               uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
-            if (userInfoValue != null) {
-              try {
-                var modelDBServiceResourceTypes =
-                    ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
-                mdbRoleService.createRoleBinding(
-                    ModelDBConstants.ROLE_REPOSITORY_OWNER,
-                    new CollaboratorUser(uacApisUtil, userInfoValue),
-                    String.valueOf(repositoryEntity.getId()),
-                    modelDBServiceResourceTypes);
-              } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-              }
-            } else {
+            if (userInfoValue == null) {
               LOGGER.warn(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),

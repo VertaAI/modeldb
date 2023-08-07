@@ -2,13 +2,9 @@ package ai.verta.modeldb.experiment.subtypes;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonDBUtil;
-import ai.verta.modeldb.common.CommonMessages;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.*;
@@ -20,13 +16,6 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.HandlerUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Entities;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.Resources;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
-import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UserInfo;
 import java.time.Instant;
 import java.util.Comparator;
@@ -44,7 +33,6 @@ public class CreateExperimentHandler extends HandlerUtil {
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
-  private final UAC uac;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
@@ -54,13 +42,11 @@ public class CreateExperimentHandler extends HandlerUtil {
   public CreateExperimentHandler(
       FutureExecutor executor,
       FutureJdbi jdbi,
-      UAC uac,
       AttributeHandler attributeHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
-    this.uac = uac;
 
     this.attributeHandler = attributeHandler;
     this.tagsHandler = tagsHandler;
@@ -190,11 +176,6 @@ public class CreateExperimentHandler extends HandlerUtil {
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenCompose(
             createdExperiment ->
-                createRoleBindingsForExperiment(createdExperiment)
-                    .thenApply(unused -> createdExperiment, executor),
-            executor)
-        .thenCompose(
-            createdExperiment ->
                 jdbi.useHandle(
                         handle -> {
                           try (var updateQuery =
@@ -225,51 +206,5 @@ public class CreateExperimentHandler extends HandlerUtil {
       long count = query.mapTo(Long.class).one();
       return count > 0;
     }
-  }
-
-  private String buildRoleBindingName(
-      String roleName, String resourceId, String vertaId, String resourceTypeName) {
-    return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
-  }
-
-  private InternalFuture<Void> createRoleBindingsForExperiment(final Experiment experimentRun) {
-    ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
-        ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT;
-    String roleName = ModelDBConstants.ROLE_EXPERIMENT_OWNER;
-    return FutureUtil.clientRequest(
-            uac.getServiceAccountRoleServiceFutureStub()
-                .setRoleBinding(
-                    SetRoleBinding.newBuilder()
-                        .setRoleBinding(
-                            RoleBinding.newBuilder()
-                                .setName(
-                                    buildRoleBindingName(
-                                        roleName,
-                                        experimentRun.getId(),
-                                        experimentRun.getOwner(),
-                                        modelDBServiceResourceType.name()))
-                                .setScope(RoleScope.newBuilder().build())
-                                .setRoleName(roleName)
-                                .addEntities(
-                                    Entities.newBuilder()
-                                        .addUserIds(experimentRun.getOwner())
-                                        .build())
-                                .addResources(
-                                    Resources.newBuilder()
-                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    modelDBServiceResourceType))
-                                        .addResourceIds(experimentRun.getId())
-                                        .build())
-                                .build())
-                        .build()),
-            executor)
-        .thenAccept(
-            response -> {
-              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
-            },
-            executor);
   }
 }
