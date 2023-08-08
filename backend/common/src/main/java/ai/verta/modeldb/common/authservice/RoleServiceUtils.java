@@ -417,52 +417,6 @@ public class RoleServiceUtils implements RoleService {
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
   }
 
-  private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var setRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStubForServiceUser()
-              .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
-    } catch (StatusRuntimeException ex) {
-      CommonUtils.retryOrThrowException(
-          ex,
-          retry,
-          (CommonUtils.RetryCallInterface<Void>)
-              retry1 -> {
-                setRoleBindingOnAuthService(retry1, roleBinding);
-                return null;
-              },
-          timeout);
-    }
-  }
-
-  private boolean deleteRoleBindingsUsingServiceUser(boolean retry, List<String> roleBindingNames) {
-    DeleteRoleBindings deleteRoleBindingRequest =
-        DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-
-      // TODO: try using futur stub than blocking stub
-      var deleteRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStubForServiceUser()
-              .deleteRoleBindings(deleteRoleBindingRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
-
-      return deleteRoleBindingResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return CommonUtils.retryOrThrowException(
-          ex,
-          retry,
-          shouldRetry -> deleteRoleBindingsUsingServiceUser(shouldRetry, roleBindingNames),
-          timeout);
-    }
-  }
-
   @Override
   public List<Organization> listMyOrganizations() {
     return listMyOrganizations(true);
