@@ -10,11 +10,8 @@ import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.common.base.Strings;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
-  private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
   public static MDBRoleService FromConfig(MDBConfig config, UACApisUtil uacApisUtil, UAC uac) {
     if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(uacApisUtil, config);

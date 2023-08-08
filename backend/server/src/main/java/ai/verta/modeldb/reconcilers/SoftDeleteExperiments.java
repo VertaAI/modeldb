@@ -1,7 +1,5 @@
 package ai.verta.modeldb.reconcilers;
 
-import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -12,7 +10,6 @@ import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import io.opentelemetry.api.OpenTelemetry;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.hibernate.query.Query;
@@ -50,8 +47,6 @@ public class SoftDeleteExperiments extends Reconciler<String> {
   protected ReconcileResult reconcile(Set<String> ids) {
     logger.debug("Reconciling experiments " + ids.toString());
 
-    deleteRoleBindings(ids);
-
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var experimentQueryString =
           String.format("from %s where id in (:ids)", ExperimentEntity.class.getSimpleName());
@@ -80,33 +75,5 @@ public class SoftDeleteExperiments extends Reconciler<String> {
     }
 
     return new ReconcileResult();
-  }
-
-  private void deleteRoleBindings(Set<String> ids) {
-    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      var deleteExperimentQueryString =
-          String.format("FROM %s WHERE id IN (:ids)", ExperimentEntity.class.getSimpleName());
-
-      Query<ExperimentEntity> experimentDeleteQuery =
-          session.createQuery(deleteExperimentQueryString, ExperimentEntity.class);
-      experimentDeleteQuery.setParameter("ids", ids);
-      List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
-
-      List<String> roleBindingNames = new LinkedList<>();
-      for (ExperimentEntity experimentEntity : experimentEntities) {
-        String ownerRoleBindingName =
-            mdbRoleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentEntity.getId(),
-                experimentEntity.getOwner(),
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        if (ownerRoleBindingName != null) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-      if (!roleBindingNames.isEmpty()) {
-        mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
-      }
-    }
   }
 }

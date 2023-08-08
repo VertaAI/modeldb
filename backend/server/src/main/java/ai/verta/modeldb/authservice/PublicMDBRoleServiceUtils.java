@@ -1,15 +1,10 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
-import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
@@ -20,9 +15,8 @@ import java.util.*;
 
 public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
-  private FutureProjectDAO futureProjectDAO;
-  private RepositoryDAO repositoryDAO;
-  private MetadataDAO metadataDAO;
+  private final RepositoryDAO repositoryDAO;
+  private final MetadataDAO metadataDAO;
 
   public PublicMDBRoleServiceUtils(UACApisUtil uacApisUtil, MDBConfig mdbConfig) {
     this.metadataDAO = new MetadataDAORdbImpl();
@@ -37,37 +31,11 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, String userId, String resourceTypeName) {
-    return null;
-  }
-
-  @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
-    return null;
-  }
-
-  @Override
-  public void createRoleBinding(
-      String roleName,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    // Do nothing
-  }
-
-  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       String resourceId) {
     // Do nothing
-  }
-
-  @Override
-  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
-    return true;
   }
 
   /**
@@ -83,15 +51,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       String resourceId,
       ModelDBServiceActions modelDBServiceActions) {
     if (resourceId != null && !resourceId.isEmpty()) {
-      if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-        try {
-          if (futureProjectDAO.getProjectById(resourceId).blockAndGet() != null) {
-            throw new NotFoundException(ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID);
-          }
-        } catch (Exception e) {
-          throw new ModelDBException(e);
-        }
-      } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
+      if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
         repositoryDAO.getDatasetById(metadataDAO, resourceId);
       }
     }

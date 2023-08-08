@@ -3,8 +3,6 @@ package ai.verta.modeldb.common.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
@@ -20,8 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
-  protected final UAC uac;
-  protected UACApisUtil uacApisUtil;
+  private final UAC uac;
+  protected final UACApisUtil uacApisUtil;
   private final Integer timeout;
 
   public RoleServiceUtils(UACApisUtil uacApisUtil, Integer timeout, UAC uac) {
@@ -264,25 +262,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, String userId, String resourceTypeName) {
-    return buildRoleBindingName(
-        roleName, resourceId, new CollaboratorUser(uacApisUtil, userId), resourceTypeName);
-  }
-
-  @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
-    return roleName
-        + "_"
-        + resourceTypeName
-        + "_"
-        + resourceId
-        + "_"
-        + collaborator.getNameForBinding();
-  }
-
-  @Override
   public Collection<String> getAccessibleResourceIds(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Collection<String> requestedResourceIds) {
@@ -436,86 +415,6 @@ public class RoleServiceUtils implements RoleService {
 
     // Validate if current user has access to the entity or not
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
-  }
-
-  @Override
-  public void createRoleBinding(
-      String roleName,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    String roleBindingName =
-        buildRoleBindingName(
-            roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
-    RoleScope roleBindingScope = RoleScope.newBuilder().build();
-
-    var newRoleBinding =
-        RoleBinding.newBuilder()
-            .setName(roleBindingName)
-            .setScope(roleBindingScope)
-            .setRoleName(roleName)
-            .addEntities(collaborator.getEntities())
-            .addResources(
-                Resources.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .addResourceIds(resourceId)
-                    .build())
-            .build();
-    setRoleBindingOnAuthService(true, newRoleBinding);
-  }
-
-  private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var setRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStubForServiceUser()
-              .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
-    } catch (StatusRuntimeException ex) {
-      CommonUtils.retryOrThrowException(
-          ex,
-          retry,
-          (CommonUtils.RetryCallInterface<Void>)
-              retry1 -> {
-                setRoleBindingOnAuthService(retry1, roleBinding);
-                return null;
-              },
-          timeout);
-    }
-  }
-
-  @Override
-  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
-    return deleteRoleBindingsUsingServiceUser(true, roleBindingNames);
-  }
-
-  private boolean deleteRoleBindingsUsingServiceUser(boolean retry, List<String> roleBindingNames) {
-    DeleteRoleBindings deleteRoleBindingRequest =
-        DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-
-      // TODO: try using futur stub than blocking stub
-      var deleteRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStubForServiceUser()
-              .deleteRoleBindings(deleteRoleBindingRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
-
-      return deleteRoleBindingResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return CommonUtils.retryOrThrowException(
-          ex,
-          retry,
-          shouldRetry -> deleteRoleBindingsUsingServiceUser(shouldRetry, roleBindingNames),
-          timeout);
-    }
   }
 
   @Override
