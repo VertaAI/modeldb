@@ -28,7 +28,7 @@ class NvidiaGPU:
         d = dict()
         d["number"] = self.number
         if self.model is not None:
-            d["model"] = self.model.name
+            d["model"] = self.model.value
 
         return d
 
