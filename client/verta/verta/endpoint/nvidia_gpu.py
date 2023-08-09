@@ -2,6 +2,32 @@ from enum import Enum
 
 
 class NvidiaGPU:
+    """
+    Nvidia GPU resources
+
+    The JSON equivalent for this is:
+    .. code-block:: json
+
+        {
+            "resources": {"nvidia_gpu": {"number": 1, "model": "V100"}}
+        }
+
+    Parameters
+    ----------
+    number: int > 0
+        Number of GPUs requested to run this endpoint's model.
+    model: NvidiaGPUModel, optional
+        Model of GPU requested to run this endpoint's model. Currently available models are
+        specified in the `NvidiaGPUModel` enum.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.resources import Resources, NvidiaGPU, NvidiaGPUModel
+        resources = Resources(nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
+    """
+
     NUM_GPUS_ERR_MSG = "`number` must be a number greater than 0"
     MODEL_ERR_MSG = "`model` must be an instance of `verta.endpoint.NvidiaGPUModel`"
 
