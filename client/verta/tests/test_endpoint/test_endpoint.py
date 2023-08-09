@@ -9,6 +9,7 @@ import yaml
 
 import verta
 from verta.endpoint._endpoint import Endpoint
+from verta.endpoint.nvidia_gpu import NvidiaGPU, NvidiaGPUModel
 from verta.endpoint.resources import Resources
 from verta.endpoint.autoscaling import Autoscaling
 from verta.endpoint.autoscaling.metrics import (
@@ -430,7 +431,9 @@ class TestEndpoint:
 
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = Resources(cpu=0.25, memory="512Mi")
+        resources = Resources(
+            cpu=0.25, memory="512Mi", nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
+        )
 
         env_vars = {
             "CUDA_VISIBLE_DEVICES": "1,2",
@@ -447,7 +450,11 @@ class TestEndpoint:
                 {"name": "GIT_TERMINAL_PROMPT", "value": "1"},
                 {"name": "VERTA_HOST", "value": "app.verta.ai"},
             ],
-            "resources": {"cpu_millis": 250, "memory": "512Mi"},
+            "resources": {
+                "cpu_millis": 250,
+                "memory": "512Mi",
+                "nvidia_gpu": {"number": 1, "model": "V100"},
+            },
             "strategy": "rollout",
         }
 
@@ -673,7 +680,11 @@ class TestEndpoint:
                 ],
             },
             "env_vars": {"VERTA_HOST": "app.verta.ai"},
-            "resources": {"cpu": 0.25, "memory": "100M"},
+            "resources": {
+                "cpu": 0.25,
+                "memory": "100M",
+                # TODO: add gpu here
+            },
         }
 
         filepath = "config.json"

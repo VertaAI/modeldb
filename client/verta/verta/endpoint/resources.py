@@ -79,7 +79,9 @@ class Resources(object):
 
     def _validate_nvidia_gpu(self, nvidia_gpu):
         if not isinstance(nvidia_gpu, NvidiaGPU):
-            raise TypeError("`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`")
+            raise TypeError(
+                "`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`"
+            )
 
     def _as_dict(self):
         d = dict()

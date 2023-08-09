@@ -2,15 +2,14 @@ from enum import Enum
 
 
 class NvidiaGPU:
-
     NUM_GPUS_ERR_MSG = "`number_of_gpus` must be a number greater than 0"
     MODEL_ERR_MSG = "`model` must be an instance of `verta.endpoint.NvidiaGPUModel`"
 
-    def __init__(self, number_of_gpus, model=None):
-        self._validate_number_of_gpus(number_of_gpus)
+    def __init__(self, number, model=None):
+        self._validate_number_of_gpus(number)
         if model is not None:
             self._validate_model(model)
-        self.number_of_gpus = number_of_gpus
+        self.number = number
         self.model = model
 
     def _validate_number_of_gpus(self, number_of_gpus):
@@ -25,7 +24,7 @@ class NvidiaGPU:
 
     def _as_dict(self):
         d = dict()
-        d["number"] = self.number_of_gpus
+        d["number"] = self.number
         if self.model is not None:
             d["model"] = self.model.name
 
