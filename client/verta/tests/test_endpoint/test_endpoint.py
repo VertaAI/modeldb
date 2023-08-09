@@ -683,7 +683,7 @@ class TestEndpoint:
             "resources": {
                 "cpu": 0.25,
                 "memory": "100M",
-                # TODO: add gpu here
+                "nvidia_gpu": {"number": 1, "model": "T4"},
             },
         }
 

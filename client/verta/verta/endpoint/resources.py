@@ -59,7 +59,8 @@ class Resources(object):
         if memory is not None:
             self._validate_memory(memory)
         if nvidia_gpu is not None:
-            self._validate_nvidia_gpu(nvidia_gpu)
+            # convert to NvidiaGPU instance if passed in as dict
+            nvidia_gpu = self._validate_nvidia_gpu(nvidia_gpu)
 
         self.cpu = cpu
         self.memory = memory
@@ -78,10 +79,13 @@ class Resources(object):
             raise ValueError(self.MEMORY_ERR_MSG)
 
     def _validate_nvidia_gpu(self, nvidia_gpu):
+        if isinstance(nvidia_gpu, dict):
+            nvidia_gpu = NvidiaGPU._from_dict(nvidia_gpu)
         if not isinstance(nvidia_gpu, NvidiaGPU):
             raise TypeError(
                 "`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`"
             )
+        return nvidia_gpu
 
     def _as_dict(self):
         d = dict()

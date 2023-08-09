@@ -8,7 +8,8 @@ class NvidiaGPU:
     def __init__(self, number, model=None):
         self._validate_number_of_gpus(number)
         if model is not None:
-            self._validate_model(model)
+            # convert to NvidiaGPUModel instance if passed in as str
+            model = self._validate_model(model)
         self.number = number
         self.model = model
 
@@ -23,6 +24,7 @@ class NvidiaGPU:
             model = NvidiaGPUModel(model)
         if not isinstance(model, NvidiaGPUModel):
             raise TypeError(self.MODEL_ERR_MSG)
+        return model
 
     def _as_dict(self):
         d = dict()
