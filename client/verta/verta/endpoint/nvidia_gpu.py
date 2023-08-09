@@ -64,6 +64,18 @@ class NvidiaGPU:
     def _from_dict(cls, rule_dict):
         return cls(**rule_dict)
 
+    def _to_hardware_compatibility_dict(self):
+        """
+        An internal method to convert this object to a dictionary that will be used when creating a
+        build.
+        """
+        if self.number == 0:
+            return None
+        if self.model is None:
+            return {"nvidia_gpu": {"all": True}}
+        else:
+            return {"nvidia_gpu": {self.model.value: True}}
+
 
 class NvidiaGPUModel(str, Enum):
     T4 = "T4"
