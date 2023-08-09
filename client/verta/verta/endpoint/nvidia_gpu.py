@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class NvidiaGPU:
-    NUM_GPUS_ERR_MSG = "`number_of_gpus` must be a number greater than 0"
+    NUM_GPUS_ERR_MSG = "`number` must be a number greater than 0"
     MODEL_ERR_MSG = "`model` must be an instance of `verta.endpoint.NvidiaGPUModel`"
 
     def __init__(self, number, model=None):
@@ -19,6 +19,8 @@ class NvidiaGPU:
             raise ValueError(self.NUM_GPUS_ERR_MSG)
 
     def _validate_model(self, model):
+        if isinstance(model, str):
+            model = NvidiaGPUModel(model)
         if not isinstance(model, NvidiaGPUModel):
             raise TypeError(self.MODEL_ERR_MSG)
 
@@ -35,6 +37,6 @@ class NvidiaGPU:
         return cls(**rule_dict)
 
 
-class NvidiaGPUModel(Enum):
+class NvidiaGPUModel(str, Enum):
     T4 = "T4"
     V100 = "V100"
