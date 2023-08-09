@@ -455,7 +455,7 @@ class Endpoint(object):
         if isinstance(model_reference, registry_entities.RegisteredModelVersion):
             build_json["model_version_id"] = model_reference.id
         elif isinstance(model_reference, tracking_entities.ExperimentRun):
-            build_json["experiment_run_id"] = model_reference.id
+            build_json["run_id"] = model_reference.id
         else:
             raise TypeError(
                 "`model_reference` must be an ExperimentRun or RegisteredModelVersion"
