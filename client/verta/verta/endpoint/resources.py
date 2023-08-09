@@ -4,6 +4,7 @@
 import abc
 import re
 
+from .nvidia_gpu import NvidiaGPU
 from .._vendored import six
 
 
@@ -52,14 +53,17 @@ class Resources(object):
         ]
     )
 
-    def __init__(self, cpu=None, memory=None):
+    def __init__(self, cpu=None, memory=None, nvidia_gpu=None):
         if cpu is not None:
             self._validate_cpu(cpu)
         if memory is not None:
             self._validate_memory(memory)
+        if nvidia_gpu is not None:
+            self._validate_nvidia_gpu(nvidia_gpu)
 
         self.cpu = cpu
         self.memory = memory
+        self.nvidia_gpu = nvidia_gpu
 
     def _validate_cpu(self, cpu):
         if not isinstance(cpu, (six.integer_types, float)):
@@ -73,12 +77,18 @@ class Resources(object):
         if not re.match(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", memory):
             raise ValueError(self.MEMORY_ERR_MSG)
 
+    def _validate_nvidia_gpu(self, nvidia_gpu):
+        if not isinstance(nvidia_gpu, NvidiaGPU):
+            raise TypeError("`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`")
+
     def _as_dict(self):
         d = dict()
         if self.cpu is not None:
             d["cpu_millis"] = int(self.cpu * 1000)
         if self.memory is not None:
             d["memory"] = self.memory
+        if self.nvidia_gpu is not None:
+            d["nvidia_gpu"] = self.nvidia_gpu._as_dict()
 
         return d
 
