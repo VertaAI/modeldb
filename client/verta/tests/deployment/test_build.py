@@ -45,5 +45,6 @@ def test_build_with_hardware_compatibility(model_version, endpoint, model_for_de
 
     retrieved_build = endpoint.get_current_build()
     assert build.id == retrieved_build.id
-    retrieved_hardware_comp = retrieved_build.get_hardware_compatibility()
-    assert hardware_compatibility == retrieved_hardware_comp._as_dict()
+    retrieved_hardware_comp = retrieved_build.nvidia_gpu_compatible_hardware
+    print(retrieved_hardware_comp)
+    assert NvidiaGPUModel.T4.value in retrieved_hardware_comp

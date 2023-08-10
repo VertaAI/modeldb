@@ -99,23 +99,6 @@ class Build:
     def is_complete(self) -> bool:
         return self.status in ("finished", "error")
 
-    def get_scan(self) -> _build_scan.BuildScan:
-        """Get this build's most recent scan.
-
-        .. versionadded:: 0.23.0
-
-        Returns
-        -------
-        :class:`~verta.endpoint.build.BuildScan`
-            Build scan.
-
-        """
-        return _build_scan.BuildScan._get(self._conn, self.id)
-
-    def get_hardware_compatibility(self):
-
-        return BuildHardwareCompatibility._get(self._conn, self.id)
-
     @property
     def nvidia_gpu_compatible_hardware(self):
         """Get this build's Nvidia GPU hardware compatibility. If no hardware compatibility was
@@ -144,6 +127,19 @@ class Build:
             if allowed or allows_all_models:
                 allowed_models.add(model)
         return allowed_models
+
+    def get_scan(self) -> _build_scan.BuildScan:
+        """Get this build's most recent scan.
+
+        .. versionadded:: 0.23.0
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildScan`
+            Build scan.
+
+        """
+        return _build_scan.BuildScan._get(self._conn, self.id)
 
 
     def start_scan(self, external: bool) -> _build_scan.BuildScan:
