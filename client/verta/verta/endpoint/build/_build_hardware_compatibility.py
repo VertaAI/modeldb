@@ -13,7 +13,7 @@ class BuildHardwareCompatibilityNvidiaGPU:
 class BuildHardwareCompatibility:
     """The hardware compatibility of a Verta model build.
 
-    .. versionadded:: 0.25.0
+    .. versionadded:: 0.24.1
 
     There should not be a need to instantiate this class directly; please use
     :meth:`Build.get_hardware_compatibility() <verta.endpoint.build.Build.get_hardware_compatibility>` instead.

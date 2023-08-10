@@ -5,7 +5,7 @@ import abc
 import re
 
 from .nvidia_gpu import NvidiaGPU
-from .._vendored import six
+from verta._vendored import six
 
 
 class Resources(object):
