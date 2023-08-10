@@ -47,6 +47,9 @@ class BuildHardwareCompatibility:
 
         return cls(hardware_compatibility)
 
+    def _as_dict(self):
+        return self._json
+
     @property
     def nvidia_gpu(self):
         ngpu = self._json.get("nvidia_gpu")
