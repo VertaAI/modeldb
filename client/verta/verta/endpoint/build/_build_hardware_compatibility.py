@@ -28,6 +28,7 @@ class BuildHardwareCompatibility:
     Attributes
     ----------
     nvidia_gpu: :class:`BuildHardwareCompatibilityNvidiaGPU`, Optional
+    x86_64: bool, Optional
 
     """
 
@@ -52,3 +53,7 @@ class BuildHardwareCompatibility:
         if ngpu is None:
             return None
         return BuildHardwareCompatibilityNvidiaGPU(**ngpu)
+
+    @property
+    def x86_64(self):
+        return self._json.get("x86_64")
