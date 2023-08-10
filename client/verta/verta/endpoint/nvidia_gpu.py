@@ -6,6 +6,7 @@ class NvidiaGPU:
     Nvidia GPU resources
 
     The JSON equivalent for this is:
+
     .. code-block:: json
 
         {
@@ -26,7 +27,7 @@ class NvidiaGPU:
 
         from verta.endpoint.resources import Resources, NvidiaGPU, NvidiaGPUModel
         resources = Resources(nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
-    
+
     """
 
     NUM_GPUS_ERR_MSG = "`number` must be a number greater than 0"
