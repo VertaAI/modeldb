@@ -33,13 +33,15 @@ class Resources(object):
             using one of these suffixes: **E, P, T, G, M, K**. You can also use the
             power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
             following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
+    nvidia_gpu: :class:`NvidiaGPU`, optional
+        Nvidia GPU resources allowed for an endpoint's model.
 
     Examples
     --------
     .. code-block:: python
 
         from verta.endpoint.resources import Resources
-        resources = Resources(cpu=.25, memory="512Mi")
+        resources = Resources(cpu=.25, memory="512Mi", nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
 
     """
 

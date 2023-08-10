@@ -16,7 +16,7 @@ class NvidiaGPU:
     ----------
     number: int > 0
         Number of GPUs requested to run this endpoint's model.
-    model: NvidiaGPUModel, optional
+    model: :class:`NvidiaGPUModel`, optional
         Model of GPU requested to run this endpoint's model. Currently available models are
         specified in the `NvidiaGPUModel` enum.
 
