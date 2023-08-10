@@ -101,8 +101,8 @@ class Build:
 
     @property
     def nvidia_gpu_compatible_hardware(self):
-        """Get this build's Nvidia GPU hardware compatibility. If no hardware compatibility was
-        specified or if this build does not use GPUs, returns None.
+        """Returns the list of this build's compatible Nvidia GPU models. If no hardware
+        compatibility was specified or if this build does not use GPUs, returns None.
 
         .. versionadded:: 0.24.1
 
