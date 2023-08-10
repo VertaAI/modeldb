@@ -181,6 +181,6 @@ public class UAC extends Connection {
   }
 
   public GroupServiceGrpc.GroupServiceFutureStub getGroupServiceFutureStub() {
-    return groupServiceFutureStub;
+    return attachInterceptors(groupServiceFutureStub);
   }
 }
