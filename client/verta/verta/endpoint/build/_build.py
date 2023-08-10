@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from verta._internal_utils import _utils, time_utils
 from . import _build_scan
+from ._build_hardware_compatibility import BuildHardwareCompatibility
 
 
 class Build:
@@ -109,6 +110,19 @@ class Build:
 
         """
         return _build_scan.BuildScan._get(self._conn, self.id)
+
+    def get_hardware_compatibility(self):
+        """Get this build's hardware compatibility. If no hardware compatibility was specified,
+        returns None.
+
+        .. versionadded:: 0.25.0
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildHardwareCompatibility` or None
+
+        """
+        return BuildHardwareCompatibility._get(self._conn, self.id)
 
     def start_scan(self, external: bool) -> _build_scan.BuildScan:
         """Start a new scan for this build. Internal scans are not yet supported.

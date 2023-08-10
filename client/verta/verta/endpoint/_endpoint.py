@@ -445,7 +445,6 @@ class Endpoint(object):
         return current_build
 
     def _create_build(self, model_reference, hardware_compatibility=None):
-        print(hardware_compatibility)
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
