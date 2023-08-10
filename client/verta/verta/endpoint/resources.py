@@ -40,7 +40,7 @@ class Resources(object):
     --------
     .. code-block:: python
 
-        from verta.endpoint.resources import Resources
+        from verta.endpoint.resources import Resources, NvidiaGPU, NvidiaGPUModel
         resources = Resources(cpu=.25, memory="512Mi", nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
 
     """
