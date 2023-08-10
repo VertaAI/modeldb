@@ -99,6 +99,7 @@ class Resources(object):
 
     @classmethod
     def _from_dict(cls, resources_dict):
+        resources_dict = resources_dict.copy()
         if "nvidia_gpu" in resources_dict:
             resources_dict["nvidia_gpu"] = NvidiaGPU._from_dict(resources_dict["nvidia_gpu"])
         return cls(**resources_dict)
