@@ -34,8 +34,9 @@ class NvidiaGPU:
     def __init__(self, number, model=None):
         self._validate_number_of_gpus(number)
         if model is not None:
+            self._validate_model(model)
             # convert to NvidiaGPUModel instance if passed in as str
-            model = self._validate_model(model)
+            model = NvidiaGPUModel(model)
         self.number = number
         self.model = model
 
@@ -61,8 +62,8 @@ class NvidiaGPU:
         return d
 
     @classmethod
-    def _from_dict(cls, rule_dict):
-        return cls(**rule_dict)
+    def _from_dict(cls, gpu_dict):
+        return cls(**gpu_dict)
 
     def _to_hardware_compatibility_dict(self):
         """

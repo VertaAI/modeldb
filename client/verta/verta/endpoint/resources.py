@@ -79,8 +79,6 @@ class Resources(object):
             raise ValueError(self.MEMORY_ERR_MSG)
 
     def _validate_nvidia_gpu(self, nvidia_gpu):
-        if isinstance(nvidia_gpu, dict):
-            nvidia_gpu = NvidiaGPU._from_dict(nvidia_gpu)
         if not isinstance(nvidia_gpu, NvidiaGPU):
             raise TypeError(
                 "`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`"
@@ -99,5 +97,7 @@ class Resources(object):
         return d
 
     @classmethod
-    def _from_dict(cls, rule_dict):
-        return cls(**rule_dict)
+    def _from_dict(cls, resources_dict):
+        if "nvidia_gpu" in resources_dict:
+            resources_dict["nvidia_gpu"] = NvidiaGPU._from_dict(resources_dict["nvidia_gpu"])
+        return cls(**resources_dict)
