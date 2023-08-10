@@ -5,7 +5,6 @@ from typing import List, Optional
 
 from verta._internal_utils import _utils, time_utils
 from . import _build_scan
-from ._build_hardware_compatibility import BuildHardwareCompatibility
 
 
 class Build:
@@ -42,6 +41,8 @@ class Build:
         Message or logs associated with the build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
+    nvidia_gpu_compatible_hardware : set, Optional
+        The set of nvidia gpu hardware that is compatible with this build.
 
     """
 
@@ -112,17 +113,38 @@ class Build:
         return _build_scan.BuildScan._get(self._conn, self.id)
 
     def get_hardware_compatibility(self):
-        """Get this build's hardware compatibility. If no hardware compatibility was specified,
-        returns None.
 
-        .. versionadded:: 0.25.0
+        return BuildHardwareCompatibility._get(self._conn, self.id)
+
+    @property
+    def nvidia_gpu_compatible_hardware(self):
+        """Get this build's Nvidia GPU hardware compatibility. If no hardware compatibility was
+        specified or if this build does not use GPUs, returns None.
+
+        .. versionadded:: 0.24.1
 
         Returns
         -------
-        :class:`~verta.endpoint.build.BuildHardwareCompatibility` or None
+        set or None
 
         """
-        return BuildHardwareCompatibility._get(self._conn, self.id)
+
+        hardware_compatibility = self._json["creator_request"].get("hardware_compatibility")
+        if hardware_compatibility is None:
+            return None
+        nvidia_gpu = hardware_compatibility.get("nvidia_gpu")
+        if nvidia_gpu is None:
+            return None
+
+        allows_all_models = nvidia_gpu.get("all")
+        allowed_models = set()
+        for model, allowed in nvidia_gpu.items():
+            if model == "all":
+                continue
+            if allowed or allows_all_models:
+                allowed_models.add(model)
+        return allowed_models
+
 
     def start_scan(self, external: bool) -> _build_scan.BuildScan:
         """Start a new scan for this build. Internal scans are not yet supported.
