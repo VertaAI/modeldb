@@ -84,7 +84,6 @@ class Resources(object):
             raise TypeError(
                 "`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`"
             )
-        return nvidia_gpu
 
     def _as_dict(self):
         d = dict()
