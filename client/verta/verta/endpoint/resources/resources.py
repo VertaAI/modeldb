@@ -61,7 +61,7 @@ class Resources(object):
         if memory is not None:
             self._validate_memory(memory)
         if nvidia_gpu is not None:
-            nvidia_gpu = self._validate_nvidia_gpu(nvidia_gpu)
+            self._validate_nvidia_gpu(nvidia_gpu)
 
         self.cpu = cpu
         self.memory = memory

@@ -31,13 +31,10 @@ class NvidiaGPU:
     """
 
     NUM_GPUS_ERR_MSG = "`number` must be a number greater than 0"
-    MODEL_ERR_MSG = "`model` must be an instance of `verta.endpoint.NvidiaGPUModel`"
 
     def __init__(self, number, model=None):
         self._validate_number_of_gpus(number)
         if model is not None:
-            self._validate_model(model)
-            # convert to NvidiaGPUModel instance if passed in as str
             model = NvidiaGPUModel(model)
         self.number = number
         self.model = model
@@ -47,13 +44,6 @@ class NvidiaGPU:
             raise TypeError(self.NUM_GPUS_ERR_MSG)
         if number_of_gpus <= 0:
             raise ValueError(self.NUM_GPUS_ERR_MSG)
-
-    def _validate_model(self, model):
-        if isinstance(model, str):
-            model = NvidiaGPUModel(model)
-        if not isinstance(model, NvidiaGPUModel):
-            raise TypeError(self.MODEL_ERR_MSG)
-        return model
 
     def _as_dict(self):
         d = dict()
