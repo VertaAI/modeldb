@@ -35,7 +35,10 @@ class NvidiaGPU:
     def __init__(self, number, model=None):
         self._validate_number_of_gpus(number)
         if model is not None:
-            model = NvidiaGPUModel(model)
+            if isinstance(model, str):
+                model = NvidiaGPUModel[model]
+            else:
+                model = NvidiaGPUModel(model)
         self.number = number
         self.model = model
 
