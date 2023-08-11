@@ -4,7 +4,8 @@
 import abc
 import re
 
-from .._vendored import six
+from .nvidia_gpu import NvidiaGPU
+from verta._vendored import six
 
 
 class Resources(object):
@@ -32,13 +33,15 @@ class Resources(object):
             using one of these suffixes: **E, P, T, G, M, K**. You can also use the
             power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
             following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
+    nvidia_gpu: :class:`~verta.endpoint.resources.NvidiaGPU`, optional
+        Nvidia GPU resources allowed for an endpoint's model.
 
     Examples
     --------
     .. code-block:: python
 
-        from verta.endpoint.resources import Resources
-        resources = Resources(cpu=.25, memory="512Mi")
+        from verta.endpoint.resources import Resources, NvidiaGPU, NvidiaGPUModel
+        resources = Resources(cpu=.25, memory="512Mi", nvidia_gpu=NvidiaGPU(1, NvidiaGPUModel.V100)
 
     """
 
@@ -52,14 +55,17 @@ class Resources(object):
         ]
     )
 
-    def __init__(self, cpu=None, memory=None):
+    def __init__(self, cpu=None, memory=None, nvidia_gpu=None):
         if cpu is not None:
             self._validate_cpu(cpu)
         if memory is not None:
             self._validate_memory(memory)
+        if nvidia_gpu is not None:
+            self._validate_nvidia_gpu(nvidia_gpu)
 
         self.cpu = cpu
         self.memory = memory
+        self.nvidia_gpu = nvidia_gpu
 
     def _validate_cpu(self, cpu):
         if not isinstance(cpu, (six.integer_types, float)):
@@ -73,15 +79,26 @@ class Resources(object):
         if not re.match(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", memory):
             raise ValueError(self.MEMORY_ERR_MSG)
 
+    def _validate_nvidia_gpu(self, nvidia_gpu):
+        if not isinstance(nvidia_gpu, NvidiaGPU):
+            raise TypeError(
+                "`nvidia_gpu` must be an instance of `verta.endpoint.NvidiaGpu`"
+            )
+
     def _as_dict(self):
         d = dict()
         if self.cpu is not None:
             d["cpu_millis"] = int(self.cpu * 1000)
         if self.memory is not None:
             d["memory"] = self.memory
+        if self.nvidia_gpu is not None:
+            d["nvidia_gpu"] = self.nvidia_gpu._as_dict()
 
         return d
 
     @classmethod
-    def _from_dict(cls, rule_dict):
-        return cls(**rule_dict)
+    def _from_dict(cls, resources_dict):
+        resources_dict = resources_dict.copy()
+        if "nvidia_gpu" in resources_dict:
+            resources_dict["nvidia_gpu"] = NvidiaGPU._from_dict(resources_dict["nvidia_gpu"])
+        return cls(**resources_dict)

@@ -339,7 +339,10 @@ class Endpoint(object):
             update_body["build_id"] = model_reference.id
         else:
             # create new build
-            build = self._create_build(model_reference)
+            if resources is not None and resources.nvidia_gpu is not None:
+                build = self._create_build(model_reference, resources.nvidia_gpu._to_hardware_compatibility_dict())
+            else:
+                build = self._create_build(model_reference)
             update_body["build_id"] = build.id
 
         ret = self._update_from_build(update_body, wait)
@@ -441,26 +444,28 @@ class Endpoint(object):
             current_build = Build._get(self._conn, self.workspace, build_id)
         return current_build
 
-    def _create_build(self, model_reference):
+    def _create_build(self, model_reference, hardware_compatibility=None):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
         )
-
+        build_json = {}
         if isinstance(model_reference, registry_entities.RegisteredModelVersion):
-            response = _utils.make_request(
-                "POST", url, self._conn, json={"model_version_id": model_reference.id}
-            )
+            build_json["model_version_id"] = model_reference.id
         elif isinstance(model_reference, tracking_entities.ExperimentRun):
-            response = _utils.make_request(
-                "POST", url, self._conn, json={"run_id": model_reference.id}
-            )
+            build_json["run_id"] = model_reference.id
         else:
             raise TypeError(
                 "`model_reference` must be an ExperimentRun or RegisteredModelVersion"
             )
 
+        if hardware_compatibility is not None:
+            build_json["hardware_compatibility"] = hardware_compatibility
+
+        response = _utils.make_request(
+            "POST", url, self._conn, json=build_json
+        )
         _utils.raise_for_http_error(response)
         return Build(self._conn, self.workspace, response.json())
 
