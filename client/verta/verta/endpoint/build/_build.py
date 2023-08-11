@@ -41,8 +41,6 @@ class Build:
         Message or logs associated with the build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
-    nvidia_gpu_compatible_hardware : set, Optional
-        The set of nvidia gpu hardware that is compatible with this build.
 
     """
 
