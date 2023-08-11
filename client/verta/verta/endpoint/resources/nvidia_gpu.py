@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import auto, Enum
 
 
 class NvidiaGPU:
@@ -49,7 +49,7 @@ class NvidiaGPU:
         d = dict()
         d["number"] = self.number
         if self.model is not None:
-            d["model"] = self.model.value
+            d["model"] = self.model.name
 
         return d
 
@@ -67,13 +67,13 @@ class NvidiaGPU:
         if self.model is None:
             return {"nvidia_gpu": {"all": True}}
         else:
-            return {"nvidia_gpu": {self.model.value: True}}
+            return {"nvidia_gpu": {self.model.name: True}}
 
 
-class NvidiaGPUModel(str, Enum):
+class NvidiaGPUModel(Enum):
     """An :class:`Enum` for supported Nvidia GPU models."""
 
-    T4 = "T4"
+    T4 = auto()
     """"""
-    V100 = "V100"
+    V100 = auto()
     """"""
