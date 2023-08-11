@@ -99,35 +99,6 @@ class Build:
     def is_complete(self) -> bool:
         return self.status in ("finished", "error")
 
-    @property
-    def nvidia_gpu_compatible_hardware(self):
-        """Returns the list of this build's compatible Nvidia GPU models. If no hardware
-        compatibility was specified or if this build does not use GPUs, returns None.
-
-        .. versionadded:: 0.24.1
-
-        Returns
-        -------
-        set or None
-
-        """
-
-        hardware_compatibility = self._json["creator_request"].get("hardware_compatibility")
-        if hardware_compatibility is None:
-            return None
-        nvidia_gpu = hardware_compatibility.get("nvidia_gpu")
-        if nvidia_gpu is None:
-            return None
-
-        allows_all_models = nvidia_gpu.get("all")
-        allowed_models = set()
-        for model, allowed in nvidia_gpu.items():
-            if model == "all":
-                continue
-            if allowed or allows_all_models:
-                allowed_models.add(model)
-        return allowed_models
-
     def get_scan(self) -> _build_scan.BuildScan:
         """Get this build's most recent scan.
 
