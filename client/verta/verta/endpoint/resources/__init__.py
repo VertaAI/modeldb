@@ -2,7 +2,7 @@
 
 from verta._internal_utils import documentation
 
-from ._resources import Resources
+from .resources import Resources
 
 
 documentation.reassign_module(
