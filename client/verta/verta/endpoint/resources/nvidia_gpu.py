@@ -71,5 +71,9 @@ class NvidiaGPU:
 
 
 class NvidiaGPUModel(str, Enum):
+    """An :class:`Enum` for supported Nvidia GPU models."""
+
     T4 = "T4"
+    """"""
     V100 = "V100"
+    """"""
