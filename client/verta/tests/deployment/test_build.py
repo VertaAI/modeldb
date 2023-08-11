@@ -1,5 +1,6 @@
 # -*- coding: utf-*-
-from verta.endpoint.resources import Resources, NvidiaGPU, NvidiaGPUModel
+from verta.endpoint.resources.nvidia_gpu import NvidiaGPU, NvidiaGPUModel
+from verta.endpoint.resources import Resources
 from verta.environment import Python
 
 
