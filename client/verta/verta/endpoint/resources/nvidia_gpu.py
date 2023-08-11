@@ -71,7 +71,7 @@ class NvidiaGPU:
 
 
 class NvidiaGPUModel(Enum):
-    """An :class:`Enum` for supported Nvidia GPU models."""
+    """An :class:`~enum.Enum` for supported Nvidia GPU models."""
 
     T4 = auto()
     """"""
