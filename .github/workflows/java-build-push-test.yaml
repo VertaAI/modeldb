@@ -103,7 +103,7 @@ jobs:
           context: backend
           push: true
           build-args: |
-            BASE_IMAGE=${{ env.VERTA_ECR_REGISTRY }}/ops/containers/base/java:main-11-latest
+            BASE_IMAGE=${{ env.VERTA_ECR_REGISTRY }}/ops/containers/base/java:main-17-latest
           tags: |
             ${{ env.ECR_REPOSITORY }}:${{ steps.image_info.outputs.tag }}
 
