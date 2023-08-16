@@ -17,10 +17,10 @@ class _OrchestratorBase(abc.ABC):
 
     def __init__(
         self,
-        pipeline_spec: Dict[str, Any],
+        pipeline_defn: Dict[str, Any],
         step_handlers: Dict[str, _StepHandlerBase],
     ):
-        self._pipeline_spec = pipeline_spec
+        self._pipeline_defn = pipeline_defn
         self._step_handlers = step_handlers
 
         # DAG nodes are step names
@@ -30,13 +30,13 @@ class _OrchestratorBase(abc.ABC):
 
     @staticmethod
     def _get_predecessors_mapping(
-        pipeline_spec: Dict[str, Any],
+        pipeline_defn: Dict[str, Any],
     ) -> Dict[str, List[str]]:
         """Get the names of steps' predecessors from a pipeline specification.
 
         Parameters
         ----------
-        pipeline_spec : dict
+        pipeline_defn : dict
             Pipeline specification.
 
         Returns
@@ -45,14 +45,14 @@ class _OrchestratorBase(abc.ABC):
             Mapping from step names to their predecessors' names.
 
         """
-        return {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
+        return {node["name"]: node["predecessors"] for node in pipeline_defn["graph"]}
 
     def _prepare_pipeline(self):
         """Initialize ``self._dag`` and ``self._outputs``.
 
         Parameters
         ----------
-        pipeline_spec : dict
+        pipeline_defn : dict
             Pipeline specification.
 
         Raises
@@ -61,7 +61,7 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._get_predecessors_mapping(self._pipeline_spec))
+        dag = TopologicalSorter(self._get_predecessors_mapping(self._pipeline_defn))
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
@@ -201,7 +201,7 @@ class LocalOrchestrator(_OrchestratorBase):
     ----------
     conn : :class:`~verta._internal_utils._utils.Connection`
         Verta client connection.
-    pipeline_spec : dict
+    pipeline_defn : dict
         Pipeline specification.
 
     Examples
@@ -210,7 +210,7 @@ class LocalOrchestrator(_OrchestratorBase):
 
         from verta._pipeline_orchestrator import LocalOrchestrator
 
-        orchestrator = LocalOrchestrator(client._conn, pipeline_spec)
+        orchestrator = LocalOrchestrator(client._conn, pipeline_defn)
         pipeline_output = orchestrator.run(pipeline_input)
 
     """
@@ -218,18 +218,18 @@ class LocalOrchestrator(_OrchestratorBase):
     def __init__(
         self,
         conn: _utils.Connection,
-        pipeline_spec: Dict[str, Any],
+        pipeline_defn: Dict[str, Any],
     ):
         super().__init__(
-            pipeline_spec=pipeline_spec,
-            step_handlers=self._init_step_handlers(conn, pipeline_spec),
+            pipeline_defn=pipeline_defn,
+            step_handlers=self._init_step_handlers(conn, pipeline_defn),
         )
 
     @classmethod
     def _init_step_handlers(
         cls,
         conn: _utils.Connection,
-        pipeline_spec: Dict[str, Any],
+        pipeline_defn: Dict[str, Any],
     ) -> Dict[str, ModelObjectStepHandler]:
         """Instantiate and return step handlers.
 
@@ -237,7 +237,7 @@ class LocalOrchestrator(_OrchestratorBase):
         ----------
         conn : :class:`~verta._internal_utils._utils.Connection`
             Verta client connection.
-        pipeline_spec : dict
+        pipeline_defn : dict
             Pipeline specification.
 
         Returns
@@ -246,10 +246,10 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
-        predecessors_mapping = cls._get_predecessors_mapping(pipeline_spec)
+        predecessors_mapping = cls._get_predecessors_mapping(pipeline_defn)
 
         step_handlers = dict()
-        for step in pipeline_spec["steps"]:
+        for step in pipeline_defn["steps"]:
             step_handlers[step["name"]] = ModelObjectStepHandler(
                 name=step["name"],
                 predecessors=predecessors_mapping.get(step["name"], []),
