@@ -72,8 +72,7 @@ class TestLocalOrchestrator:
         triple_model_ver = create_standard_model(Triple)
         sum_model_ver = create_standard_model(Sum)
 
-        pipeline_spec = {
-            "pipeline_name": "diamond-pipeline",
+        pipeline_defn = {
             "steps": [
                 {"name": "echo", "model_version_id": echo_model_ver.id},
                 {"name": "double", "model_version_id": double_model_ver.id},
@@ -81,12 +80,12 @@ class TestLocalOrchestrator:
                 {"name": "sum", "model_version_id": sum_model_ver.id},
             ],
             "graph": [
-                {"name": "double", "inputs": ["echo"]},
-                {"name": "triple", "inputs": ["echo"]},
-                {"name": "sum", "inputs": ["double", "triple"]},
+                {"name": "double", "predecessors": ["echo"]},
+                {"name": "triple", "predecessors": ["echo"]},
+                {"name": "sum", "predecessors": ["double", "triple"]},
             ],
         }
-        orchestrator = LocalOrchestrator(registered_model._conn, pipeline_spec)
+        orchestrator = LocalOrchestrator(registered_model._conn, pipeline_defn)
 
         input = 3
         with runtime.context() as ctx:
