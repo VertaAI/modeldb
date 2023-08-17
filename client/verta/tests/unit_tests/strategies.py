@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 
 """Hypothesis composite strategies for use in client unit tests."""
-
 from string import ascii_letters, ascii_lowercase, hexdigits
 from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
+from tests.strategies import json_strategy
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS, python_to_val_proto
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
-from verta.endpoint import KafkaSettings, build
-
-from tests.strategies import json_strategy
+from verta.endpoint import build, KafkaSettings
 
 
 @st.composite
@@ -262,3 +260,98 @@ def mock_workspace(draw):
         )
     )
     return workspace
+
+
+@st.composite
+def mock_pipeline_definition(draw):
+    """Generate a mocked pipeline specification dictionary"""
+
+    # step names in a pipeline must be unique
+    step_names = draw(
+        st.lists(st.text(min_size=5, max_size=25), min_size=5, max_size=5, unique=True)
+    )
+    model_versions = draw(
+        st.lists(
+            st.text(alphabet=["1", "2", "3", "4", "5"], min_size=1),
+            min_size=5,
+            max_size=5,
+            unique=True,
+        )
+    )
+
+    return {
+        "graph": [
+            {"predecessors": [], "name": step_names[0]},
+            {"predecessors": [step_names[0]], "name": step_names[1]},
+            {"predecessors": [step_names[1]], "name": step_names[2]},
+            {"predecessors": [step_names[1]], "name": step_names[3]},
+            {"predecessors": [step_names[2], step_names[1]], "name": step_names[4]},
+        ],
+        "pipeline_version_id": draw(st.integers(min_value=1, max_value=1000)),
+        "steps": [
+            {
+                "model_version_id": model_versions[0],
+                "name": step_names[0],
+            },
+            {
+                "model_version_id": model_versions[1],
+                "name": step_names[1],
+            },
+            {
+                "model_version_id": model_versions[2],
+                "name": step_names[2],
+            },
+            {
+                "model_version_id": model_versions[3],
+                "name": step_names[3],
+            },
+            {
+                "model_version_id": model_versions[4],
+                "name": step_names[4],
+            },
+        ],
+    }
+
+
+@st.composite
+def mock_pipeline_resources_dict(draw):
+    """Generate a mocked pipeline resources dictionary"""
+    return {
+        "resources": {
+            "cpu_millis": draw(st.integers(min_value=1)),
+            "memory": draw(st.text(min_size=1)),
+            "nvidia_gpu": {
+                "model": draw(st.enums("T4", "V100")),
+                "number": draw(st.integers(min_value=1, max_value=1000)),
+            },
+        }
+    }
+
+
+@st.composite
+def mock_pipeline_step_configuration(draw):
+    """Generate a mocked pipeline step configuration dictionary"""
+    return {
+        "build_id": draw(st.integers(min_value=1)),
+        "env": draw(
+            st.dictionaries(
+                keys=st.text(min_size=1),
+                values=st.text(min_size=1),
+                min_size=1,
+            )
+        ),
+        "resources": mock_pipeline_resources_dict(),
+        "name": draw(st.text(min_size=1)),
+    }
+
+
+@st.composite
+def mock_pipeline_configuration(draw):
+    """Generate a mocked pipeline step configuration dictionary with Kafka settings"""
+    return {
+        "pipeline_version_id": draw(st.integers(min_value=1)),
+        "steps": [
+            mock_pipeline_step_configuration(),
+            mock_pipeline_step_configuration(),
+        ],
+    }

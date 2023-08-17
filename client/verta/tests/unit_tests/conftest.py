@@ -2,17 +2,24 @@
 
 """Pytest fixtures for use in client unit tests."""
 
+import json
 import os
+import random
+from typing import Any, Callable, Dict, List
 from unittest.mock import patch
 
+import hypothesis.strategies as st
 import pytest
 import responses
 
+from tests.unit_tests.strategies import mock_pipeline_definition
 from verta._internal_utils._utils import Configuration, Connection
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
 from verta.client import Client
 from verta.credentials import EmailCredentials
 from verta.endpoint import Endpoint
+from verta.endpoint.resources import NvidiaGPU, NvidiaGPUModel, Resources
+from verta.pipeline import PipelineGraph, PipelineStep
 from verta.registry.entities import RegisteredModelVersion
 
 
@@ -64,15 +71,137 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 
 
 @pytest.fixture(scope="session")
-def mock_registered_model_version(mock_conn, mock_config):
-    """Return a mocked object of the RegisteredModelVersion class for use in tests"""
+def mock_simple_pipeline_definition() -> Dict[str, Any]:
+    """Return a mocked pipeline definition for use in tests"""
+
+    def simple_pipeline_definition(id: int) -> Dict[str, Any]:
+        return {
+            "graph": [
+                {"predecessors": [], "name": "step1"},
+                {"predecessors": ["step1"], "name": "step2"},
+            ],
+            "pipeline_version_id": id,
+            "steps": [
+                {
+                    "model_version_id": 1,
+                    "name": "step1",
+                },
+                {
+                    "model_version_id": 2,
+                    "name": "step2",
+                },
+            ],
+        }
+
+    return simple_pipeline_definition
+
+
+@pytest.fixture(scope="session")
+def make_mock_registered_model_version(
+    mock_conn, mock_config, mock_simple_pipeline_definition
+) -> Callable:
+    """Return a callable function for creating mocked objects of the
+    RegisteredModelVersion class for use in tests that require multiple
+    unique instances.
+    """
 
     class MockRegisteredModelVersion(RegisteredModelVersion):
         def __repr__(self):  # avoid network calls when displaying test results
             return object.__repr__(self)
 
-    return MockRegisteredModelVersion(
-        mock_conn,
-        mock_config,
-        _RegistryService.ModelVersion(id=555, registered_model_id=123),
-    )
+        def _get_artifact(self, key=None, artifact_type=None):
+            return json.dumps(mock_simple_pipeline_definition(id=self.id)).encode(
+                "utf-8"
+            )
+
+    def _make_mock_registered_model_version():
+        """Return a mocked ``RegisteredModelVersion``.
+
+        ``id`` and ``registered_model_id`` will be random and unique for the
+        test session.
+
+        """
+        model_ver_id = random.randint(1, 1000000)
+        reg_model_id = random.randint(1, 1000000)
+
+        return MockRegisteredModelVersion(
+            mock_conn,
+            mock_config,
+            _RegistryService.ModelVersion(
+                id=model_ver_id,
+                registered_model_id=reg_model_id,
+                version="test_version_name",
+            ),
+        )
+
+    return _make_mock_registered_model_version
+
+
+@pytest.fixture(scope="session")
+def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
+    """
+    Return a callable function for creating mocked objects of the PipelineStep
+    class for use in tests that require multiple unique instances.
+    """
+
+    class MockPipelineStep(PipelineStep):
+        def __repr__(self):
+            return object.__repr__(self)
+
+    def _make_mock_pipeline_step():
+        return MockPipelineStep(
+            model_version=make_mock_registered_model_version(),
+            name=st.text(min_size=1),
+            predecessors=[],
+        )
+
+    return _make_mock_pipeline_step
+
+
+@pytest.fixture(scope="session")
+def make_mock_pipeline_graph(make_mock_pipeline_step) -> Callable:
+    """
+    Return a callable function for creating mocked objects of the PipelineGraph
+    class for use in tests that require multiple unique instances.
+    """
+
+    class MockPipelineGraph(PipelineGraph):
+        def __repr__(self):
+            return object.__repr__(self)
+
+    def _make_mock_pipeline_graph():
+        step1 = make_mock_pipeline_step()
+        step1.set_name("step1")
+        step2 = make_mock_pipeline_step()
+        step2.set_name("step2")
+        step3 = make_mock_pipeline_step()
+        step3.set_name("step3")
+        return MockPipelineGraph(steps=[step1, step2, step3])
+
+    return _make_mock_pipeline_graph
+
+
+@pytest.fixture(scope="session")
+def make_mock_step_resources() -> Callable:
+    """
+    Return a callable function for generating a list of mocked resources for
+    a given list of step names.
+    """
+
+    def _make_mock_step_resources(step_names: List[str]) -> Dict[str, Any]:
+        res = dict()
+        for name in step_names:
+            res.update(
+                {
+                    name: Resources(
+                        cpu=random.randint(1, 10),
+                        memory="5Gi",
+                        nvidia_gpu=NvidiaGPU(
+                            model=NvidiaGPUModel.T4, number=random.randint(1, 10)
+                        ),
+                    ),
+                }
+            )
+        return res
+
+    return _make_mock_step_resources

@@ -503,7 +503,7 @@ def class_created_entities():
         entity.delete()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def model_version(registered_model):
     yield registered_model.get_or_create_version()
 
