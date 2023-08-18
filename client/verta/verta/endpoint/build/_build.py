@@ -41,13 +41,13 @@ class Build:
         Message or logs associated with the build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
-    location: Optional[str]
+    location: str or None
         (alpha) The location of the build. This is only available for completed or external builds.
-    requires_root: Optional[bool]
+    requires_root: bool or None
         (alpha) Whether the build requires root access.
-    scan_external: Optional[bool]
+    scan_external: bool or None
         (alpha) Whether the build should be scanned by an external provider.
-    self_contained: Optional[bool]
+    self_contained: bool or None
         (alpha) Whether the build is self-contained.
 
     """
@@ -122,7 +122,7 @@ class Build:
     def location(self) -> Optional[str]:
         location = self._json.get("location")
         if location is None:
-            location = self.json.get("creator_request", dict()).get("external_location")
+            location = self._json.get("creator_request", dict()).get("external_location")
         return location
 
     @property
