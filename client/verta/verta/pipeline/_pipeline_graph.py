@@ -83,12 +83,16 @@ class PipelineGraph:
 
     def _to_graph_definition(self) -> List[Dict[str, Any]]:
         """
-        Convert this PipelineGraph to a graph dict formatted for a pipeline definition.
+        The back-end expects a list of steps and their predecessors as part of the
+        `graph` object within a PipelineDefinition. This method converts this PipelineGraph
+        to a formatted list of steps with predecessors for that purpose.
         """
         return [step._to_graph_spec() for step in self.steps]
 
     def _to_steps_definition(self) -> List[Dict[str, Any]]:
         """
-        Convert this PipelineGraph to a dict formatted for a pipeline definition.
+        The back-end expects a list of steps and their model versions as part of the
+        `steps` object within a PipelineDefinition. This method converts this PipelineGraph
+        to a formatted list of steps with model versions for that purpose.
         """
         return [step._to_step_spec() for step in self.steps]
