@@ -18,8 +18,8 @@ class PipelineGraph:
 
     Attributes
     ----------
-        steps: list of :class:`~verta.deployment.PipelineStep`
-            List of PipelineSteps comprising all possible steps in the PiplineGraph.
+    steps: list of :class:`~verta.deployment.PipelineStep`
+        List of PipelineSteps comprising all possible steps in the PiplineGraph.
     """
 
     def __init__(self, steps: List[PipelineStep]):

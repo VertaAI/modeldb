@@ -21,12 +21,12 @@ class RegisteredPipeline:
 
     Attributes
     ----------
-        name: str
-            Name of this pipeline.
-        id: int
-            Auto-assigned ID of this Pipeline.
-        pipeline_graph: :class:`~verta.pipeline.PipelineGraph`
-            PipelineGraph object containing all possible steps in the Pipline.
+    name: str
+        Name of this pipeline.
+    id: int
+        Auto-assigned ID of this Pipeline.
+    pipeline_graph: :class:`~verta.pipeline.PipelineGraph`
+        PipelineGraph object containing all possible steps in the Pipline.
     """
 
     def __init__(
