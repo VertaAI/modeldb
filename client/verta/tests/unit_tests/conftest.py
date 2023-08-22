@@ -71,8 +71,13 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 
 
 @pytest.fixture(scope="session")
-def mock_simple_pipeline_definition() -> Dict[str, Any]:
-    """Return a mocked pipeline definition for use in tests"""
+def make_mock_simple_pipeline_definition() -> Callable:
+    """
+    Return a callable function for creating a simple mocked pipeline
+    definition for use in tests, including a parameter for the pipeline
+    id to ensure consistency in tests that mock creation of a pipeline
+    object from a pipeline definition.
+    """
 
     def simple_pipeline_definition(id: int) -> Dict[str, Any]:
         return {
@@ -98,7 +103,7 @@ def mock_simple_pipeline_definition() -> Dict[str, Any]:
 
 @pytest.fixture(scope="session")
 def make_mock_registered_model_version(
-    mock_conn, mock_config, mock_simple_pipeline_definition
+    mock_conn, mock_config, make_mock_simple_pipeline_definition
 ) -> Callable:
     """Return a callable function for creating mocked objects of the
     RegisteredModelVersion class for use in tests that require multiple
@@ -110,7 +115,7 @@ def make_mock_registered_model_version(
             return object.__repr__(self)
 
         def _get_artifact(self, key=None, artifact_type=None):
-            return json.dumps(mock_simple_pipeline_definition(id=self.id)).encode(
+            return json.dumps(make_mock_simple_pipeline_definition(id=self.id)).encode(
                 "utf-8"
             )
 
