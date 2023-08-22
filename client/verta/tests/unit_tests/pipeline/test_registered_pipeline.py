@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Unit tests for the RegisteredPipeline class
-"""
+"""Unit tests for the RegisteredPipeline class"""
 
 import pytest
 from hypothesis import given, HealthCheck, settings
@@ -77,9 +75,10 @@ def test_log_pipeline_definition_artifact(
 def test_to_pipeline_definition(
     make_mock_pipeline_graph, make_mock_registered_model_version
 ) -> None:
-    """
-    Test that a pipeline definition can be constructed from a
-    RegisteredPipeline object.  In depth testing of the `_to_graph_definition`
+    """Test that a pipeline definition can be constructed from a
+    RegisteredPipeline object.
+
+    In depth testing of the `_to_graph_definition`
     and `to_steps_definition` functions are handled in unit tests for
     PipelineGraph.
     """
@@ -101,8 +100,7 @@ def test_to_pipeline_configuration_valid(
     make_mock_registered_model_version,
     make_mock_step_resources,
 ) -> None:
-    """
-    Test that a valid pipeline configuration can be constructed from a
+    """Test that a valid pipeline configuration can be constructed from a
     RegisteredPipeline object and a valid list of pipeline resources.
     """
     graph = make_mock_pipeline_graph()
@@ -129,8 +127,7 @@ def test_to_pipeline_configuration_invalid_resources(
     make_mock_registered_model_version,
     make_mock_step_resources,
 ) -> None:
-    """
-    Test that a ValueError is raised when an invalid step name is included
+    """Test that a ValueError is raised when an invalid step name is included
     in the provided pipeline resources. (Does not match a step name in the
     pipeline's graph)
     """
@@ -150,8 +147,7 @@ def test_to_pipeline_configuration_invalid_resources(
 def test_to_pipeline_configuration_no_resources(
     make_mock_pipeline_graph, make_mock_registered_model_version
 ) -> None:
-    """
-    Test that a pipeline configuration can be constructed from a
+    """Test that a pipeline configuration can be constructed from a
     RegisteredPipeline object without providing pipeline resources.
     """
     graph = make_mock_pipeline_graph()
@@ -175,9 +171,10 @@ def test_from_pipeline_definition(
     mock_config,
     mocked_responses,
 ) -> None:
-    """
-    Test that a RegisteredPipeline object can be constructed from a pipeline
-    definition. The model version's `_get_artifact` function is mocked to
+    """Test that a RegisteredPipeline object can be constructed from a pipeline
+    definition.
+
+    The model version's `_get_artifact` function is mocked to
     return a simple, consistent pipeline definition. Calls related to the
     fetching of the artifact are mocked.
     """

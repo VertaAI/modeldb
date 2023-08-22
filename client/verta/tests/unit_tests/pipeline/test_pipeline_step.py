@@ -22,9 +22,10 @@ def test_steps_from_pipeline_definition(
     mock_config,
     mocked_responses,
 ) -> None:
-    """
-    Test that a list of PipelineStep objects can be constructed and returned from
-    a pipeline definition.  The registered model, model version, and environment
+    """Test that a list of PipelineStep objects can be constructed and returned from
+    a pipeline definition.
+
+    The registered model, model version, and environment
     is fetched for each step, so a response is mocked for each call.
     """
     graph = pipeline_definition["graph"]

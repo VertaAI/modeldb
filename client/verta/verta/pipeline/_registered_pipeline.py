@@ -11,8 +11,8 @@ from verta.registry.entities import RegisteredModelVersion
 
 
 class RegisteredPipeline:
-    """
-    Object representing a version of a registered inference pipeline.
+    """Object representing a version of a registered inference pipeline.
+
     There should not be a need to instantiate this class directly; please use
     :meth:`Client.create_registered_pipeline() <verta.Client.create_registered_piepline>`
     for creating a new pipeline, or
@@ -34,11 +34,11 @@ class RegisteredPipeline:
         registered_model_version: RegisteredModelVersion,
         pipeline_graph: PipelineGraph,
     ):
-        """
-        Create a Pipeline instance from an existing RegisteredModelVersion object
-        and the provided pipeline graph. Name and ID are captured once upon creation
-        to avoid additional HTTP calls to refresh the cache of the RMV, because
-        pipelines are immutable.
+        """Create a Pipeline instance from an existing RegisteredModelVersion object
+        and the provided pipeline graph.
+
+        Name and ID are captured once upon creation to avoid additional HTTP calls
+        to refresh the cache of the RMV, because pipelines are immutable.
         """
         self._registered_model_version = registered_model_version
         self._name = self._registered_model_version.name
@@ -68,11 +68,11 @@ class RegisteredPipeline:
         return self._pipeline_graph
 
     def copy_graph(self) -> PipelineGraph:
-        """
-        Return a shallow copy of the PipelineGraph of this pipeline. RegisteredPipeline
-        objects are immutable once registered with Verta. This function returns
-        a PipelineGraph object that can be modified and used to create and register
-        a new RegisteredPipeline.
+        """Return a shallow copy of the PipelineGraph of this pipeline.
+
+        RegisteredPipeline objects are immutable once registered with Verta. This
+        function returns a PipelineGraph object that can be modified and used to
+        create and register a new RegisteredPipeline.
         """
         return copy.copy(self.pipeline_graph)
 
@@ -85,14 +85,12 @@ class RegisteredPipeline:
         )
 
     def _get_pipeline_definition_artifact(self) -> Dict[str, Any]:
-        """
-        Get the pipeline definition artifact from the registered model version.
-        """
+        """Get the pipeline definition artifact from the registered model version."""
         return self._registered_model_version.get_artifact("pipeline.json")
 
     def _to_pipeline_definition(self) -> Dict[str, Any]:
-        """
-        Create a complete pipeline definition dict from a name and PipelineGraph.
+        """Create a complete pipeline definition dict from a name and PipelineGraph.
+
         Used in conjunction with the client function for creating a registered
         pipeline from a pipeline graph.
         """
@@ -105,9 +103,9 @@ class RegisteredPipeline:
     def _to_pipeline_configuration(
         self, pipeline_resources: Optional[Dict[str, Resources]] = None
     ) -> Dict[str, Any]:
-        """
-        Build a pipeline configuration dict for this pipeline. The
-        `env` and `build` keys are not included in the configuration
+        """Build a pipeline configuration dict for this pipeline.
+
+        The `env` and `build` keys are not included in the configuration
         resulting in default values being used by the backend.
 
         Parameters
@@ -147,9 +145,9 @@ class RegisteredPipeline:
         conn: Connection,
         conf: Configuration,
     ) -> "RegisteredPipeline":
-        """
-        Create a Pipeline instance from a specification dict. Used when
-        fetching a registered pipeline from the Verta backend.
+        """Create a Pipeline instance from a specification dict.
+
+        Used when fetching a registered pipeline from the Verta backend.
 
         Parameters
         ----------

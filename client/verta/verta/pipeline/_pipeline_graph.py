@@ -7,8 +7,7 @@ from ._pipeline_step import PipelineStep
 
 
 class PipelineGraph:
-    """
-    A collection of PipelineSteps to be run as a single inference pipeline.
+    """A collection of PipelineSteps to be run as a single inference pipeline.
 
     Parameters
     ----------
@@ -42,8 +41,7 @@ class PipelineGraph:
         raise AttributeError("cannot set attribute 'steps'; please use set_steps()")
 
     def set_steps(self, steps: List[str]) -> None:
-        """
-        Set the list of steps for this PipelineGraph.
+        """Set the list of steps for this PipelineGraph.
 
         Parameters
         ----------
@@ -63,8 +61,7 @@ class PipelineGraph:
     def _from_definition(
         cls, pipeline_definition: Dict[str, Any], conn: Connection, conf: Configuration
     ) -> "PipelineGraph":
-        """
-        Create a PipelineGraph instance from a specification dict.
+        """Create a PipelineGraph instance from a specification dict.
 
         Parameters
         ----------
@@ -82,7 +79,8 @@ class PipelineGraph:
         )
 
     def _to_graph_definition(self) -> List[Dict[str, Any]]:
-        """
+        """Create a pipeline graph specification from this PipelineGraph.
+
         The back-end expects a list of steps and their predecessors as part of the
         `graph` object within a PipelineDefinition. This method converts this PipelineGraph
         to a formatted list of steps with predecessors for that purpose.
@@ -90,7 +88,8 @@ class PipelineGraph:
         return [step._to_graph_spec() for step in self.steps]
 
     def _to_steps_definition(self) -> List[Dict[str, Any]]:
-        """
+        """Create a pipeline steps specification from this PipelineGraph.
+
         The back-end expects a list of steps and their model versions as part of the
         `steps` object within a PipelineDefinition. This method converts this PipelineGraph
         to a formatted list of steps with model versions for that purpose.

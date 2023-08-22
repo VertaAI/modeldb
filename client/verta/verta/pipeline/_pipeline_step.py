@@ -7,8 +7,8 @@ from verta.registry.entities import RegisteredModel, RegisteredModelVersion
 
 
 class PipelineStep:
-    """
-    A single step within an inference pipeline, representing a single model version to be run.
+    """A single step within an inference pipeline, representing a single model
+    version to be run.
 
     Parameters
     ----------
@@ -40,7 +40,9 @@ class PipelineStep:
     ):
         self._name = self.set_name(name)
         self._model_version = self.set_model_version(model_version)
-        self._predecessors = self.set_predecessors(predecessors) if predecessors else list()
+        self._predecessors = (
+            self.set_predecessors(predecessors) if predecessors else list()
+        )
 
         # avoid the need to pass in connection params when building as local object
         self._registered_model: Optional[RegisteredModel] = None
@@ -74,8 +76,7 @@ class PipelineStep:
         )
 
     def set_model_version(self, new_model_version: RegisteredModelVersion) -> None:
-        """
-        Change the registered model version associated with this step.
+        """Change the registered model version associated with this step.
 
         Parameters
         ----------
@@ -98,8 +99,7 @@ class PipelineStep:
         raise AttributeError("can't set attribute 'name'; please use set_name()")
 
     def set_name(self, name: str) -> None:
-        """
-        Change the name of this step.
+        """Change the name of this step.
 
         Parameters
         ----------
@@ -122,8 +122,7 @@ class PipelineStep:
         )
 
     def set_predecessors(self, steps: List["PipelineStep"]) -> None:
-        """
-        Set the predecessors associated with this step.
+        """Set the predecessors associated with this step.
 
         Parameters
         ----------
@@ -140,8 +139,8 @@ class PipelineStep:
         self._predecessors = steps
 
     def _get_registered_model(self, conn: Connection, conf: Configuration) -> None:
-        """
-        Fetch the registered model associated with this step's model version.
+        """Fetch the registered model associated with this step's model version.
+
         This is to provide important context to the user via the _repr_ method
         when a registered pipeline is fetched from the backend.
         """
@@ -154,8 +153,12 @@ class PipelineStep:
     def _steps_from_pipeline_definition(
         cls, pipeline_definition: Dict[str, Any], conn: Connection, conf: Configuration
     ) -> List["PipelineStep"]:
+<<<<<<< Updated upstream
         """
         Return a list of PipelineStep objects from a pipeline specification
+=======
+        """Return a list of PipelineStep objects by from a pipeline specification
+>>>>>>> Stashed changes
 
         Parameters
         ----------
@@ -193,8 +196,7 @@ class PipelineStep:
         return steps
 
     def _to_step_spec(self) -> Dict[str, Any]:
-        """
-        Return a dictionary representation of this step, formatted for a
+        """Return a dictionary representation of this step, formatted for a
         pipeline definition.
         """
         return {
@@ -203,8 +205,7 @@ class PipelineStep:
         }
 
     def _to_graph_spec(self) -> Dict[str, Any]:
-        """
-        Return a dictionary representation of predecessors for this step,
+        """Return a dictionary representation of predecessors for this step,
         formatted for a pipeline definition.
         """
         return {

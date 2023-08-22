@@ -30,9 +30,10 @@ def test_set_steps(make_mock_pipeline_step) -> None:
 def test_from_definition(
     mocked_responses, pipeline_definition, mock_conn, mock_config
 ) -> None:
-    """
-    Test that a PipelineGraph object can be constructed from a pipeline
-    specification.  The model version is fetched for each step, so a response
+    """Test that a PipelineGraph object can be constructed from a pipeline
+    specification.
+
+    The model version is fetched for each step, so a response
     is mocked for each.  In depth testing of each step is handled in
     test_pipeline_step.test_steps_from_pipeline_spec.
     """
@@ -55,8 +56,7 @@ def test_from_definition(
 
 
 def test_to_graph_definition(make_mock_pipeline_step) -> None:
-    """
-    Test that a pipeline graph specification can be constructed from a
+    """Test that a pipeline graph specification can be constructed from a
     PipelineGraph object
     """
     step_1 = make_mock_pipeline_step()
@@ -83,8 +83,7 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
 
 
 def test_to_steps_definition(make_mock_pipeline_step) -> None:
-    """
-    Test that a pipeline steps specification can be constructed from a
+    """Test that a pipeline steps specification can be constructed from a
     PipelineGraph object.
     """
     step_1 = make_mock_pipeline_step()
