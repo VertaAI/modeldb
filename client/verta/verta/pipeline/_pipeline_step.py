@@ -38,9 +38,9 @@ class PipelineStep:
             List["PipelineStep"]
         ] = None,  # Optional because it could be the first step with no predecessors
     ):
-        self._name = name
-        self._model_version = model_version
-        self._predecessors = predecessors or list()
+        self._name = self.set_name(name)
+        self._model_version = self.set_model_version(model_version)
+        self._predecessors = self.set_predecessors(predecessors) if predecessors else list()
 
         # avoid the need to pass in connection params when building as local object
         self._registered_model: Optional[RegisteredModel] = None
