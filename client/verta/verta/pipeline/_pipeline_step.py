@@ -88,6 +88,7 @@ class PipelineStep:
                 f"model_version must be a RegisteredModelVersion object, not {type(new_model_version)}"
             )
         self._model_version = new_model_version
+        return self.model_version
 
     @property
     def name(self) -> str:
@@ -109,6 +110,7 @@ class PipelineStep:
         if not isinstance(name, str):
             raise TypeError(f"name must be a string, not {type(name)}")
         self._name = name
+        return self.name
 
     @property
     def predecessors(self) -> List["PipelineStep"]:
@@ -137,6 +139,7 @@ class PipelineStep:
                     f"individual predecessors must be type PipelineStep, not {type(step)}"
                 )
         self._predecessors = steps
+        return self.predecessors
 
     def _get_registered_model(self, conn: Connection, conf: Configuration) -> None:
         """Fetch the registered model associated with this step's model version.
