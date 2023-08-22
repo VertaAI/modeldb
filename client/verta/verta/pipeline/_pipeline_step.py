@@ -50,7 +50,7 @@ class PipelineStep:
 
     def __repr__(self) -> str:
         sequence = (
-            "\nPipelineStep:",
+            "\n    PipelineStep:",
             f"step name: {self.name}",
         )
         if self._registered_model:  # don't display on local-only objects`
@@ -60,7 +60,7 @@ class PipelineStep:
             f"registered_model_version_id: {self.model_version.id}",
             f"predecessors: {[s.name for s in self.predecessors]}",
         )
-        return "\n".join(sequence)
+        return "\n    ".join(sequence)
 
     @property
     def model_version(self) -> RegisteredModelVersion:

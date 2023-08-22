@@ -27,7 +27,7 @@ class PipelineGraph:
         self._steps = self.set_steps(steps)
 
     def __repr__(self):
-        return "\n".join((f"\nPipelineGraph steps:\n{self._format_steps()}",))
+        return f"\nPipelineGraph steps:\n{self._format_steps()}"
 
     def _format_steps(self):
         """Format steps for improved readability in __repr__() function."""
