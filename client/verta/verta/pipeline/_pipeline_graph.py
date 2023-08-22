@@ -70,6 +70,10 @@ class PipelineGraph:
         ----------
         pipeline_spec : dict
             Specification dict from which to create the Pipeline.
+        conn : :class:`~verta._internal_utils._utils.Connection`
+            Connection object for fetching the model version associated with the step
+        conf: :class:`~verta._internal_utils._utils.Configuration`
+            Configuration object for fetching the model version associated with the step
         """
         return cls(
             steps=PipelineStep._steps_from_pipeline_definition(
