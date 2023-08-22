@@ -165,7 +165,7 @@ def test_to_pipeline_configuration_no_resources(
     for graph_step, config_step in zip(graph.steps, pipeline_configuration["steps"]):
         # All steps are included in the configuration
         assert graph_step.name == config_step["name"]
-        # All steps in the config have resources
+        # No resources are found in the configuration
         assert "resources" not in config_step.keys()
 
 
