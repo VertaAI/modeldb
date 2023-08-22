@@ -24,7 +24,7 @@ class PipelineGraph:
     """
 
     def __init__(self, steps: List[PipelineStep]):
-        self._steps = steps
+        self._steps = self.set_steps(steps)
 
     def __repr__(self):
         return "\n".join((f"\nPipelineGraph steps:\n{self._format_steps()}",))
