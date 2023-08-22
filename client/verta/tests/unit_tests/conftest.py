@@ -164,7 +164,7 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
     def _make_mock_pipeline_step():
         return MockPipelineStep(
             model_version=make_mock_registered_model_version(),
-            name=st.text(min_size=1),
+            name="test_pipeline_step_name",
             predecessors=[],
         )
 
