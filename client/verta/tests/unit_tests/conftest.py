@@ -124,16 +124,16 @@ def make_mock_registered_model_version(
         test session.
 
         """
-        ids = set()
+        # ids = set()
         model_ver_id = random.randint(1, 1000000)
-        while model_ver_id in ids:
-            model_ver_id = random.randint(1, 1000000)
-        ids.add(model_ver_id)
+        # while model_ver_id in ids:
+        #     model_ver_id = random.randint(1, 1000000)
+        # ids.add(model_ver_id)
 
         reg_model_id = random.randint(1, 1000000)
-        while reg_model_id in ids:
-            reg_model_id = random.randint(1, 1000000)
-        ids.add(reg_model_id)
+        # while reg_model_id in ids:
+        #     reg_model_id = random.randint(1, 1000000)
+        # ids.add(reg_model_id)
 
         return MockRegisteredModelVersion(
             mock_conn,

@@ -14,7 +14,7 @@ def test_copy_graph(
     """Test that the graph of a RegisteredPipeline can be copied"""
     graph = make_mock_pipeline_graph()
     pipeline = RegisteredPipeline(
-        pipeline_graph=graph,
+        graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
     copied_graph = pipeline.copy_graph()
@@ -39,7 +39,7 @@ def test_log_pipeline_definition_artifact(
     """
     rmv = make_mock_registered_model_version()
     pipeline = RegisteredPipeline(
-        pipeline_graph=make_mock_pipeline_graph(),
+        graph=make_mock_pipeline_graph(),
         registered_model_version=rmv,
     )
     # Fetch the model
@@ -84,7 +84,7 @@ def test_to_pipeline_definition(
     """
     graph = make_mock_pipeline_graph()
     pipeline = RegisteredPipeline(
-        pipeline_graph=graph,
+        graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
     pipeline_definition = pipeline._to_pipeline_definition()
@@ -107,7 +107,7 @@ def test_to_pipeline_configuration_valid(
     step_names = [step.name for step in graph.steps]
     mock_res = make_mock_step_resources(step_names)
     pipeline = RegisteredPipeline(
-        pipeline_graph=graph,
+        graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
 
@@ -136,7 +136,7 @@ def test_to_pipeline_configuration_invalid_resources(
     mock_res = make_mock_step_resources(step_names)
     mock_res["invalid_step_name"] = make_mock_step_resources(["invalid_step_name"])
     pipeline = RegisteredPipeline(
-        pipeline_graph=graph,
+        graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
 
@@ -152,7 +152,7 @@ def test_to_pipeline_configuration_no_resources(
     """
     graph = make_mock_pipeline_graph()
     pipeline = RegisteredPipeline(
-        pipeline_graph=graph,
+        graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
 

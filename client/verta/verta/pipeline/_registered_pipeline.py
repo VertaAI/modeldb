@@ -25,14 +25,14 @@ class RegisteredPipeline:
         Name of this pipeline.
     id: int
         Auto-assigned ID of this Pipeline.
-    pipeline_graph: :class:`~verta.pipeline.PipelineGraph`
+    graph: :class:`~verta.pipeline.PipelineGraph`
         PipelineGraph object containing all possible steps in the Pipline.
     """
 
     def __init__(
         self,
         registered_model_version: RegisteredModelVersion,
-        pipeline_graph: PipelineGraph,
+        graph: PipelineGraph,
     ):
         """Create a Pipeline instance from an existing RegisteredModelVersion object
         and the provided pipeline graph.
@@ -43,7 +43,7 @@ class RegisteredPipeline:
         self._registered_model_version = registered_model_version
         self._name = self._registered_model_version.name
         self._id = self._registered_model_version.id
-        self._pipeline_graph = pipeline_graph
+        self._graph = graph
 
     def __repr__(self):
         return "\n".join(
@@ -51,7 +51,7 @@ class RegisteredPipeline:
                 "RegisteredPipeline:",
                 f"pipeline name: {self.name}",
                 f"pipeline id: {self.id}",
-                f"\n{self._pipeline_graph}",
+                f"\n{self._graph}",
             )
         )
 
@@ -64,8 +64,8 @@ class RegisteredPipeline:
         return self._id
 
     @property
-    def pipeline_graph(self):
-        return self._pipeline_graph
+    def graph(self):
+        return self._graph
 
     def copy_graph(self) -> PipelineGraph:
         """Return a shallow copy of the PipelineGraph of this pipeline.
@@ -74,7 +74,7 @@ class RegisteredPipeline:
         function returns a PipelineGraph object that can be modified and used to
         create and register a new RegisteredPipeline.
         """
-        return copy.copy(self.pipeline_graph)
+        return copy.copy(self._graph)
 
     def _log_pipeline_definition_artifact(self) -> None:
         """
@@ -96,8 +96,8 @@ class RegisteredPipeline:
         """
         return {
             "pipeline_version_id": self.id,
-            "graph": self.pipeline_graph._to_graph_definition(),
-            "predecessors": self.pipeline_graph._to_steps_definition(),
+            "graph": self._graph._to_graph_definition(),
+            "predecessors": self._graph._to_steps_definition(),
         }
 
     def _to_pipeline_configuration(
@@ -117,7 +117,7 @@ class RegisteredPipeline:
         Dictionary representation of a pipeline configuration.
         """
         steps = list()
-        for step in self.pipeline_graph.steps:
+        for step in self._graph.steps:
             step_config = {
                 "name": step.name,
             }
@@ -166,7 +166,7 @@ class RegisteredPipeline:
         pipeline_definition = json.loads(pipeline_definition_str)
         return cls(
             registered_model_version=registered_model_version,
-            pipeline_graph=PipelineGraph._from_definition(
+            graph=PipelineGraph._from_definition(
                 pipeline_definition=pipeline_definition, conn=conn, conf=conf
             ),
         )
