@@ -47,7 +47,7 @@ class PipelineGraph:
 
         Parameters
         ----------
-        steps : list of :class:`~verta.deployment.PipelineStep`, optional
+        steps : list of :class:`~verta.deployment.PipelineStep`
             List of all possible steps of the pipline graph. Order does not matter.
         """
         if not isinstance(steps, list):
