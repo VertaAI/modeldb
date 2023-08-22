@@ -11,15 +11,23 @@ from verta.pipeline import RegisteredPipeline
 def test_copy_graph(
     make_mock_pipeline_graph, make_mock_registered_model_version
 ) -> None:
-    """Test that the graph of a RegisteredPipeline can be copied"""
+    """Test that the graph of a RegisteredPipeline can be copied.
+
+    Each step in the copied graph should be a new object, but have the same
+    name, predecessors, and model version as the original.
+    """
     graph = make_mock_pipeline_graph()
     pipeline = RegisteredPipeline(
         graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
     copied_graph = pipeline.copy_graph()
-    assert copied_graph.steps == graph.steps  # same steps
-    assert copied_graph is not graph  # different objects
+    for orig_step, copied_step in zip(graph.steps, copied_graph.steps):
+        assert orig_step is not copied_step
+        assert orig_step.name == copied_step.name
+        assert orig_step.predecessors == copied_step.predecessors
+        assert orig_step.model_version.id == copied_step.model_version.id
+    assert copied_graph is not graph
 
 
 @given(pipeline_definition=pipeline_definition())
