@@ -103,7 +103,7 @@ class PipelineStep:
 
         Parameters
         ----------
-        new_name : str
+        name : str
             New name to use for the step.
         """
         if not isinstance(name, str):
