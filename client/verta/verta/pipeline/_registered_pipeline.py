@@ -111,12 +111,20 @@ class RegisteredPipeline:
         Parameters
         ----------
         pipeline_resources : dict of str to :class:`~verta.endpoint.resources.Resources`, optional
+            Resources to be allocated to each step of the pipeline. Keys are step names.
 
         Returns
         -------
         dict
             Representation of a pipeline configuration.
         """
+        if pipeline_resources:
+            for step_name in pipeline_resources.keys():
+                if step_name not in [step.name for step in self._graph.steps]:
+                    raise ValueError(
+                        f"pipeline_resources contains resources for a step not in "
+                        f"the pipeline: {step_name}"
+                    )
         steps = list()
         for step in self._graph.steps:
             step_config = {
@@ -125,15 +133,8 @@ class RegisteredPipeline:
             if pipeline_resources:
                 step_res = pipeline_resources.get(step.name, None)
                 if step_res:
-                    step_config["resources"] = pipeline_resources.pop(
-                        step.name
-                    )._as_dict()
+                    step_config["resources"] = step_res._as_dict()
             steps.append(step_config)
-        if pipeline_resources:
-            raise ValueError(
-                f"pipeline_resources contains resources for steps not in "
-                f"the pipeline {pipeline_resources.keys()}"
-            )
         return {
             "pipeline_version_id": self.id,
             "steps": steps,
