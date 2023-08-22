@@ -145,7 +145,7 @@ class TestKafka:
         mock_endpoint,
         mock_conn,
         mocked_responses,
-        mock_registered_model_version,
+        make_mock_registered_model_version,
     ) -> None:
         """Verify that, while updating an endpoint, not including a `cluster_config_id`
         in the KafkaSettings results in the correct sequence of HTTP requests, including
@@ -181,7 +181,7 @@ class TestKafka:
             )
 
             mock_endpoint.update(
-                mock_registered_model_version, kafka_settings=kafka_settings
+                make_mock_registered_model_version(), kafka_settings=kafka_settings
             )
             _responses.assert_call_count(get_configs_url, 1)
 
@@ -193,7 +193,7 @@ class TestKafka:
         mock_endpoint,
         mock_conn,
         mocked_responses,
-        mock_registered_model_version,
+        make_mock_registered_model_version,
     ) -> None:
         """Verify that, while updating an endpoint, the provided value for
         `cluster_config_id` is used, resulting in the correct sequence of HTTP
@@ -226,7 +226,7 @@ class TestKafka:
                 url=stages_url + f"/{STAGE_ID}", status=200, json={"id": STAGE_ID}
             )
             mock_endpoint.update(
-                mock_registered_model_version, kafka_settings=kafka_settings
+                make_mock_registered_model_version(), kafka_settings=kafka_settings
             )
 
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -241,7 +241,7 @@ class TestKafka:
         mock_endpoint,
         mock_conn,
         mocked_responses,
-        mock_registered_model_version,
+        make_mock_registered_model_version,
     ) -> None:
         """In the unlikely evert the ID of a found Kafka config is missing from the
         backend response, the expected exception is raised.
@@ -259,7 +259,7 @@ class TestKafka:
             _responses.get(url=get_configs_url, status=200, json=kafka_configs_response)
             with pytest.raises(RuntimeError) as err:
                 mock_endpoint.update(
-                    mock_registered_model_version, kafka_settings=kafka_settings
+                    make_mock_registered_model_version(), kafka_settings=kafka_settings
                 )
             assert (
                 str(err.value)
@@ -275,7 +275,7 @@ class TestKafka:
         mock_endpoint,
         mock_conn,
         mocked_responses,
-        mock_registered_model_version,
+        make_mock_registered_model_version,
     ) -> None:
         """If no valid Kafka configurations are found, the expected exception is raised."""
         deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
@@ -290,7 +290,7 @@ class TestKafka:
             _responses.get(url=get_configs_url, status=200, json={"configurations": []})
             with pytest.raises(RuntimeError) as err:
                 mock_endpoint.update(
-                    mock_registered_model_version, kafka_settings=kafka_settings
+                    make_mock_registered_model_version(), kafka_settings=kafka_settings
                 )
             assert (
                 str(err.value)
