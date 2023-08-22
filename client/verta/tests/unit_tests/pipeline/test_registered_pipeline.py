@@ -21,7 +21,7 @@ def test_copy_graph(
     )
     copied_graph = pipeline.copy_graph()
     assert copied_graph.steps == graph.steps  # same steps
-    assert copied_graph != graph  # different objects
+    assert copied_graph is not graph  # different objects
 
 
 @given(pipeline_definition=mock_pipeline_definition())
