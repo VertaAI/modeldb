@@ -22,11 +22,11 @@ def test_steps_from_pipeline_definition(
     mock_config,
     mocked_responses,
 ) -> None:
-    """Test that a list of PipelineStep objects can be constructed and returned from
-    a pipeline definition.
+    """Test that a list of PipelineStep objects can be constructed and
+    returned from a pipeline definition.
 
-    The registered model, model version, and environment
-    is fetched for each step, so a response is mocked for each call.
+    The registered model, model version, and environment is fetched for
+    each step, so a response is mocked for each call.
     """
     graph = pipeline_definition["graph"]
     for step in pipeline_definition["steps"]:
@@ -47,7 +47,11 @@ def test_steps_from_pipeline_definition(
     )
     # we have the same number of steps as in the pipeline definition
     assert len(generated_steps) == len(pipeline_definition["steps"])
-    for spec_step, gen_step in zip(pipeline_definition["steps"], generated_steps):
+    # convert from set to list and sort for comparison
+    generated_steps_sorted = sorted(list(generated_steps), key=lambda x: x.name)
+    # sort for comparison
+    spec_steps_sorted = sorted(pipeline_definition["steps"], key=lambda x: x["name"])
+    for spec_step, gen_step in zip(spec_steps_sorted, generated_steps_sorted):
         # each step is converted to a PipelineStep object
         assert isinstance(gen_step, PipelineStep)
         # the names are the same for the steps and their definitions
@@ -79,7 +83,7 @@ def test_to_graph_spec(
     make_mock_registered_model_version, make_mock_pipeline_step
 ) -> None:
     """Test that a PipelineStep object can be converted to a step specification"""
-    predecessors = [make_mock_pipeline_step() for _ in range(random.randint(1, 5))]
+    predecessors = {make_mock_pipeline_step() for _ in range(random.randint(1, 5))}
     step = PipelineStep(
         model_version=make_mock_registered_model_version(),
         name="test_name",
@@ -100,9 +104,11 @@ def test_set_predecessors_add(
     step = PipelineStep(
         model_version=make_mock_registered_model_version(),
         name="test_name",
-        predecessors=[predecessor_1],
+        predecessors={predecessor_1},
     )
-    step.set_predecessors(step.predecessors + [predecessor_2])
+    new_steps = step.predecessors.copy()
+    new_steps.add(predecessor_2)
+    step.set_predecessors(new_steps)
     assert set(step.predecessors) == {predecessor_1, predecessor_2}
 
 
@@ -110,15 +116,16 @@ def test_set_predecessors_remove(
     make_mock_registered_model_version, make_mock_pipeline_step
 ) -> None:
     """Test that predecessors can be removed from a PipelineStep object"""
-    predecessors = [make_mock_pipeline_step() for _ in range(random.randint(2, 10))]
-    steps_to_remain = predecessors[: len(predecessors) // 2]
+    predecessors = {make_mock_pipeline_step() for _ in range(random.randint(2, 10))}
+    predecessors_as_list = list(predecessors)  # convert to list for slicing
+    steps_to_remain = predecessors_as_list[: len(predecessors_as_list) // 2]
     step = PipelineStep(
         model_version=make_mock_registered_model_version(),
         name="test_name",
         predecessors=predecessors,
     )
-    step.set_predecessors(steps_to_remain)
-    assert set(step.predecessors) == set(steps_to_remain)
+    step.set_predecessors(set(steps_to_remain))
+    assert step.predecessors == set(steps_to_remain)
 
 
 def test_change_model_version(make_mock_registered_model_version) -> None:
@@ -128,7 +135,7 @@ def test_change_model_version(make_mock_registered_model_version) -> None:
     step = PipelineStep(
         model_version=model_ver_1,
         name="test_name",
-        predecessors=[],
+        predecessors=set(),
     )
     assert step.model_version == model_ver_1
     step.set_model_version(model_ver_2)

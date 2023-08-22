@@ -165,7 +165,7 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
         return MockPipelineStep(
             model_version=make_mock_registered_model_version(),
             name=name if name else "test_pipeline_step_name",
-            predecessors=[],
+            predecessors=set(),
         )
 
     return _make_mock_pipeline_step
@@ -189,6 +189,6 @@ def make_mock_pipeline_graph(make_mock_pipeline_step) -> Callable:
         step2.set_name("step2")
         step3 = make_mock_pipeline_step()
         step3.set_name("step3")
-        return MockPipelineGraph(steps=[step1, step2, step3])
+        return MockPipelineGraph(steps={step1, step2, step3})
 
     return _make_mock_pipeline_graph

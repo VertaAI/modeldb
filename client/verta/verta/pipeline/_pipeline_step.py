@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from verta._internal_utils._utils import Configuration, Connection
 from verta.registry.entities import RegisteredModel, RegisteredModelVersion
@@ -16,8 +16,8 @@ class PipelineStep:
         Name of the step, for use within the scope of the pipeline only.
     model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
         Registered model version to run for the step.
-    predecessors : list, optional
-        List of PipelineSteps whose outputs will be treated as inputs to this step.
+    predecessors : set, optional
+        Set of PipelineSteps whose outputs will be treated as inputs to this step.
         If not included, the step is assumed to be an initial step. Values must be unique.
 
     Attributes
@@ -35,13 +35,13 @@ class PipelineStep:
         name: str,
         model_version: RegisteredModelVersion,
         predecessors: Optional[
-            List["PipelineStep"]
+            Set["PipelineStep"]
         ] = None,  # Optional because it could be the first step with no predecessors
     ):
         self._name = self.set_name(name)
         self._model_version = self.set_model_version(model_version)
         self._predecessors = (
-            self.set_predecessors(predecessors) if predecessors else list()
+            self.set_predecessors(predecessors) if predecessors else set()
         )
 
         # avoid the need to pass in connection params when building as local object
@@ -99,7 +99,7 @@ class PipelineStep:
         """Raise a more informative error than the default."""
         raise AttributeError("can't set attribute 'name'; please use set_name()")
 
-    def set_name(self, name: str) -> None:
+    def set_name(self, name: str) -> str:
         """Change the name of this step.
 
         Parameters
@@ -113,8 +113,8 @@ class PipelineStep:
         return self.name
 
     @property
-    def predecessors(self) -> List["PipelineStep"]:
-        return list(set(self._predecessors))  # deduplicated
+    def predecessors(self) -> Set["PipelineStep"]:
+        return self._predecessors
 
     @predecessors.setter
     def predecessors(self, value) -> None:
@@ -123,7 +123,7 @@ class PipelineStep:
             "can't set attribute 'predecessors'; please use set_predecessors()"
         )
 
-    def set_predecessors(self, steps: List["PipelineStep"]) -> None:
+    def set_predecessors(self, steps: Set["PipelineStep"]) -> set:
         """Set the predecessors associated with this step.
 
         Parameters
@@ -131,8 +131,8 @@ class PipelineStep:
         steps : list
             List of PipelineStep objects whose outputs will be treated as inputs to this step.
         """
-        if not isinstance(steps, list):
-            raise TypeError(f"predecessors must be type list, not {type(steps)}")
+        if not isinstance(steps, set):
+            raise TypeError(f"predecessors must be type set, not {type(steps)}")
         for step in steps:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
@@ -155,7 +155,7 @@ class PipelineStep:
     @classmethod
     def _steps_from_pipeline_definition(
         cls, pipeline_definition: Dict[str, Any], conn: Connection, conf: Configuration
-    ) -> List["PipelineStep"]:
+    ) -> Set["PipelineStep"]:
         """Return a list of PipelineStep objects by from a pipeline specification
 
         Parameters
@@ -172,15 +172,15 @@ class PipelineStep:
         list of :class:`~verta._pipelines.PipelineStep`
             List of steps in the pipeline spec as PipelineStep objects
         """
-        steps: List["PipelineStep"] = list()
+        steps: Set["PipelineStep"] = set()
         for step in pipeline_definition["steps"]:
-            steps.append(
+            steps.add(
                 cls(
                     name=step["name"],
                     model_version=RegisteredModelVersion._get_by_id(
                         id=step["model_version_id"], conn=conn, conf=conf
                     ),
-                    predecessors=[],
+                    predecessors=set(),
                 )
             )
         for step_object in steps:
@@ -191,7 +191,7 @@ class PipelineStep:
                 if s["name"] == step_object.name
             ][0]
             step_object.set_predecessors(
-                [s for s in steps if s.name in predecessor_names]
+                {s for s in steps if s.name in predecessor_names}
             )
         return steps
 

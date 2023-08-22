@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 from verta._internal_utils._utils import Configuration, Connection
 from ._pipeline_step import PipelineStep
@@ -11,18 +11,18 @@ class PipelineGraph:
 
     Parameters
     ----------
-    steps : list of :class:`~verta.pipeline.PipelineStep`
+    steps : set of :class:`~verta.pipeline.PipelineStep`
         List of all possible steps of the pipeline. Ordering of steps in the pipeline
         itself is determined by the predecessors provided to each step, thus ordering
         of this list is irrelevant.
 
     Attributes
     ----------
-    steps: list of :class:`~verta.deployment.PipelineStep`
-        List of PipelineSteps comprising all possible steps in the PiplineGraph.
+    steps: set of :class:`~verta.deployment.PipelineStep`
+        Set of PipelineSteps comprising all possible steps in the PiplineGraph.
     """
 
-    def __init__(self, steps: List[PipelineStep]):
+    def __init__(self, steps: Set[PipelineStep]):
         self._steps = self.set_steps(steps)
 
     def __repr__(self):
@@ -40,20 +40,19 @@ class PipelineGraph:
     def steps(self, value):
         raise AttributeError("cannot set attribute 'steps'; please use set_steps()")
 
-    def set_steps(self, steps: List[str]) -> None:
-        """Set the list of steps for this PipelineGraph.
+    def set_steps(self, steps: Set[PipelineStep]) -> Set[PipelineStep]:
+        """Update the set of steps for this PipelineGraph to the provided value.
 
         Parameters
         ----------
-        steps : list of :class:`~verta.deployment.PipelineStep`
-            List of all possible steps of the pipline graph. Order does not matter.
+        steps : set of :class:`~verta.deployment.PipelineStep`
+            Set of all possible steps of the pipline graph. Order does not matter.
         """
-        if not isinstance(steps, list):
-            raise TypeError(f"steps must be type list, not {type(steps)}")
+        if not isinstance(steps, set):
+            raise TypeError(f"steps must be type set, not {type(steps)}")
         for step in steps:
             if not isinstance(step, PipelineStep):
                 raise TypeError(f"individual steps must be type PipelineStep, not {type(step)}")
-        steps = list(set(steps))
         self._steps = steps
         return self.steps
 
@@ -83,7 +82,8 @@ class PipelineGraph:
 
         The back-end expects a list of steps and their predecessors as part of the
         `graph` object within a PipelineDefinition. This method converts this PipelineGraph
-        to a formatted list of steps with predecessors for that purpose.
+        to a formatted list of steps with predecessors for that purpose. A list is used
+        to remain json serializable.
         """
         return [step._to_graph_spec() for step in self.steps]
 
@@ -92,6 +92,7 @@ class PipelineGraph:
 
         The back-end expects a list of steps and their model versions as part of the
         `steps` object within a PipelineDefinition. This method converts this PipelineGraph
-        to a formatted list of steps with model versions for that purpose.
+        to a formatted list of steps with model versions for that purpose. A list is used
+        to remain json serializable.
         """
         return [step._to_step_spec() for step in self.steps]

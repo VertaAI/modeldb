@@ -15,10 +15,10 @@ def test_set_steps(make_mock_pipeline_step) -> None:
     """
     step_1 = make_mock_pipeline_step()
     step_2 = make_mock_pipeline_step()
-    graph = PipelineGraph(steps=[])
-    graph.set_steps([step_1, step_2])
-    assert set(graph.steps) == set([step_1, step_2])
-    graph.set_steps([])
+    graph = PipelineGraph(steps=set())
+    graph.set_steps({step_1, step_2})
+    assert set(graph.steps) == {step_1, step_2}
+    graph.set_steps(set())
     assert not graph.steps
 
 
@@ -62,9 +62,9 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
     step_1 = make_mock_pipeline_step("step_1")
     step_2 = make_mock_pipeline_step("step_2")
     step_3 = make_mock_pipeline_step("step_3")
-    step_2.set_predecessors([step_1])
-    step_3.set_predecessors([step_2])
-    graph = PipelineGraph(steps=[step_1, step_2, step_3])
+    step_2.set_predecessors({step_1})
+    step_3.set_predecessors({step_2})
+    graph = PipelineGraph(steps={step_1, step_2, step_3})
     graph_spec = graph._to_graph_definition()
     assert sorted(graph_spec, key=lambda x: x["name"]) == [
         {
@@ -85,12 +85,14 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
 def test_to_steps_definition(make_mock_pipeline_step) -> None:
     """Test that a pipeline steps specification can be constructed from a
     PipelineGraph object.
+
+    Definitions are type list to remain json serializable.
     """
     step_1 = make_mock_pipeline_step()
     step_2 = make_mock_pipeline_step()
-    graph = PipelineGraph(steps=[step_1, step_2])
+    graph = PipelineGraph(steps={step_1, step_2})
     step_specs = graph._to_steps_definition()
-    assert step_specs == [
+    expected_definition = [
         {
             "name": step_1.name,
             "model_version_id": step_1.model_version.id,
@@ -100,3 +102,6 @@ def test_to_steps_definition(make_mock_pipeline_step) -> None:
             "model_version_id": step_2.model_version.id,
         },
     ]
+    assert sorted(step_specs, key=lambda x: x["name"]) == sorted(
+        expected_definition, key=lambda x: x["name"]
+    )
