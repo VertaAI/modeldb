@@ -6,7 +6,7 @@ Unit tests for the RegisteredPipeline class
 import pytest
 from hypothesis import given, HealthCheck, settings
 
-from tests.unit_tests.strategies import mock_pipeline_definition
+from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import RegisteredPipeline
 
 
@@ -24,7 +24,7 @@ def test_copy_graph(
     assert copied_graph is not graph  # different objects
 
 
-@given(pipeline_definition=mock_pipeline_definition())
+@given(pipeline_definition=pipeline_definition())
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,

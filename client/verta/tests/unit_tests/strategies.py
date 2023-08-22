@@ -263,7 +263,7 @@ def mock_workspace(draw):
 
 
 @st.composite
-def mock_pipeline_definition(draw):
+def pipeline_definition(draw):
     """Generate a mocked pipeline specification dictionary"""
 
     # step names in a pipeline must be unique
@@ -309,49 +309,5 @@ def mock_pipeline_definition(draw):
                 "model_version_id": model_versions[4],
                 "name": step_names[4],
             },
-        ],
-    }
-
-
-@st.composite
-def mock_pipeline_resources_dict(draw):
-    """Generate a mocked pipeline resources dictionary"""
-    return {
-        "resources": {
-            "cpu_millis": draw(st.integers(min_value=1)),
-            "memory": draw(st.text(min_size=1)),
-            "nvidia_gpu": {
-                "model": draw(st.enums("T4", "V100")),
-                "number": draw(st.integers(min_value=1, max_value=1000)),
-            },
-        }
-    }
-
-
-@st.composite
-def mock_pipeline_step_configuration(draw):
-    """Generate a mocked pipeline step configuration dictionary"""
-    return {
-        "build_id": draw(st.integers(min_value=1)),
-        "env": draw(
-            st.dictionaries(
-                keys=st.text(min_size=1),
-                values=st.text(min_size=1),
-                min_size=1,
-            )
-        ),
-        "resources": mock_pipeline_resources_dict(),
-        "name": draw(st.text(min_size=1)),
-    }
-
-
-@st.composite
-def mock_pipeline_configuration(draw):
-    """Generate a mocked pipeline step configuration dictionary with Kafka settings"""
-    return {
-        "pipeline_version_id": draw(st.integers(min_value=1)),
-        "steps": [
-            mock_pipeline_step_configuration(),
-            mock_pipeline_step_configuration(),
         ],
     }

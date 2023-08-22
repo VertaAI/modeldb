@@ -7,11 +7,11 @@ import random
 
 from hypothesis import given, HealthCheck, settings
 
-from tests.unit_tests.strategies import mock_pipeline_definition
+from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineStep
 
 
-@given(pipeline_definition=mock_pipeline_definition())
+@given(pipeline_definition=pipeline_definition())
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,

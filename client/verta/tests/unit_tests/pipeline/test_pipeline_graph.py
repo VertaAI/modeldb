@@ -5,7 +5,7 @@ Unit tests for the PipelineGraph class
 
 from hypothesis import given, HealthCheck, settings
 
-from tests.unit_tests.strategies import mock_pipeline_definition
+from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineGraph
 
 
@@ -22,7 +22,7 @@ def test_set_steps(make_mock_pipeline_step) -> None:
     assert not graph.steps
 
 
-@given(pipeline_definition=mock_pipeline_definition())
+@given(pipeline_definition=pipeline_definition())
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,

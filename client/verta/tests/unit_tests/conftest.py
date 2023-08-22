@@ -8,11 +8,9 @@ import random
 from typing import Any, Callable, Dict, List
 from unittest.mock import patch
 
-import hypothesis.strategies as st
 import pytest
 import responses
 
-from tests.unit_tests.strategies import mock_pipeline_definition
 from verta._internal_utils._utils import Configuration, Connection
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
 from verta.client import Client
