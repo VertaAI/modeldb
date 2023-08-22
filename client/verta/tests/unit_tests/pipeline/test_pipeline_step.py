@@ -62,15 +62,15 @@ def test_steps_from_pipeline_definition(
 
 def test_to_step_spec(make_mock_registered_model_version) -> None:
     """Test that a PipelineStep object can be converted to a step specification"""
-    mod_version = make_mock_registered_model_version()
+    model_version = make_mock_registered_model_version()
     step = PipelineStep(
-        model_version=mod_version,
+        model_version=model_version,
         name="test_name",
         predecessors=[],  # predecessors not included in step spec
     )
     assert step._to_step_spec() == {
         "name": "test_name",
-        "model_version_id": mod_version.id,
+        "model_version_id": model_version.id,
     }
 
 
