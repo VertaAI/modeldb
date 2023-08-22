@@ -284,8 +284,8 @@ def pipeline_definition(draw):
             {"predecessors": [], "name": step_names[0]},
             {"predecessors": [step_names[0]], "name": step_names[1]},
             {"predecessors": [step_names[1]], "name": step_names[2]},
-            {"predecessors": [step_names[1]], "name": step_names[3]},
-            {"predecessors": [step_names[2], step_names[1]], "name": step_names[4]},
+            {"predecessors": [step_names[2]], "name": step_names[3]},
+            {"predecessors": [step_names[3]], "name": step_names[4]},
         ],
         "pipeline_version_id": draw(st.integers(min_value=1, max_value=1000)),
         "steps": [
