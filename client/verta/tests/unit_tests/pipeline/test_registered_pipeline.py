@@ -39,25 +39,26 @@ def test_log_pipeline_definition_artifact(
     Verify the expected sequence of calls when a pipeline definition
     is logged as an artifact to the pipeline's model version.
     """
+    rmv = make_mock_registered_model_version()
     pipeline = RegisteredPipeline(
         pipeline_graph=make_mock_pipeline_graph(),
-        registered_model_version=make_mock_registered_model_version(),
+        registered_model_version=rmv,
     )
     # Fetch the model
     mocked_responses.get(
-        f"https://test_socket/api/v1/registry/model_versions/{pipeline.id}",
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{pipeline.id}",
         json={},
         status=200,
     )
     # Fetch the model version
     mocked_responses.put(
-        f"https://test_socket/api/v1/registry/registered_models/0/model_versions/{pipeline.id}",
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/registered_models/0/model_versions/{pipeline.id}",
         json={},
         status=200,
     )
     # Fetch the artifact upload URL
     mocked_responses.post(
-        f"https://test_socket/api/v1/registry/model_versions/{pipeline.id}/getUrlForArtifact",
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{pipeline.id}/getUrlForArtifact",
         json={
             "url": f"https://account.s3.amazonaws.com/development/ModelVersionEntity/"
             f"{pipeline.id}/pipeline.json"
