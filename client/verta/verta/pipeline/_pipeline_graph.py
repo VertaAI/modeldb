@@ -51,10 +51,10 @@ class PipelineGraph:
             List of all possible steps of the pipline graph. Order does not matter.
         """
         if not isinstance(steps, list):
-            raise TypeError("steps must be a list of PipelineStep objects")
+            raise TypeError(f"steps must be type list, not {type(steps)}")
         for step in steps:
             if not isinstance(step, PipelineStep):
-                raise TypeError("steps must be a list of PipelineStep objects")
+                raise TypeError(f"individual steps must be type PipelineStep, not {type(step)}")
         steps = list(set(steps))
         self._steps = steps
         return self.steps
