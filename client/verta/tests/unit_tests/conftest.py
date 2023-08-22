@@ -158,7 +158,7 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
     """
 
     class MockPipelineStep(PipelineStep):
-        def __repr__(self):
+        def __repr__(self):  # avoid network calls when displaying test results
             return object.__repr__(self)
 
     def _make_mock_pipeline_step():
