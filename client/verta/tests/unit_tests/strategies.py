@@ -273,7 +273,8 @@ def pipeline_definition(draw):
     )
     model_versions = draw(
         st.lists(
-            st.text(alphabet=["1", "2", "3", "4", "5"], min_size=1),
+            # limit max value to prevent protobuf "Value out of range" error
+            st.integers(min_value=1, max_value=1000000000),
             min_size=5,
             max_size=5,
             unique=True,

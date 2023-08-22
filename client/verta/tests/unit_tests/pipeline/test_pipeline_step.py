@@ -5,13 +5,19 @@ Unit tests for the PipelineStep class
 
 import random
 
-from hypothesis import given, HealthCheck, settings
+from hypothesis import given, HealthCheck, settings, strategies as st
 
 from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineStep
 
 
-@given(pipeline_definition=pipeline_definition())
+@given(
+    pipeline_definition=pipeline_definition(),
+    registered_model_id=st.integers(min_value=1, max_value=1000000000),
+    # max value limit avoids protobuf "Value out of range" error
+    model_version_name=st.text(min_size=1),
+    model_name=st.text(min_size=1),
+)
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,
@@ -21,6 +27,9 @@ def test_steps_from_pipeline_definition(
     mock_conn,
     mock_config,
     mocked_responses,
+    registered_model_id,
+    model_version_name,
+    model_name,
 ) -> None:
     """Test that a list of PipelineStep objects can be constructed and
     returned from a pipeline definition.
@@ -32,12 +41,23 @@ def test_steps_from_pipeline_definition(
     for step in pipeline_definition["steps"]:
         mocked_responses.get(
             f"https://test_socket/api/v1/registry/model_versions/{step['model_version_id']}",
-            json={"model_version": step["model_version_id"]},
+            json={
+                "model_version": {
+                    "id": step["model_version_id"],
+                    "registered_model_id": registered_model_id,
+                    "version": model_version_name,
+                }
+            },
             status=200,
         )
         mocked_responses.get(
-            f"https://test_socket/api/v1/registry/registered_models/0",
-            json={},
+            f"https://test_socket/api/v1/registry/registered_models/{registered_model_id}",
+            json={
+                "registered_model": {
+                    "id": registered_model_id,
+                    "name": model_name,
+                }
+            },
             status=200,
         )
     generated_steps = PipelineStep._steps_from_pipeline_definition(
@@ -47,22 +67,31 @@ def test_steps_from_pipeline_definition(
     )
     # we have the same number of steps as in the pipeline definition
     assert len(generated_steps) == len(pipeline_definition["steps"])
-    # convert from set to list and sort for comparison
+
+    # sort each group of steps for comparison
     generated_steps_sorted = sorted(list(generated_steps), key=lambda x: x.name)
-    # sort for comparison
-    spec_steps_sorted = sorted(pipeline_definition["steps"], key=lambda x: x["name"])
-    for spec_step, gen_step in zip(spec_steps_sorted, generated_steps_sorted):
+    definition_steps_sorted = sorted(
+        pipeline_definition["steps"], key=lambda x: x["name"]
+    )
+
+    for def_step, gen_step in zip(definition_steps_sorted, generated_steps_sorted):
+        # the names are the same for the steps and their definitions
+        assert gen_step.name == def_step["name"]
+        # model version ids are the same for the steps and their definitions
+        assert gen_step.model_version.id == def_step["model_version_id"]
+        # registered model ids are the same for the steps and their definitions
+        assert gen_step._registered_model.id == registered_model_id
+        # registered model names are fetched and added
+        assert gen_step._registered_model.name == model_name
         # each step is converted to a PipelineStep object
         assert isinstance(gen_step, PipelineStep)
-        # the names are the same for the steps and their definitions
-        assert gen_step.name == spec_step["name"]
         # predecessors for each step are also converted to PipelineStep objects
         for i in gen_step.predecessors:
             assert isinstance(i, PipelineStep)
-        # the predecessors for each step are the same as in the definition
-        assert set([i.name for i in gen_step.predecessors]) == set(
-            [s["predecessors"] for s in graph if gen_step.name == s["name"]][0]
-        )
+        # the predecessors for each step are all included and have the same name as in the definition
+        assert [s.name for s in gen_step.predecessors] == [
+            s["predecessors"] for s in graph if gen_step.name == s["name"]
+        ][0]
 
 
 def test_to_step_spec(make_mock_registered_model_version) -> None:
@@ -71,7 +100,7 @@ def test_to_step_spec(make_mock_registered_model_version) -> None:
     step = PipelineStep(
         model_version=model_version,
         name="test_name",
-        predecessors=[],  # predecessors not included in step spec
+        predecessors=set(),  # predecessors not included in step spec
     )
     assert step._to_step_spec() == {
         "name": "test_name",

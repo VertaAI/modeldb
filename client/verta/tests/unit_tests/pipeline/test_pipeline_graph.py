@@ -4,6 +4,7 @@ Unit tests for the PipelineGraph class
 """
 
 from hypothesis import given, HealthCheck, settings
+from hypothesis import strategies as st
 
 from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineGraph
@@ -22,13 +23,25 @@ def test_set_steps(make_mock_pipeline_step) -> None:
     assert not graph.steps
 
 
-@given(pipeline_definition=pipeline_definition())
+@given(
+    pipeline_definition=pipeline_definition(),
+    registered_model_id=st.integers(min_value=1, max_value=1000000000),
+    # max value limit avoids protobuf "Value out of range" error
+    model_version_name=st.text(min_size=1),
+    model_name=st.text(min_size=1),
+)
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,
 )
 def test_from_definition(
-    mocked_responses, pipeline_definition, mock_conn, mock_config
+    mocked_responses,
+    pipeline_definition,
+    mock_conn,
+    mock_config,
+    registered_model_id,
+    model_version_name,
+    model_name,
 ) -> None:
     """Test that a PipelineGraph object can be constructed from a pipeline
     specification.
@@ -40,19 +53,44 @@ def test_from_definition(
     for step in pipeline_definition["steps"]:
         mocked_responses.get(
             f"https://test_socket/api/v1/registry/model_versions/{step['model_version_id']}",
-            json={"name": "test"},
+            json={
+                "model_version": {
+                    "id": step['model_version_id'],
+                    "registered_model_id": registered_model_id,
+                    "version": model_version_name,
+                }
+            },
             status=200,
         )
         mocked_responses.get(
-            f"https://test_socket/api/v1/registry/registered_models/0",
-            json={},
+            f"https://test_socket/api/v1/registry/registered_models/{registered_model_id}",
+            json={
+                "registered_model": {
+                    "id": registered_model_id,
+                    "name": model_name,
+                }
+            },
             status=200,
         )
     graph = PipelineGraph._from_definition(
         pipeline_definition=pipeline_definition, conn=mock_conn, conf=mock_config
     )
+    # the object produced is a PipelineGraph
     assert isinstance(graph, PipelineGraph)
+    # we have the same number of steps as in the pipeline definition
     assert len(graph.steps) == len(pipeline_definition["steps"])
+
+    # sort each group of steps for comparison
+    pipeline_steps_sorted = sorted(
+        pipeline_definition["steps"], key=lambda x: x["name"]
+    )
+    graph_steps_sorted = sorted(list(graph.steps), key=lambda x: x.name)
+
+    for graph_step, pipeline_step in zip(graph_steps_sorted, pipeline_steps_sorted):
+        assert graph_step.name == pipeline_step["name"]
+        assert graph_step.model_version.id == pipeline_step["model_version_id"]
+        assert graph_step._registered_model.name == model_name
+        assert graph_step._registered_model.id == registered_model_id
 
 
 def test_to_graph_definition(make_mock_pipeline_step) -> None:
@@ -88,8 +126,8 @@ def test_to_steps_definition(make_mock_pipeline_step) -> None:
 
     Definitions are type list to remain json serializable.
     """
-    step_1 = make_mock_pipeline_step()
-    step_2 = make_mock_pipeline_step()
+    step_1 = make_mock_pipeline_step(name="step_1")
+    step_2 = make_mock_pipeline_step(name="step_2")
     graph = PipelineGraph(steps={step_1, step_2})
     step_specs = graph._to_steps_definition()
     expected_definition = [
