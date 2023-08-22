@@ -178,7 +178,7 @@ def test_from_pipeline_definition(
     """
     Test that a RegisteredPipeline object can be constructed from a pipeline
     definition. The model version's `_get_artifact` function is mocked to
-    return a simple, consistent pipeline definition. Calls relates to the
+    return a simple, consistent pipeline definition. Calls related to the
     fetching of the artifact are mocked.
     """
     mocked_responses.get(
