@@ -25,7 +25,7 @@ def test_set_steps(make_mock_pipeline_step) -> None:
 
 @given(
     pipeline_definition=pipeline_definition(),
-    registered_model_id=st.integers(min_value=1, max_value=1000000000),
+    registered_model_id=st.integers(min_value=1, max_value=2**63),
     # max value limit avoids protobuf "Value out of range" error
     model_version_name=st.text(min_size=1),
     model_name=st.text(min_size=1),

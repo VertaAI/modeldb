@@ -274,7 +274,7 @@ def pipeline_definition(draw):
     model_versions = draw(
         st.lists(
             # limit max value to prevent protobuf "Value out of range" error
-            st.integers(min_value=1, max_value=1000000000),
+            st.integers(min_value=1, max_value=2**63),
             min_size=5,
             max_size=5,
             unique=True,
@@ -289,7 +289,7 @@ def pipeline_definition(draw):
             {"predecessors": [step_names[2]], "name": step_names[3]},
             {"predecessors": [step_names[3]], "name": step_names[4]},
         ],
-        "pipeline_version_id": draw(st.integers(min_value=1, max_value=1000)),
+        "pipeline_version_id": draw(st.integers(min_value=1)),
         "steps": [
             {
                 "model_version_id": model_versions[0],
