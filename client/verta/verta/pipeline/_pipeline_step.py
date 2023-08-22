@@ -24,8 +24,8 @@ class PipelineStep:
     ----------
         name : str
             Name of the step within the scope of the pipeline.
-        model_version
-            :class:`~verta.registry.entities.RegisteredModelVersion` run by this step.
+        model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
+            Model version being run by this step.
         predecessors : list
             List of PipelineSteps whose outputs will be treated as inputs to this step.
     """
