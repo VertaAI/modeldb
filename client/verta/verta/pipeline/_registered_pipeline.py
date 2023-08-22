@@ -110,7 +110,7 @@ class RegisteredPipeline:
 
         Parameters
         ----------
-        pipeline_resources : Resources
+        pipeline_resources : dict of str to :class:`~verta.endpoint.resources.Resources`, optional
 
         Returns
         -------
