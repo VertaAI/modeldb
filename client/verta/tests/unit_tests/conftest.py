@@ -201,7 +201,7 @@ def make_mock_step_resources() -> Callable:
     a given list of step names.
     """
 
-    def _make_mock_step_resources(step_names: List[str]) -> Dict[str, Any]:
+    def _make_mock_step_resources(step_names: List[str]) -> Dict[str, Resources]:
         res = dict()
         for name in step_names:
             res.update(
