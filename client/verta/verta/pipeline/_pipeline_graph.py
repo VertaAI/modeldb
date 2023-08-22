@@ -57,6 +57,7 @@ class PipelineGraph:
                 raise TypeError("steps must be a list of PipelineStep objects")
         steps = list(set(steps))
         self._steps = steps
+        return self.steps
 
     @classmethod
     def _from_definition(
