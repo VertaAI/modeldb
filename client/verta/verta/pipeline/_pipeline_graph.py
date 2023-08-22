@@ -31,7 +31,7 @@ class PipelineGraph:
 
     def _format_steps(self):
         """Format steps for improved readability in __repr__() function."""
-        return "\n".join([str(s) for s in self._steps])
+        return "\n".join([repr(s) for s in self._steps])
 
     @property
     def steps(self):
