@@ -114,7 +114,8 @@ class RegisteredPipeline:
 
         Returns
         -------
-        Dictionary representation of a pipeline configuration.
+        dict
+            Representation of a pipeline configuration.
         """
         steps = list()
         for step in self._graph.steps:
