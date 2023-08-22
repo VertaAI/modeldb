@@ -82,7 +82,7 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
     ]
 
 
-def test_to_step_definition(make_mock_pipeline_step) -> None:
+def test_to_steps_definition(make_mock_pipeline_step) -> None:
     """
     Test that a pipeline steps specification can be constructed from a
     PipelineGraph object.
