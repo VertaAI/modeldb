@@ -11,6 +11,7 @@ from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS, python_to_val_pr
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
 from verta.endpoint import build, KafkaSettings
+from verta.endpoint.resources import NvidiaGPU, NvidiaGPUModel, Resources
 
 
 @st.composite
@@ -311,3 +312,16 @@ def pipeline_definition(draw):
             },
         ],
     }
+
+
+@st.composite
+def resources(draw):
+    """Return a strategy emulating the Resources class."""
+    return Resources(
+        cpu=draw(st.integers(min_value=1)),
+        memory=draw(st.from_regex(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", fullmatch=True)),
+        nvidia_gpu=NvidiaGPU(
+            model=draw(st.sampled_from([NvidiaGPUModel.T4, NvidiaGPUModel.V100])),
+            number=draw(st.integers(min_value=1)),
+        ),
+    )

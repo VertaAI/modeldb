@@ -59,14 +59,14 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
     """Test that a pipeline graph specification can be constructed from a
     PipelineGraph object
     """
-    step_1 = make_mock_pipeline_step()
-    step_2 = make_mock_pipeline_step()
-    step_3 = make_mock_pipeline_step()
+    step_1 = make_mock_pipeline_step("step_1")
+    step_2 = make_mock_pipeline_step("step_2")
+    step_3 = make_mock_pipeline_step("step_3")
     step_2.set_predecessors([step_1])
     step_3.set_predecessors([step_2])
     graph = PipelineGraph(steps=[step_1, step_2, step_3])
     graph_spec = graph._to_graph_definition()
-    assert graph_spec == [
+    assert sorted(graph_spec, key=lambda x: x["name"]) == [
         {
             "name": step_1.name,
             "predecessors": [],

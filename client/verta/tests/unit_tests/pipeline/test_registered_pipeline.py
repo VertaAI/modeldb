@@ -4,7 +4,7 @@
 import pytest
 from hypothesis import given, HealthCheck, settings
 
-from tests.unit_tests.strategies import pipeline_definition
+from tests.unit_tests.strategies import pipeline_definition, resources
 from verta.pipeline import RegisteredPipeline
 
 
@@ -102,25 +102,24 @@ def test_to_pipeline_definition(
         "predecessors": graph._to_steps_definition(),
     }
 
-
+@given(resources=resources())
 def test_to_pipeline_configuration_valid(
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
-    make_mock_step_resources,
+    resources,
 ) -> None:
     """Test that a valid pipeline configuration can be constructed from a
     RegisteredPipeline object and a valid list of pipeline resources.
     """
     graph = make_mock_pipeline_graph()
-    step_names = [step.name for step in graph.steps]
-    mock_res = make_mock_step_resources(step_names)
+    step_resources = {step.name: resources for step in graph.steps}
     pipeline = RegisteredPipeline(
         graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
 
     pipeline_configuration = pipeline._to_pipeline_configuration(
-        pipeline_resources=mock_res
+        pipeline_resources=step_resources
     )
     assert pipeline_configuration["pipeline_version_id"] == pipeline.id
     for graph_step, config_step in zip(graph.steps, pipeline_configuration["steps"]):
@@ -130,26 +129,26 @@ def test_to_pipeline_configuration_valid(
         assert "resources" in config_step.keys()
 
 
+@given(resources=resources())
 def test_to_pipeline_configuration_invalid_resources(
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
-    make_mock_step_resources,
+    resources,
 ) -> None:
     """Test that a ValueError is raised when an invalid step name is included
     in the provided pipeline resources. (Does not match a step name in the
     pipeline's graph)
     """
     graph = make_mock_pipeline_graph()
-    step_names = [step.name for step in graph.steps]
-    mock_res = make_mock_step_resources(step_names)
-    mock_res["invalid_step_name"] = make_mock_step_resources(["invalid_step_name"])
+    step_resources = {step.name: resources for step in graph.steps}
+    step_resources["invalid_step_name"] = resources
     pipeline = RegisteredPipeline(
         graph=graph,
         registered_model_version=make_mock_registered_model_version(),
     )
 
     with pytest.raises(ValueError):
-        pipeline._to_pipeline_configuration(pipeline_resources=mock_res)
+        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
 
 
 def test_to_pipeline_configuration_no_resources(

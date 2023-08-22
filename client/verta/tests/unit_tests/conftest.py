@@ -5,7 +5,7 @@
 import json
 import os
 import random
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, Optional
 from unittest.mock import patch
 
 import pytest
@@ -150,19 +150,21 @@ def make_mock_registered_model_version(
 
 @pytest.fixture(scope="session")
 def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
-    """
-    Return a callable function for creating mocked objects of the PipelineStep
+    """Return a callable function for creating mocked objects of the PipelineStep
     class for use in tests that require multiple unique instances.
+
+    The optional `name` parameter is for use in tests where more than one unique
+    step is required for a singe test.
     """
 
     class MockPipelineStep(PipelineStep):
         def __repr__(self):  # avoid network calls when displaying test results
             return object.__repr__(self)
 
-    def _make_mock_pipeline_step():
+    def _make_mock_pipeline_step(name: Optional[str] = None):
         return MockPipelineStep(
             model_version=make_mock_registered_model_version(),
-            name="test_pipeline_step_name",
+            name=name if name else "test_pipeline_step_name",
             predecessors=[],
         )
 
@@ -190,29 +192,3 @@ def make_mock_pipeline_graph(make_mock_pipeline_step) -> Callable:
         return MockPipelineGraph(steps=[step1, step2, step3])
 
     return _make_mock_pipeline_graph
-
-
-@pytest.fixture(scope="session")
-def make_mock_step_resources() -> Callable:
-    """
-    Return a callable function for generating a list of mocked resources for
-    a given list of step names.
-    """
-
-    def _make_mock_step_resources(step_names: List[str]) -> Dict[str, Resources]:
-        res = dict()
-        for name in step_names:
-            res.update(
-                {
-                    name: Resources(
-                        cpu=random.randint(1, 10),
-                        memory="5Gi",
-                        nvidia_gpu=NvidiaGPU(
-                            model=NvidiaGPUModel.T4, number=random.randint(1, 10)
-                        ),
-                    ),
-                }
-            )
-        return res
-
-    return _make_mock_step_resources
