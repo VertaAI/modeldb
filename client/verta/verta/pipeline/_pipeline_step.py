@@ -41,7 +41,7 @@ class PipelineStep:
         self._name = self.set_name(name)
         self._model_version = self.set_model_version(model_version)
         self._predecessors = (
-            self.set_predecessors(predecessors) if predecessors else set()
+            self._validate_predecessors(predecessors) if predecessors else set()
         )
         self._registered_model_id = self._model_version.registered_model_id
         self._registered_model: RegisteredModel = self._get_registered_model(
@@ -111,7 +111,7 @@ class PipelineStep:
 
     @property
     def predecessors(self) -> Set["PipelineStep"]:
-        return self._predecessors
+        return self._validate_predecessors(self._predecessors)
 
     @predecessors.setter
     def predecessors(self, value) -> None:
@@ -128,15 +128,22 @@ class PipelineStep:
         steps : list
             List of PipelineStep objects whose outputs will be treated as inputs to this step.
         """
-        if not isinstance(steps, set):
-            raise TypeError(f"predecessors must be type set, not {type(steps)}")
-        for step in steps:
+        self._predecessors = self._validate_predecessors(steps)
+        return self.predecessors
+
+    def _validate_predecessors(
+        self, predecessors: Set["PipelineStep"]
+    ) -> set["PipelineStep"]:
+        """Validate that the provided predecessors are a set of PipelineStep objects."""
+        if not isinstance(predecessors, set):
+            raise TypeError(f"steps must be type set, not {type(predecessors)}")
+        for step in predecessors:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
-                    f"individual predecessors must be type PipelineStep, not {type(step)}"
+                    f"individual predecessors of a PipelineStep must be type"
+                    f" PipelineStep, not {type(step)} for predecessor '{step}'"
                 )
-        self._predecessors = steps
-        return self.predecessors
+        return predecessors
 
     def _get_registered_model(self, conn: Connection, conf: Configuration) -> None:
         """Fetch the registered model associated with this step's model version.

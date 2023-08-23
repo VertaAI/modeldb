@@ -23,7 +23,9 @@ class PipelineGraph:
     """
 
     def __init__(self, steps: Set[PipelineStep]):
-        self._steps = self.set_steps(steps)
+        self._steps = self._validate_steps(steps)
+        self._predecessors = [s.predecessors for s in self._steps]
+        # throws an error if any step's predecessors attr has been inappropriately mutated
 
     def __repr__(self):
         return f"\nPipelineGraph steps:\n{self._format_steps()}"
@@ -34,7 +36,8 @@ class PipelineGraph:
 
     @property
     def steps(self):
-        return self._steps
+        return self._validate_steps(self._steps)
+
 
     @steps.setter
     def steps(self, value):
@@ -48,13 +51,20 @@ class PipelineGraph:
         steps : set of :class:`~verta.deployment.PipelineStep`
             Set of all possible steps of the pipline graph. Order does not matter.
         """
+        self._steps = self._validate_steps(steps)
+        return self.steps
+
+    def _validate_steps(self, steps: Set[PipelineStep]) -> Set[PipelineStep]:
+        """Validate that the provided steps are a set of  PipelineStep objects."""
         if not isinstance(steps, set):
             raise TypeError(f"steps must be type set, not {type(steps)}")
         for step in steps:
             if not isinstance(step, PipelineStep):
-                raise TypeError(f"individual steps must be type PipelineStep, not {type(step)}")
-        self._steps = steps
-        return self.steps
+                raise TypeError(
+                    f"individual steps of a PipelineGraph must be type"
+                    f" PipelineStep, not {type(step)} for step '{step}'"
+                )
+        return steps
 
     @classmethod
     def _from_definition(
