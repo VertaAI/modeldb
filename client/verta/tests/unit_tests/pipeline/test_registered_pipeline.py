@@ -1,26 +1,35 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the RegisteredPipeline class"""
 
+from unittest.mock import patch
+
 import pytest
 from hypothesis import given, HealthCheck, settings
 
+import verta
 from tests.unit_tests.strategies import pipeline_definition, resources
 from verta.pipeline import RegisteredPipeline
 
 
 def test_copy_graph(
-    make_mock_pipeline_graph, make_mock_registered_model_version
+    make_mock_pipeline_graph,
+    make_mock_registered_model_version,
+    make_mock_registered_model,
 ) -> None:
     """Test that the graph of a RegisteredPipeline can be copied.
 
     Each step in the copied graph should be a new object, but have the same
     name, predecessors, and model version as the original.
     """
-    graph = make_mock_pipeline_graph()
-    pipeline = RegisteredPipeline(
-        graph=graph,
-        registered_model_version=make_mock_registered_model_version(),
-    )
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
     copied_graph = pipeline.copy_graph()
     # convert from sets to lists and sort for comparison
     graph_steps_sorted = sorted(list(graph.steps), key=lambda x: x.name)
@@ -84,7 +93,9 @@ def test_log_pipeline_definition_artifact(
 
 
 def test_to_pipeline_definition(
-    make_mock_pipeline_graph, make_mock_registered_model_version
+    make_mock_pipeline_graph,
+    make_mock_registered_model_version,
+    make_mock_registered_model,
 ) -> None:
     """Test that a pipeline definition can be constructed from a
     RegisteredPipeline object.
@@ -93,11 +104,15 @@ def test_to_pipeline_definition(
     and `to_steps_definition` functions are handled in unit tests for
     PipelineGraph.
     """
-    graph = make_mock_pipeline_graph()
-    pipeline = RegisteredPipeline(
-        graph=graph,
-        registered_model_version=make_mock_registered_model_version(),
-    )
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
     pipeline_definition = pipeline._to_pipeline_definition()
     assert pipeline_definition == {
         "pipeline_version_id": pipeline.id,
@@ -105,21 +120,27 @@ def test_to_pipeline_definition(
         "predecessors": graph._to_steps_definition(),
     }
 
+
 @given(resources=resources())
 def test_to_pipeline_configuration_valid(
+    resources,
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
-    resources,
+    make_mock_registered_model,
 ) -> None:
     """Test that a valid pipeline configuration can be constructed from a
     RegisteredPipeline object and a valid list of pipeline resources.
     """
-    graph = make_mock_pipeline_graph()
-    step_resources = {step.name: resources for step in graph.steps}
-    pipeline = RegisteredPipeline(
-        graph=graph,
-        registered_model_version=make_mock_registered_model_version(),
-    )
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        step_resources = {step.name: resources for step in graph.steps}
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
 
     pipeline_configuration = pipeline._to_pipeline_configuration(
         pipeline_resources=step_resources
@@ -134,38 +155,47 @@ def test_to_pipeline_configuration_valid(
 
 @given(resources=resources())
 def test_to_pipeline_configuration_invalid_resources(
+    resources,
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
-    resources,
+    make_mock_registered_model,
 ) -> None:
     """Test that a ValueError is raised when an invalid step name is included
     in the provided pipeline resources. (Does not match a step name in the
     pipeline's graph)
     """
-    graph = make_mock_pipeline_graph()
-    step_resources = {step.name: resources for step in graph.steps}
-    step_resources["invalid_step_name"] = resources
-    pipeline = RegisteredPipeline(
-        graph=graph,
-        registered_model_version=make_mock_registered_model_version(),
-    )
-
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        step_resources = {step.name: resources for step in graph.steps}
+        step_resources["invalid_step_name"] = resources
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
     with pytest.raises(ValueError):
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
 
 
 def test_to_pipeline_configuration_no_resources(
-    make_mock_pipeline_graph, make_mock_registered_model_version
+    make_mock_pipeline_graph,
+    make_mock_registered_model_version,
+    make_mock_registered_model,
 ) -> None:
     """Test that a pipeline configuration can be constructed from a
     RegisteredPipeline object without providing pipeline resources.
     """
-    graph = make_mock_pipeline_graph()
-    pipeline = RegisteredPipeline(
-        graph=graph,
-        registered_model_version=make_mock_registered_model_version(),
-    )
-
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
     pipeline_configuration = pipeline._to_pipeline_configuration()
     assert pipeline_configuration["pipeline_version_id"] == pipeline.id
     for graph_step, config_step in zip(graph.steps, pipeline_configuration["steps"]):

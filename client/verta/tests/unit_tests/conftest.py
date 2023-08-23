@@ -16,9 +16,8 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from verta.client import Client
 from verta.credentials import EmailCredentials
 from verta.endpoint import Endpoint
-from verta.endpoint.resources import NvidiaGPU, NvidiaGPUModel, Resources
 from verta.pipeline import PipelineGraph, PipelineStep
-from verta.registry.entities import RegisteredModelVersion
+from verta.registry.entities import RegisteredModel, RegisteredModelVersion
 
 
 @pytest.fixture(scope="session")
@@ -100,6 +99,31 @@ def make_mock_simple_pipeline_definition() -> Callable:
 
 
 @pytest.fixture(scope="session")
+def make_mock_registered_model(mock_conn, mock_config) -> Callable:
+    """Return a callable function for creating mocked objects of the
+    RegisteredModel class.
+    """
+
+    class MockRegisteredModel(RegisteredModel):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    def _make_mock_registered_model(id: int, name: str):
+        """Return a mocked RegisteredModel object."""
+
+        return MockRegisteredModel(
+            mock_conn,
+            mock_config,
+            _RegistryService.RegisteredModel(
+                id=id,
+                name=name,
+            ),
+        )
+
+    return _make_mock_registered_model
+
+
+@pytest.fixture(scope="session")
 def make_mock_registered_model_version(
     mock_conn, mock_config, make_mock_simple_pipeline_definition
 ) -> Callable:
@@ -124,16 +148,16 @@ def make_mock_registered_model_version(
         test session.
 
         """
-        # ids = set()
+        ids = set()
         model_ver_id = random.randint(1, 1000000)
-        # while model_ver_id in ids:
-        #     model_ver_id = random.randint(1, 1000000)
-        # ids.add(model_ver_id)
+        while model_ver_id in ids:
+            model_ver_id = random.randint(1, 1000000)
+        ids.add(model_ver_id)
 
         reg_model_id = random.randint(1, 1000000)
-        # while reg_model_id in ids:
-        #     reg_model_id = random.randint(1, 1000000)
-        # ids.add(reg_model_id)
+        while reg_model_id in ids:
+            reg_model_id = random.randint(1, 1000000)
+        ids.add(reg_model_id)
 
         return MockRegisteredModelVersion(
             mock_conn,
@@ -141,7 +165,7 @@ def make_mock_registered_model_version(
             _RegistryService.ModelVersion(
                 id=model_ver_id,
                 registered_model_id=reg_model_id,
-                version="test_version_name",
+                version="test_model_version_name",
             ),
         )
 

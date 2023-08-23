@@ -6,9 +6,11 @@ Unit tests for the PipelineStep class
 import random
 
 from hypothesis import given, HealthCheck, settings, strategies as st
+from unittest.mock import patch
 
 from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineStep
+import verta
 
 
 @given(
@@ -24,18 +26,19 @@ from verta.pipeline import PipelineStep
 )
 def test_steps_from_pipeline_definition(
     pipeline_definition,
-    mock_conn,
-    mock_config,
-    mocked_responses,
     registered_model_id,
     model_version_name,
     model_name,
+    mock_conn,
+    mock_config,
+    mocked_responses,
 ) -> None:
     """Test that a list of PipelineStep objects can be constructed and
     returned from a pipeline definition.
 
     The registered model, model version, and environment is fetched for
-    each step, so a response is mocked for each call.
+    each step.  However, only the call to to fetch the RMV is mocked, as
+    the _get_registered_model function is patched to return a mock RM.
     """
     graph = pipeline_definition["graph"]
     for step in pipeline_definition["steps"]:
@@ -68,7 +71,7 @@ def test_steps_from_pipeline_definition(
     # we have the same number of steps as in the pipeline definition
     assert len(generated_steps) == len(pipeline_definition["steps"])
 
-    # sort each group of steps for comparison
+    # sort both group of steps for side-by-side comparison
     generated_steps_sorted = sorted(list(generated_steps), key=lambda x: x.name)
     definition_steps_sorted = sorted(
         pipeline_definition["steps"], key=lambda x: x["name"]
@@ -94,30 +97,47 @@ def test_steps_from_pipeline_definition(
         ][0]
 
 
-def test_to_step_spec(make_mock_registered_model_version) -> None:
+def test_to_step_spec(
+    make_mock_registered_model_version, make_mock_registered_model
+) -> None:
     """Test that a PipelineStep object can be converted to a step specification"""
-    model_version = make_mock_registered_model_version()
-    step = PipelineStep(
-        model_version=model_version,
-        name="test_name",
-        predecessors=set(),  # predecessors not included in step spec
+    mocked_rmv = make_mock_registered_model_version()
+    mocked_rm = make_mock_registered_model(
+        id=mocked_rmv.registered_model_id, name="test_rmv"
     )
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step = PipelineStep(
+            model_version=mocked_rmv,
+            name="test_name",
+            predecessors=set(),  # predecessors not included in step spec
+        )
     assert step._to_step_spec() == {
         "name": "test_name",
-        "model_version_id": model_version.id,
+        "model_version_id": mocked_rmv.id,
     }
 
 
 def test_to_graph_spec(
-    make_mock_registered_model_version, make_mock_pipeline_step
+    make_mock_registered_model_version,
+    make_mock_pipeline_step,
+    make_mock_registered_model,
 ) -> None:
     """Test that a PipelineStep object can be converted to a step specification"""
-    predecessors = {make_mock_pipeline_step() for _ in range(random.randint(1, 5))}
-    step = PipelineStep(
-        model_version=make_mock_registered_model_version(),
-        name="test_name",
-        predecessors=predecessors,
+    mocked_rmv = make_mock_registered_model_version()
+    mocked_rm = make_mock_registered_model(
+        id=mocked_rmv.registered_model_id, name="test_rmv"
     )
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        predecessors = {make_mock_pipeline_step() for _ in range(random.randint(1, 5))}
+        step = PipelineStep(
+            model_version=mocked_rmv,
+            name="test_name",
+            predecessors=predecessors,
+        )
     assert step._to_graph_spec() == {
         "name": "test_name",
         "predecessors": [s.name for s in predecessors],
@@ -125,16 +145,25 @@ def test_to_graph_spec(
 
 
 def test_set_predecessors_add(
-    make_mock_registered_model_version, make_mock_pipeline_step
+    make_mock_registered_model_version,
+    make_mock_pipeline_step,
+    make_mock_registered_model,
 ) -> None:
     """Test that predecessors can be added to a PipelineStep object"""
-    predecessor_1 = make_mock_pipeline_step()
-    predecessor_2 = make_mock_pipeline_step()
-    step = PipelineStep(
-        model_version=make_mock_registered_model_version(),
-        name="test_name",
-        predecessors={predecessor_1},
+    mocked_rmv = make_mock_registered_model_version()
+    mocked_rm = make_mock_registered_model(
+        id=mocked_rmv.registered_model_id, name="test_rmv"
     )
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        predecessor_1 = make_mock_pipeline_step()
+        predecessor_2 = make_mock_pipeline_step()
+        step = PipelineStep(
+            model_version=mocked_rmv,
+            name="test_name",
+            predecessors={predecessor_1},
+        )
     new_steps = step.predecessors.copy()
     new_steps.add(predecessor_2)
     step.set_predecessors(new_steps)
@@ -142,30 +171,45 @@ def test_set_predecessors_add(
 
 
 def test_set_predecessors_remove(
-    make_mock_registered_model_version, make_mock_pipeline_step
+    make_mock_registered_model_version,
+    make_mock_pipeline_step,
+    make_mock_registered_model,
 ) -> None:
     """Test that predecessors can be removed from a PipelineStep object"""
-    predecessors = {make_mock_pipeline_step() for _ in range(random.randint(2, 10))}
-    predecessors_as_list = list(predecessors)  # convert to list for slicing
-    steps_to_remain = predecessors_as_list[: len(predecessors_as_list) // 2]
-    step = PipelineStep(
-        model_version=make_mock_registered_model_version(),
-        name="test_name",
-        predecessors=predecessors,
+    mocked_rmv = make_mock_registered_model_version()
+    mocked_rm = make_mock_registered_model(
+        id=mocked_rmv.registered_model_id, name="test_rmv"
     )
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        predecessors = {make_mock_pipeline_step() for _ in range(random.randint(2, 10))}
+        predecessors_as_list = list(predecessors)  # convert to list for slicing
+        steps_to_remain = predecessors_as_list[: len(predecessors_as_list) // 2]
+        step = PipelineStep(
+            model_version=mocked_rmv,
+            name="test_name",
+            predecessors=predecessors,
+        )
     step.set_predecessors(set(steps_to_remain))
     assert step.predecessors == set(steps_to_remain)
 
 
-def test_change_model_version(make_mock_registered_model_version) -> None:
+def test_change_model_version(
+    make_mock_registered_model_version, make_mock_registered_model
+) -> None:
     """Test that a PipelineStep object can have its model version changed"""
     model_ver_1 = make_mock_registered_model_version()
     model_ver_2 = make_mock_registered_model_version()
-    step = PipelineStep(
-        model_version=model_ver_1,
-        name="test_name",
-        predecessors=set(),
-    )
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step = PipelineStep(
+            model_version=model_ver_1,
+            name="test_name",
+            predecessors=set(),
+        )
     assert step.model_version == model_ver_1
     step.set_model_version(model_ver_2)
     assert step.model_version == model_ver_2

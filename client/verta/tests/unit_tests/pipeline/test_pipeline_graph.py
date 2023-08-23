@@ -3,20 +3,26 @@
 Unit tests for the PipelineGraph class
 """
 
-from hypothesis import given, HealthCheck, settings
-from hypothesis import strategies as st
+from unittest.mock import patch
 
+from hypothesis import given, HealthCheck, settings, strategies as st
+
+import verta
 from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineGraph
 
 
-def test_set_steps(make_mock_pipeline_step) -> None:
+def test_set_steps(make_mock_pipeline_step, make_mock_registered_model) -> None:
     """
     Test that the steps of a PipelineGraph can be set
     """
-    step_1 = make_mock_pipeline_step()
-    step_2 = make_mock_pipeline_step()
-    graph = PipelineGraph(steps=set())
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step_1 = make_mock_pipeline_step()
+        step_2 = make_mock_pipeline_step()
+        graph = PipelineGraph(steps=set())
     graph.set_steps({step_1, step_2})
     assert set(graph.steps) == {step_1, step_2}
     graph.set_steps(set())
@@ -35,13 +41,13 @@ def test_set_steps(make_mock_pipeline_step) -> None:
     deadline=None,
 )
 def test_from_definition(
-    mocked_responses,
     pipeline_definition,
-    mock_conn,
-    mock_config,
     registered_model_id,
     model_version_name,
     model_name,
+    mock_conn,
+    mock_config,
+    mocked_responses,
 ) -> None:
     """Test that a PipelineGraph object can be constructed from a pipeline
     specification.
@@ -55,7 +61,7 @@ def test_from_definition(
             f"https://test_socket/api/v1/registry/model_versions/{step['model_version_id']}",
             json={
                 "model_version": {
-                    "id": step['model_version_id'],
+                    "id": step["model_version_id"],
                     "registered_model_id": registered_model_id,
                     "version": model_version_name,
                 }
@@ -93,13 +99,19 @@ def test_from_definition(
         assert graph_step._registered_model.id == registered_model_id
 
 
-def test_to_graph_definition(make_mock_pipeline_step) -> None:
+def test_to_graph_definition(
+    make_mock_pipeline_step, make_mock_registered_model
+) -> None:
     """Test that a pipeline graph specification can be constructed from a
     PipelineGraph object
     """
-    step_1 = make_mock_pipeline_step("step_1")
-    step_2 = make_mock_pipeline_step("step_2")
-    step_3 = make_mock_pipeline_step("step_3")
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step_1 = make_mock_pipeline_step("step_1")
+        step_2 = make_mock_pipeline_step("step_2")
+        step_3 = make_mock_pipeline_step("step_3")
     step_2.set_predecessors({step_1})
     step_3.set_predecessors({step_2})
     graph = PipelineGraph(steps={step_1, step_2, step_3})
@@ -120,15 +132,21 @@ def test_to_graph_definition(make_mock_pipeline_step) -> None:
     ]
 
 
-def test_to_steps_definition(make_mock_pipeline_step) -> None:
+def test_to_steps_definition(
+    make_mock_pipeline_step, make_mock_registered_model
+) -> None:
     """Test that a pipeline steps specification can be constructed from a
     PipelineGraph object.
 
     Definitions are type list to remain json serializable.
     """
-    step_1 = make_mock_pipeline_step(name="step_1")
-    step_2 = make_mock_pipeline_step(name="step_2")
-    graph = PipelineGraph(steps={step_1, step_2})
+    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step_1 = make_mock_pipeline_step(name="step_1")
+        step_2 = make_mock_pipeline_step(name="step_2")
+        graph = PipelineGraph(steps={step_1, step_2})
     step_specs = graph._to_steps_definition()
     expected_definition = [
         {

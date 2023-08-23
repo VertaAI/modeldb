@@ -43,26 +43,23 @@ class PipelineStep:
         self._predecessors = (
             self.set_predecessors(predecessors) if predecessors else set()
         )
-
-        # avoid the need to pass in connection params when building as local object
-        self._registered_model: Optional[RegisteredModel] = None
-
-        # avoid additional http calls to refresh RMV cache.
         self._registered_model_id = self._model_version.registered_model_id
+        self._registered_model: RegisteredModel = self._get_registered_model(
+            conn=model_version._conn, conf=model_version._conf
+        )
 
     def __repr__(self) -> str:
-        sequence = (
-            "\n    PipelineStep:",
-            f"step name: {self.name}",
+        return "\n    ".join(
+            (
+                "\n    PipelineStep:",
+                f"step name: {self.name}",
+                f"registered_model: {self._registered_model.name}",
+                f"registered_model_id: {self._registered_model_id}",
+                f"registered_model_version: {self.model_version.name}",
+                f"registered_model_version_id: {self.model_version.id}",
+                f"predecessors: {[s.name for s in self.predecessors]}",
+            )
         )
-        if self._registered_model:  # don't display on local-only objects`
-            sequence += (f"registered_model: {self._registered_model.name}",)
-        sequence += (
-            f"registered_model_version: {self.model_version.name}",
-            f"registered_model_version_id: {self.model_version.id}",
-            f"predecessors: {[s.name for s in self.predecessors]}",
-        )
-        return "\n    ".join(sequence)
 
     @property
     def model_version(self) -> RegisteredModelVersion:
@@ -151,12 +148,17 @@ class PipelineStep:
             id=self._registered_model_id, conn=conn, conf=conf
         )
         self._registered_model = rm
+        return rm
 
     @classmethod
     def _steps_from_pipeline_definition(
         cls, pipeline_definition: Dict[str, Any], conn: Connection, conf: Configuration
     ) -> Set["PipelineStep"]:
-        """Return a list of PipelineStep objects from a pipeline specification
+        """Return a list of PipelineStep objects from a pipeline definition.
+
+        This method is used when fetching a pre-existing pipeline from the backend
+        and converting it to a local RegisteredPipeline object, which includes the
+        PipelineGraph and all component steps as PipelineStep objects.
 
         Parameters
         ----------
@@ -184,7 +186,6 @@ class PipelineStep:
                 )
             )
         for step_object in steps:
-            step_object._get_registered_model(conn=conn, conf=conf)
             predecessor_names = [
                 s["predecessors"]
                 for s in pipeline_definition["graph"]
