@@ -114,7 +114,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>1.9.0</version>
+                <version>1.9.10</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
