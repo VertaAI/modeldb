@@ -160,9 +160,13 @@ def test_to_pipeline_configuration_invalid_resources(
     make_mock_registered_model_version,
     make_mock_registered_model,
 ) -> None:
-    """Test that a ValueError is raised when an invalid step name is included
-    in the provided pipeline resources. (Does not match a step name in the
-    pipeline's graph)
+    """Test that the expected errors are raised when an invalid pipeline resources
+    are provided.
+
+    Invalid resources include:
+    - a step name not in the pipeline -> ValueError
+    - a step name that is not a string -> TypeError
+    - a step resource that is not a Resources object -> TypeError
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
@@ -175,8 +179,32 @@ def test_to_pipeline_configuration_invalid_resources(
             graph=graph,
             registered_model_version=make_mock_registered_model_version(),
         )
-    with pytest.raises(ValueError):
+    # step name not in pipeline
+    with pytest.raises(ValueError) as err:
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
+        assert (
+            str(err.value)
+            ==  "pipeline_resources contains resources for a step not in the "
+                "pipeline: 'invalid_step_name'"
+        )
+    step_resources.pop("invalid_step_name")
+    # step name not a string
+    step_resources.update({123: resources})
+    with pytest.raises(TypeError) as err2:
+        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
+        assert (
+            str(err2.value)
+            == "pipeline_resources keys must be type str, not <class 'int'>"
+        )
+    step_resources.pop(123)
+    # step resource not a Resources object
+    step_resources.update({"step_1": "not_resources"})
+    with pytest.raises(TypeError) as err3:
+        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
+        assert (
+            str(err3.value)
+            == "pipeline_resources values must be type Resources, not <class 'str'>"
+        )
 
 
 def test_to_pipeline_configuration_no_resources(
