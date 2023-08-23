@@ -137,9 +137,10 @@ def make_mock_registered_model_version(
             return object.__repr__(self)
 
         def _get_artifact(self, key=None, artifact_type=None):
-            return json.dumps(make_mock_simple_pipeline_definition(id=self.id)).encode(
-                "utf-8"
-            )
+            if key == "pipeline.json":
+                return json.dumps(
+                    make_mock_simple_pipeline_definition(id=self.id)
+                ).encode("utf-8")
 
     def _make_mock_registered_model_version():
         """Return a mocked ``RegisteredModelVersion``.

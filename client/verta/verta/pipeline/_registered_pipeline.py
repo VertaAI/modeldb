@@ -4,6 +4,8 @@ import json
 import copy
 from typing import Any, Dict, Optional
 
+import tempfile
+
 from verta._internal_utils._utils import Configuration, Connection
 from verta.endpoint.resources import Resources
 from verta.pipeline import PipelineGraph
@@ -80,13 +82,10 @@ class RegisteredPipeline:
         """
         Log the pipeline definition as an artifact of the registered model version.
         """
-        self._registered_model_version.log_artifact(
-            "pipeline.json", self._to_pipeline_definition()
-        )
-
-    def _get_pipeline_definition_artifact(self) -> Dict[str, Any]:
-        """Get the pipeline definition artifact from the registered model version."""
-        return self._registered_model_version.get_artifact("pipeline.json")
+        with tempfile.NamedTemporaryFile() as temp_file:
+            bytes = json.dumps(self._to_pipeline_definition()).encode("utf-8")
+            temp_file.write(bytes)
+            self._registered_model_version.log_artifact("pipeline.json", temp_file)
 
     def _to_pipeline_definition(self) -> Dict[str, Any]:
         """Create a complete pipeline definition dict from a name and PipelineGraph.
@@ -150,11 +149,29 @@ class RegisteredPipeline:
         }
 
     @classmethod
+    def _get_pipeline_definition_artifact(
+        cls, registered_model_version: RegisteredModelVersion
+    ) -> Dict[str, Any]:
+        """Get the pipeline definition artifact from the registered model version.
+
+        Parameters
+        ----------
+        registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
+            RegisteredModelVersion object associated with this pipeline, from which
+            the pipeline definition artifact will be fetched.
+
+        Returns
+        -------
+        dict
+            Pipeline definition dictionary.
+        """
+        definition = registered_model_version.get_artifact("pipeline.json").read()
+        return json.loads(definition.decode("utf-8"))
+
+    @classmethod
     def _from_pipeline_definition(
         cls,
         registered_model_version: RegisteredModelVersion,
-        conn: Connection,
-        conf: Configuration,
     ) -> "RegisteredPipeline":
         """Create a Pipeline instance from a specification dict.
 
@@ -166,18 +183,15 @@ class RegisteredPipeline:
             RegisteredModelVersion object associated with this pipeline.
         pipeline_definition : dict
             Specification dict from which to create the Pipeline.
-        conn : :class:`~verta._internal_utils._utils.Connection`
-            Connection object for fetching the models and model versions associated with steps.
-        conf : :class:`~verta._internal_utils._utils.Configuration`
-            Configuration object for fetching the models and model versions associated with steps.
         """
-        pipeline_definition_str = registered_model_version.get_artifact(
-            "pipeline.json"
-        ).read()
-        pipeline_definition = json.loads(pipeline_definition_str)
+        pipeline_definition = cls._get_pipeline_definition_artifact(
+            registered_model_version
+        )
         return cls(
             registered_model_version=registered_model_version,
             graph=PipelineGraph._from_definition(
-                pipeline_definition=pipeline_definition, conn=conn, conf=conf
+                pipeline_definition=pipeline_definition,
+                conn=registered_model_version._conn,
+                conf=registered_model_version._conf,
             ),
         )

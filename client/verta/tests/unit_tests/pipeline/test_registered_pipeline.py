@@ -4,7 +4,7 @@
 from unittest.mock import patch
 
 import pytest
-from hypothesis import given, HealthCheck, settings
+from hypothesis import given, HealthCheck, settings, strategies as st
 
 import verta
 from tests.unit_tests.strategies import pipeline_definition, resources
@@ -42,13 +42,13 @@ def test_copy_graph(
     assert copied_graph is not graph
 
 
-@given(pipeline_definition=pipeline_definition())
+@given(model_version_name=st.text(min_size=1))
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     deadline=None,
 )
 def test_log_pipeline_definition_artifact(
-    pipeline_definition,
+    model_version_name,
     mocked_responses,
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
@@ -56,40 +56,66 @@ def test_log_pipeline_definition_artifact(
     """
     Verify the expected sequence of calls when a pipeline definition
     is logged as an artifact to the pipeline's model version.
+
+    Fetching the registered model version is patched instead of mocking a
+    response to avoid having to pass the RM's id down through multiple
+    pytest fixtures.
     """
     rmv = make_mock_registered_model_version()
-    pipeline = RegisteredPipeline(
-        graph=make_mock_pipeline_graph(),
-        registered_model_version=rmv,
-    )
-    # Fetch the model
+    # Fetch the registered model version
     mocked_responses.get(
-        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{pipeline.id}",
-        json={},
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{rmv.id}",
+        json={
+            "model_version": {
+                "id": rmv.id,
+                "registered_model_id": rmv.registered_model_id,
+                "version": model_version_name,
+            }
+        },
         status=200,
     )
-    # Fetch the model version
     mocked_responses.put(
-        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/registered_models/0/model_versions/{pipeline.id}",
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/registered_models/{rmv.registered_model_id}/model_versions/{rmv.id}",
         json={},
         status=200,
     )
     # Fetch the artifact upload URL
     mocked_responses.post(
-        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{pipeline.id}/getUrlForArtifact",
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/{rmv.id}/getUrlForArtifact",
         json={
             "url": f"https://account.s3.amazonaws.com/development/ModelVersionEntity/"
-            f"{pipeline.id}/pipeline.json"
+            f"{rmv.id}/pipeline.json"
         },
         status=200,
     )
     # Upload the artifact
     mocked_responses.put(
-        f"https://account.s3.amazonaws.com/development/ModelVersionEntity/{pipeline.id}/pipeline.json",
+        f"https://account.s3.amazonaws.com/development/ModelVersionEntity/{rmv.id}/pipeline.json",
         json={},
         status=200,
     )
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=rmv
+    ):
+        pipeline = RegisteredPipeline(
+            graph=make_mock_pipeline_graph(),
+            registered_model_version=rmv,
+        )
     pipeline._log_pipeline_definition_artifact()
+
+
+def test_get_pipeline_definition_artifact(
+    make_mock_registered_model_version,
+    make_mock_simple_pipeline_definition,
+) -> None:
+    """Test that a pipeline definition artifact can be fetched from the
+    registered model version associated with a RegisteredPipeline object.
+    """
+    rmv = make_mock_registered_model_version()
+    pipeline_definition = RegisteredPipeline._get_pipeline_definition_artifact(
+        registered_model_version=rmv,
+    )
+    assert pipeline_definition == make_mock_simple_pipeline_definition(id=rmv.id)
 
 
 def test_to_pipeline_definition(
@@ -184,8 +210,8 @@ def test_to_pipeline_configuration_invalid_resources(
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
         assert (
             str(err.value)
-            ==  "pipeline_resources contains resources for a step not in the "
-                "pipeline: 'invalid_step_name'"
+            == "pipeline_resources contains resources for a step not in the "
+            "pipeline: 'invalid_step_name'"
         )
     step_resources.pop("invalid_step_name")
     # step name not a string
@@ -265,8 +291,6 @@ def test_from_pipeline_definition(
     rmv = make_mock_registered_model_version()
     pipeline = RegisteredPipeline._from_pipeline_definition(
         registered_model_version=rmv,
-        conn=mock_conn,
-        conf=mock_config,
     )
     assert isinstance(pipeline, RegisteredPipeline)
     assert pipeline.id == rmv.id
