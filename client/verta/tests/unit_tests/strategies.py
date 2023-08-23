@@ -269,49 +269,40 @@ def pipeline_definition(draw):
 
     # step names in a pipeline must be unique
     step_names = draw(
-        st.lists(st.text(min_size=5, max_size=25), min_size=5, max_size=5, unique=True)
+        st.lists(st.text(min_size=1), min_size=2, unique=True)
     )
     model_versions = draw(
         st.lists(
             # limit max value to prevent protobuf "Value out of range" error
             st.integers(min_value=1, max_value=2**63),
-            min_size=5,
-            max_size=5,
+            min_size=len(step_names),
+            max_size=len(step_names),
             unique=True,
         )
     )
 
+    graph = list()
+    for i in range(len(step_names)):
+        if i == 0:
+            graph.append({"predecessors": [], "name": step_names[i]})
+        else:
+            graph.append(
+                {"predecessors": [step_names[i - 1]], "name": step_names[i]}
+            )
+
+    steps = list()
+    for i in range(len(step_names)):
+        steps.append(
+            {
+                "model_version_id": model_versions[i],
+                "name": step_names[i],
+            }
+        )
+
     return {
-        "graph": [
-            {"predecessors": [], "name": step_names[0]},
-            {"predecessors": [step_names[0]], "name": step_names[1]},
-            {"predecessors": [step_names[1]], "name": step_names[2]},
-            {"predecessors": [step_names[2]], "name": step_names[3]},
-            {"predecessors": [step_names[3]], "name": step_names[4]},
-        ],
+        "graph": graph,
         "pipeline_version_id": draw(st.integers(min_value=1)),
-        "steps": [
-            {
-                "model_version_id": model_versions[0],
-                "name": step_names[0],
-            },
-            {
-                "model_version_id": model_versions[1],
-                "name": step_names[1],
-            },
-            {
-                "model_version_id": model_versions[2],
-                "name": step_names[2],
-            },
-            {
-                "model_version_id": model_versions[3],
-                "name": step_names[3],
-            },
-            {
-                "model_version_id": model_versions[4],
-                "name": step_names[4],
-            },
-        ],
+        "steps": steps,
     }
 
 
