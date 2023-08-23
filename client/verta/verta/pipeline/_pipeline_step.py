@@ -156,7 +156,7 @@ class PipelineStep:
     def _steps_from_pipeline_definition(
         cls, pipeline_definition: Dict[str, Any], conn: Connection, conf: Configuration
     ) -> Set["PipelineStep"]:
-        """Return a list of PipelineStep objects by from a pipeline specification
+        """Return a list of PipelineStep objects from a pipeline specification
 
         Parameters
         ----------
