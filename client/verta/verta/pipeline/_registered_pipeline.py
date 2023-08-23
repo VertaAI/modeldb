@@ -119,11 +119,20 @@ class RegisteredPipeline:
             Representation of a pipeline configuration.
         """
         if pipeline_resources:
+            for res in pipeline_resources.values():
+                if not isinstance(res, Resources):
+                    raise TypeError(
+                        f"pipeline_resources values must be type Resources, not {type(res)}"
+                    )
             for step_name in pipeline_resources.keys():
+                if not isinstance(step_name, str):
+                    raise TypeError(
+                        f"pipeline_resources keys must be type str, not {type(step_name)}"
+                    )
                 if step_name not in [step.name for step in self._graph.steps]:
                     raise ValueError(
                         f"pipeline_resources contains resources for a step not in "
-                        f"the pipeline: {step_name}"
+                        f"the pipeline: '{step_name}'"
                     )
         steps = list()
         for step in self._graph.steps:
