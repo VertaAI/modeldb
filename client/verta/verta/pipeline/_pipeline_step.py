@@ -46,9 +46,7 @@ class PipelineStep:
             self._validate_predecessors(predecessors) if predecessors else set()
         )
         self._registered_model_id = self._registered_model_version.registered_model_id
-        self._registered_model: RegisteredModel = self._get_registered_model(
-            conn=registered_model_version._conn, conf=registered_model_version._conf
-        )
+        self._registered_model: RegisteredModel = self._get_registered_model()
 
     def __repr__(self) -> str:
         return "\n    ".join(
@@ -101,9 +99,7 @@ class PipelineStep:
             )
         self._registered_model_version = registered_model_version
         self._registered_model_id = registered_model_version.registered_model_id
-        self._registered_model = self._get_registered_model(
-            conn=registered_model_version._conn, conf=registered_model_version._conf
-        )
+        self._registered_model = self._get_registered_model()
         return self.registered_model_version
 
     @property
@@ -131,7 +127,7 @@ class PipelineStep:
         Raises
         ------
         TypeError
-            If the provided value is not type str.
+            If the provided value for ``name`` is not type str.
 
         """
         if not isinstance(name, str):
@@ -150,13 +146,23 @@ class PipelineStep:
             "can't set attribute 'predecessors'; please use set_predecessors()"
         )
 
-    def set_predecessors(self, steps: Set["PipelineStep"]) -> set:
+    def set_predecessors(self, steps: Set["PipelineStep"]) -> Set["PipelineStep"]:
         """Set the predecessors associated with this step.
 
         Parameters
         ----------
         steps : list
             List of PipelineStep objects whose outputs will be treated as inputs to this step.
+
+        Returns
+        -------
+        set of PipelineStep
+            The new set of predecessors now set for this step.
+
+        Raises
+        ------
+        TypeError
+            If the provided value for ``steps`` is not a set of PipelineStep objects.
         """
         self._predecessors = self._validate_predecessors(steps)
         return self.predecessors
@@ -164,7 +170,14 @@ class PipelineStep:
     def _validate_predecessors(
         self, predecessors: Set["PipelineStep"]
     ) -> set["PipelineStep"]:
-        """Validate that the provided predecessors are a set of PipelineStep objects."""
+        """Validate that the provided predecessors are a set of PipelineStep objects.
+
+        Parameters
+        ----------
+        predecessors : set
+            Set of PipelineStep objects whose outputs will be treated as inputs to
+            this step.
+        """
         if not isinstance(predecessors, set):
             raise TypeError(f"steps must be type set, not {type(predecessors)}")
         for step in predecessors:
@@ -175,14 +188,20 @@ class PipelineStep:
                 )
         return predecessors
 
-    def _get_registered_model(self, conn: Connection, conf: Configuration) -> RegisteredModel:
+    def _get_registered_model(self) -> RegisteredModel:
         """Fetch the registered model associated with this step's model version.
 
         This is to provide important context to the user via the _repr_ method
         when a registered pipeline is fetched from the backend.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModel`
         """
         rm = RegisteredModel._get_by_id(
-            id=self._registered_model_id, conn=conn, conf=conf
+            id=self._registered_model_id,
+            conn=self.registered_model_version._conn,
+            conf=self.registered_model_version._conf,
         )
         self._registered_model = rm
         return rm
