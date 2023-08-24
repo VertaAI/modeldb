@@ -99,8 +99,11 @@ class PipelineStep:
             raise TypeError(
                 f"registered_model_version must be a RegisteredModelVersion object, not {type(registered_model_version)}"
             )
-        # TODO: Figure out if self._model_version_id gets updated here by default
         self._registered_model_version = registered_model_version
+        self._registered_model_id = registered_model_version.registered_model_id
+        self._registered_model = self._get_registered_model(
+            conn=registered_model_version._conn, conf=registered_model_version._conf
+        )
         return self.registered_model_version
 
     @property
@@ -172,7 +175,7 @@ class PipelineStep:
                 )
         return predecessors
 
-    def _get_registered_model(self, conn: Connection, conf: Configuration) -> None:
+    def _get_registered_model(self, conn: Connection, conf: Configuration) -> RegisteredModel:
         """Fetch the registered model associated with this step's model version.
 
         This is to provide important context to the user via the _repr_ method

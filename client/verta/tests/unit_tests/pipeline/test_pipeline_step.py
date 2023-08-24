@@ -195,21 +195,55 @@ def test_set_predecessors_remove(
     assert step.predecessors == set(steps_to_remain)
 
 
+@given(
+    rm_1_name=st.text(min_size=1),
+    rm_2_name=st.text(min_size=1),
+)
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+    deadline=None,
+)
 def test_change_model_version(
-    make_mock_registered_model_version, make_mock_registered_model
+    rm_1_name,
+    rm_2_name,
+    make_mock_registered_model_version,
+    make_mock_registered_model,
+    mocked_responses,
 ) -> None:
-    """Test that a PipelineStep object can have its model version changed"""
-    model_ver_1 = make_mock_registered_model_version()
-    model_ver_2 = make_mock_registered_model_version()
-    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
-    with patch.object(
-        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
-    ):
-        step = PipelineStep(
-            registered_model_version=model_ver_1,
-            name="test_name",
-            predecessors=set(),
-        )
-    assert step.registered_model_version == model_ver_1
-    step.set_registered_model_version(model_ver_2)
-    assert step.registered_model_version == model_ver_2
+    """Test that a PipelineStep object can have its model version changed
+
+    Each time a RMV is set for a PipelineStep, the RM for it is fetched,
+    so a call is mocked for th initial step creation and the change.
+    """
+    rmv_1 = make_mock_registered_model_version()
+    rmv_2 = make_mock_registered_model_version()
+    mocked_responses.get(
+        f"https://test_socket/api/v1/registry/registered_models/{rmv_1.registered_model_id}",
+        json={
+            "registered_model": {
+                "id": rmv_1.registered_model_id,
+                "name": rm_1_name,
+            }
+        },
+        status=200,
+    )
+    mocked_responses.get(
+        f"https://test_socket/api/v1/registry/registered_models/{rmv_2.registered_model_id}",
+        json={
+            "registered_model": {
+                "id": rmv_2.registered_model_id,
+                "name": rm_2_name,
+            }
+        },
+        status=200,
+    )
+    step = PipelineStep(
+        registered_model_version=rmv_1,
+        name="test_name",
+        predecessors=set(),
+    )
+    assert step.registered_model_version == rmv_1
+    assert step._registered_model_id == rmv_1.registered_model_id
+    step.set_registered_model_version(rmv_2)
+    assert step.registered_model_version == rmv_2
+    assert step._registered_model_id == rmv_2.registered_model_id
