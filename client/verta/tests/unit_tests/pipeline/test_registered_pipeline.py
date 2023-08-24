@@ -195,9 +195,9 @@ def test_to_pipeline_configuration_invalid_resources(
     are provided.
 
     Invalid resources include:
+    - a step name not in the pipeline -> ValueError
     - a step name that is not a string -> TypeError
     - a step resource that is not a Resources object -> TypeError
-    - a step name not in the pipeline -> ValueError
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
@@ -210,7 +210,14 @@ def test_to_pipeline_configuration_invalid_resources(
             graph=graph,
             registered_model_version=make_mock_registered_model_version(),
         )
-
+    # step name not in pipeline
+    with pytest.raises(ValueError) as err:
+        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
+        assert (
+                str(err.value)
+                == "pipeline_resources contains resources for a step not in the "
+                   "pipeline: 'invalid_step_name'"
+        )
     step_resources.pop("invalid_step_name")
     # step name not a string
     step_resources.update({123: resources})
@@ -229,14 +236,7 @@ def test_to_pipeline_configuration_invalid_resources(
             str(err3.value)
             == "pipeline_resources values must be type Resources, not <class 'str'>"
         )
-    # step name not in pipeline
-    with pytest.raises(ValueError) as err:
-        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
-        assert (
-            str(err.value)
-            == "pipeline_resources contains resources for a step not in the "
-            "pipeline: 'invalid_step_name'"
-        )
+
 
 
 def test_to_pipeline_configuration_no_resources(
