@@ -188,7 +188,7 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
 
     def _make_mock_pipeline_step(name: Optional[str] = None):
         return MockPipelineStep(
-            model_version=make_mock_registered_model_version(),
+            registered_model_version=make_mock_registered_model_version(),
             name=name if name else "test_pipeline_step_name",
             predecessors=set(),
         )

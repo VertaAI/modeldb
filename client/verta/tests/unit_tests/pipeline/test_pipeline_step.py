@@ -81,7 +81,7 @@ def test_steps_from_pipeline_definition(
         # the names are the same for the steps and their definitions
         assert gen_step.name == def_step["name"]
         # model version ids are the same for the steps and their definitions
-        assert gen_step.model_version.id == def_step["model_version_id"]
+        assert gen_step.registered_model_version.id == def_step["model_version_id"]
         # registered model ids are the same for the steps and their definitions
         assert gen_step._registered_model.id == registered_model_id
         # registered model names are fetched and added
@@ -109,7 +109,7 @@ def test_to_step_spec(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
         step = PipelineStep(
-            model_version=mocked_rmv,
+            registered_model_version=mocked_rmv,
             name="test_name",
             predecessors=set(),  # predecessors not included in step spec
         )
@@ -134,7 +134,7 @@ def test_to_graph_spec(
     ):
         predecessors = {make_mock_pipeline_step() for _ in range(random.randint(1, 5))}
         step = PipelineStep(
-            model_version=mocked_rmv,
+            registered_model_version=mocked_rmv,
             name="test_name",
             predecessors=predecessors,
         )
@@ -160,7 +160,7 @@ def test_set_predecessors_add(
         predecessor_1 = make_mock_pipeline_step()
         predecessor_2 = make_mock_pipeline_step()
         step = PipelineStep(
-            model_version=mocked_rmv,
+            registered_model_version=mocked_rmv,
             name="test_name",
             predecessors={predecessor_1},
         )
@@ -187,7 +187,7 @@ def test_set_predecessors_remove(
         predecessors_as_list = list(predecessors)  # convert to list for slicing
         steps_to_remain = predecessors_as_list[: len(predecessors_as_list) // 2]
         step = PipelineStep(
-            model_version=mocked_rmv,
+            registered_model_version=mocked_rmv,
             name="test_name",
             predecessors=predecessors,
         )
@@ -206,10 +206,10 @@ def test_change_model_version(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
         step = PipelineStep(
-            model_version=model_ver_1,
+            registered_model_version=model_ver_1,
             name="test_name",
             predecessors=set(),
         )
-    assert step.model_version == model_ver_1
-    step.set_model_version(model_ver_2)
-    assert step.model_version == model_ver_2
+    assert step.registered_model_version == model_ver_1
+    step.set_registered_model_version(model_ver_2)
+    assert step.registered_model_version == model_ver_2

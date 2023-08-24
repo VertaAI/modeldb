@@ -94,7 +94,9 @@ def test_from_definition(
 
     for graph_step, pipeline_step in zip(graph_steps_sorted, pipeline_steps_sorted):
         assert graph_step.name == pipeline_step["name"]
-        assert graph_step.model_version.id == pipeline_step["model_version_id"]
+        assert (
+            graph_step.registered_model_version.id == pipeline_step["model_version_id"]
+        )
         assert graph_step._registered_model.name == model_name
         assert graph_step._registered_model.id == registered_model_id
 
@@ -151,11 +153,11 @@ def test_to_steps_definition(
     expected_definition = [
         {
             "name": step_1.name,
-            "model_version_id": step_1.model_version.id,
+            "model_version_id": step_1.registered_model_version.id,
         },
         {
             "name": step_2.name,
-            "model_version_id": step_2.model_version.id,
+            "model_version_id": step_2.registered_model_version.id,
         },
     ]
     assert sorted(step_specs, key=lambda x: x["name"]) == sorted(

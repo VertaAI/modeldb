@@ -38,7 +38,10 @@ def test_copy_graph(
         assert orig_step is not copied_step
         assert orig_step.name == copied_step.name
         assert orig_step.predecessors == copied_step.predecessors
-        assert orig_step.model_version.id == copied_step.model_version.id
+        assert (
+            orig_step.registered_model_version.id
+            == copied_step.registered_model_version.id
+        )
     assert copied_graph is not graph
 
 

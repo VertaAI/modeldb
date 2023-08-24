@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 from verta._internal_utils._utils import Configuration, Connection
 from verta.registry.entities import RegisteredModel, RegisteredModelVersion
@@ -14,38 +14,40 @@ class PipelineStep:
     ----------
     name : str
         Name of the step, for use within the scope of the pipeline only.
-    model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
-        Registered model version to run for the step.
+    registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
+        Registered model version to run for this step.
     predecessors : set, optional
-        Set of PipelineSteps whose outputs will be treated as inputs to this step.
-        If not included, the step is assumed to be an initial step. Values must be unique.
+        Set of unique PipelineSteps whose outputs will be treated as inputs to this
+        step. If not included, the step is assumed to be an initial step.
 
     Attributes
     ----------
     name : str
         Name of the step within the scope of the pipeline.
-    model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
-        Model version being run by this step.
-    predecessors : list
-        List of PipelineSteps whose outputs will be treated as inputs to this step.
+    registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
+        Registered model version run by this step.
+    predecessors : set
+        Set of PipelineSteps whose outputs will be treated as inputs to this step.
     """
 
     def __init__(
         self,
         name: str,
-        model_version: RegisteredModelVersion,
+        registered_model_version: RegisteredModelVersion,
         predecessors: Optional[
             Set["PipelineStep"]
         ] = None,  # Optional because it could be the first step with no predecessors
     ):
         self._name = self.set_name(name)
-        self._model_version = self.set_model_version(model_version)
+        self._registered_model_version = self.set_registered_model_version(
+            registered_model_version
+        )
         self._predecessors = (
             self._validate_predecessors(predecessors) if predecessors else set()
         )
-        self._registered_model_id = self._model_version.registered_model_id
+        self._registered_model_id = self._registered_model_version.registered_model_id
         self._registered_model: RegisteredModel = self._get_registered_model(
-            conn=model_version._conn, conf=model_version._conf
+            conn=registered_model_version._conn, conf=registered_model_version._conf
         )
 
     def __repr__(self) -> str:
@@ -55,37 +57,51 @@ class PipelineStep:
                 f"step name: {self.name}",
                 f"registered_model: {self._registered_model.name}",
                 f"registered_model_id: {self._registered_model_id}",
-                f"registered_model_version: {self.model_version.name}",
-                f"registered_model_version_id: {self.model_version.id}",
+                f"registered_model_version: {self.registered_model_version.name}",
+                f"registered_model_version_id: {self.registered_model_version.id}",
                 f"predecessors: {[s.name for s in self.predecessors]}",
             )
         )
 
     @property
-    def model_version(self) -> RegisteredModelVersion:
-        return self._model_version
+    def registered_model_version(self) -> RegisteredModelVersion:
+        return self._registered_model_version
 
-    @model_version.setter
-    def model_version(self, value) -> None:
+    @registered_model_version.setter
+    def registered_model_version(self, value) -> None:
         """Raise a more informative error than the default."""
         raise AttributeError(
-            "can't set attribute 'model_version'; please use set_model_version()"
+            "can't set attribute 'registered_model_version'; please use set_registered_model_version()"
         )
 
-    def set_model_version(self, new_model_version: RegisteredModelVersion) -> None:
-        """Change the registered model version associated with this step.
+    def set_registered_model_version(
+        self, registered_model_version: RegisteredModelVersion
+    ) -> RegisteredModelVersion:
+        """Set the registered model version associated with this step.
 
         Parameters
         ----------
-        model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
+        registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
             Registered model version to use for the step.
+
+        Returns
+        -------
+        RegisteredModelVersion
+            The new registered model version now set for this step.
+
+        Raises
+        ------
+        TypeError
+            If the provided value is not type RegisteredModelVersion
+
         """
-        if not isinstance(new_model_version, RegisteredModelVersion):
+        if not isinstance(registered_model_version, RegisteredModelVersion):
             raise TypeError(
-                f"model_version must be a RegisteredModelVersion object, not {type(new_model_version)}"
+                f"registered_model_version must be a RegisteredModelVersion object, not {type(registered_model_version)}"
             )
-        self._model_version = new_model_version
-        return self.model_version
+        # TODO: Figure out if self._model_version_id gets updated here by default
+        self._registered_model_version = registered_model_version
+        return self.registered_model_version
 
     @property
     def name(self) -> str:
@@ -102,7 +118,18 @@ class PipelineStep:
         Parameters
         ----------
         name : str
-            New name to use for the step.
+            New name to use for the step
+
+        Returns
+        -------
+        name: str
+            The string value of the name now set for this step.
+
+        Raises
+        ------
+        TypeError
+            If the provided value is not type str.
+
         """
         if not isinstance(name, str):
             raise TypeError(f"name must be a string, not {type(name)}")
@@ -186,7 +213,7 @@ class PipelineStep:
             steps.add(
                 cls(
                     name=step["name"],
-                    model_version=RegisteredModelVersion._get_by_id(
+                    registered_model_version=RegisteredModelVersion._get_by_id(
                         id=step["model_version_id"], conn=conn, conf=conf
                     ),
                     predecessors=set(),
@@ -209,7 +236,7 @@ class PipelineStep:
         """
         return {
             "name": self.name,
-            "model_version_id": self.model_version.id,
+            "model_version_id": self.registered_model_version.id,
         }
 
     def _to_graph_spec(self) -> Dict[str, Any]:
