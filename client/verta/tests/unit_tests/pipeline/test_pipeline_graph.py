@@ -13,9 +13,7 @@ from verta.pipeline import PipelineGraph
 
 
 def test_set_steps(make_mock_pipeline_step, make_mock_registered_model) -> None:
-    """
-    Test that the steps of a PipelineGraph can be set
-    """
+    """Test that the steps of a PipelineGraph can be set."""
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
@@ -50,7 +48,7 @@ def test_from_definition(
     mocked_responses,
 ) -> None:
     """Test that a PipelineGraph object can be constructed from a pipeline
-    specification.
+    definition.
 
     The model version is fetched for each step, so a response
     is mocked for each.  In depth testing of each step is handled in
@@ -85,7 +83,6 @@ def test_from_definition(
     assert isinstance(graph, PipelineGraph)
     # we have the same number of steps as in the pipeline definition
     assert len(graph.steps) == len(pipeline_definition["steps"])
-
     # sort each group of steps for comparison
     pipeline_steps_sorted = sorted(
         pipeline_definition["steps"], key=lambda x: x["name"]
@@ -104,8 +101,8 @@ def test_from_definition(
 def test_to_graph_definition(
     make_mock_pipeline_step, make_mock_registered_model
 ) -> None:
-    """Test that a pipeline graph specification can be constructed from a
-    PipelineGraph object
+    """Test that a pipeline `graph` specification can be constructed from a
+    PipelineGraph object.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
@@ -137,7 +134,7 @@ def test_to_graph_definition(
 def test_to_steps_definition(
     make_mock_pipeline_step, make_mock_registered_model
 ) -> None:
-    """Test that a pipeline steps specification can be constructed from a
+    """Test that a pipeline `steps` specification can be constructed from a
     PipelineGraph object.
 
     Definitions are type list to remain json serializable.

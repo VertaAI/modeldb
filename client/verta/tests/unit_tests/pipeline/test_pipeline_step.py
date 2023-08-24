@@ -4,18 +4,18 @@ Unit tests for the PipelineStep class
 """
 
 import random
-
-from hypothesis import given, HealthCheck, settings, strategies as st
 from unittest.mock import patch
 
+from hypothesis import given, HealthCheck, settings, strategies as st
+
+import verta
 from tests.unit_tests.strategies import pipeline_definition
 from verta.pipeline import PipelineStep
-import verta
 
 
 @given(
     pipeline_definition=pipeline_definition(),
-    registered_model_id=st.integers(min_value=1, max_value=1000000000),
+    registered_model_id=st.integers(min_value=1, max_value=2**63),
     # max value limit avoids protobuf "Value out of range" error
     model_version_name=st.text(min_size=1),
     model_name=st.text(min_size=1),
@@ -36,9 +36,8 @@ def test_steps_from_pipeline_definition(
     """Test that a list of PipelineStep objects can be constructed and
     returned from a pipeline definition.
 
-    The registered model, model version, and environment is fetched for
-    each step.  However, only the call to to fetch the RMV is mocked, as
-    the _get_registered_model function is patched to return a mock RM.
+    The registered model, and registered model version is fetched for
+    each step, so a call is mocked for each.
     """
     graph = pipeline_definition["graph"]
     for step in pipeline_definition["steps"]:
@@ -70,7 +69,6 @@ def test_steps_from_pipeline_definition(
     )
     # we have the same number of steps as in the pipeline definition
     assert len(generated_steps) == len(pipeline_definition["steps"])
-
     # sort both group of steps for side-by-side comparison
     generated_steps_sorted = sorted(list(generated_steps), key=lambda x: x.name)
     definition_steps_sorted = sorted(
@@ -100,7 +98,7 @@ def test_steps_from_pipeline_definition(
 def test_to_step_spec(
     make_mock_registered_model_version, make_mock_registered_model
 ) -> None:
-    """Test that a PipelineStep object can be converted to a step specification"""
+    """Test that a PipelineStep object can be converted to a step specification."""
     mocked_rmv = make_mock_registered_model_version()
     mocked_rm = make_mock_registered_model(
         id=mocked_rmv.registered_model_id, name="test_rmv"
@@ -124,7 +122,7 @@ def test_to_graph_spec(
     make_mock_pipeline_step,
     make_mock_registered_model,
 ) -> None:
-    """Test that a PipelineStep object can be converted to a step specification"""
+    """Test that a PipelineStep object can be converted to a graph specification."""
     mocked_rmv = make_mock_registered_model_version()
     mocked_rm = make_mock_registered_model(
         id=mocked_rmv.registered_model_id, name="test_rmv"
@@ -149,7 +147,7 @@ def test_set_predecessors_add(
     make_mock_pipeline_step,
     make_mock_registered_model,
 ) -> None:
-    """Test that predecessors can be added to a PipelineStep object"""
+    """Test that predecessors can be added to a PipelineStep object."""
     mocked_rmv = make_mock_registered_model_version()
     mocked_rm = make_mock_registered_model(
         id=mocked_rmv.registered_model_id, name="test_rmv"
@@ -175,7 +173,7 @@ def test_set_predecessors_remove(
     make_mock_pipeline_step,
     make_mock_registered_model,
 ) -> None:
-    """Test that predecessors can be removed from a PipelineStep object"""
+    """Test that predecessors can be removed from a PipelineStep object."""
     mocked_rmv = make_mock_registered_model_version()
     mocked_rm = make_mock_registered_model(
         id=mocked_rmv.registered_model_id, name="test_rmv"
@@ -207,13 +205,12 @@ def test_change_model_version(
     rm_1_name,
     rm_2_name,
     make_mock_registered_model_version,
-    make_mock_registered_model,
     mocked_responses,
 ) -> None:
-    """Test that a PipelineStep object can have its model version changed
+    """Test that a PipelineStep object can have its model version changed.
 
     Each time a RMV is set for a PipelineStep, the RM for it is fetched,
-    so a call is mocked for th initial step creation and the change.
+    so a call is mocked for the initial step creation and the change.
     """
     rmv_1 = make_mock_registered_model_version()
     rmv_2 = make_mock_registered_model_version()

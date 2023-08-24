@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for the RegisteredPipeline class"""
+"""
+Unit tests for the RegisteredPipeline class
+"""
 
 from unittest.mock import patch
 
@@ -7,7 +9,7 @@ import pytest
 from hypothesis import given, HealthCheck, settings, strategies as st
 
 import verta
-from tests.unit_tests.strategies import pipeline_definition, resources
+from tests.unit_tests.strategies import resources
 from verta.pipeline import RegisteredPipeline
 
 
@@ -31,9 +33,10 @@ def test_copy_graph(
             registered_model_version=make_mock_registered_model_version(),
         )
     copied_graph = pipeline.copy_graph()
-    # convert from sets to lists and sort for comparison
+    # convert from sets to lists and sort for side-by-side comparison
     graph_steps_sorted = sorted(list(graph.steps), key=lambda x: x.name)
     copied_graph_steps_sorted = sorted(list(copied_graph.steps), key=lambda x: x.name)
+
     for orig_step, copied_step in zip(graph_steps_sorted, copied_graph_steps_sorted):
         assert orig_step is not copied_step
         assert orig_step.name == copied_step.name
@@ -56,8 +59,7 @@ def test_log_pipeline_definition_artifact(
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
 ) -> None:
-    """
-    Verify the expected sequence of calls when a pipeline definition
+    """Verify the expected sequence of calls when a pipeline definition
     is logged as an artifact to the pipeline's model version.
 
     Fetching the registered model version is patched instead of mocking a
@@ -157,7 +159,7 @@ def test_to_pipeline_configuration_valid(
     make_mock_registered_model_version,
     make_mock_registered_model,
 ) -> None:
-    """Test that a valid pipeline configuration can be constructed from a
+    """Test that a pipeline configuration can be constructed from a
     RegisteredPipeline object and a valid list of pipeline resources.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
@@ -193,9 +195,9 @@ def test_to_pipeline_configuration_invalid_resources(
     are provided.
 
     Invalid resources include:
-    - a step name not in the pipeline -> ValueError
     - a step name that is not a string -> TypeError
     - a step resource that is not a Resources object -> TypeError
+    - a step name not in the pipeline -> ValueError
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
@@ -208,14 +210,7 @@ def test_to_pipeline_configuration_invalid_resources(
             graph=graph,
             registered_model_version=make_mock_registered_model_version(),
         )
-    # step name not in pipeline
-    with pytest.raises(ValueError) as err:
-        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
-        assert (
-            str(err.value)
-            == "pipeline_resources contains resources for a step not in the "
-            "pipeline: 'invalid_step_name'"
-        )
+
     step_resources.pop("invalid_step_name")
     # step name not a string
     step_resources.update({123: resources})
@@ -234,6 +229,14 @@ def test_to_pipeline_configuration_invalid_resources(
             str(err3.value)
             == "pipeline_resources values must be type Resources, not <class 'str'>"
         )
+    # step name not in pipeline
+    with pytest.raises(ValueError) as err:
+        pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
+        assert (
+            str(err.value)
+            == "pipeline_resources contains resources for a step not in the "
+            "pipeline: 'invalid_step_name'"
+        )
 
 
 def test_to_pipeline_configuration_no_resources(
@@ -242,7 +245,7 @@ def test_to_pipeline_configuration_no_resources(
     make_mock_registered_model,
 ) -> None:
     """Test that a pipeline configuration can be constructed from a
-    RegisteredPipeline object without providing pipeline resources.
+    RegisteredPipeline object without providing any pipeline resources.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
     with patch.object(
@@ -258,22 +261,20 @@ def test_to_pipeline_configuration_no_resources(
     for graph_step, config_step in zip(graph.steps, pipeline_configuration["steps"]):
         # All steps are included in the configuration
         assert graph_step.name == config_step["name"]
-        # No resources are found in the configuration
+        # No resources are found in the resulting configuration
         assert "resources" not in config_step.keys()
 
 
 def test_from_pipeline_definition(
     make_mock_registered_model_version,
-    mock_conn,
-    mock_config,
     mocked_responses,
 ) -> None:
     """Test that a RegisteredPipeline object can be constructed from a pipeline
     definition.
 
-    The model version's `_get_artifact` function is mocked to
-    return a simple, consistent pipeline definition. Calls related to the
-    fetching of the artifact are mocked.
+    The model version's `_get_artifact` function is overidden in the
+    mocked RMV fixture to return a simple, consistent pipeline definition.
+    Calls related to the fetching of the RMV and RM are mocked.
     """
     mocked_responses.get(
         "https://test_socket/api/v1/registry/model_versions/1",
