@@ -25,10 +25,10 @@ class PipelineGraph:
     def __init__(self, steps: Set[PipelineStep]):
         self._steps = self._validate_steps(steps)
         self._predecessors = [s.predecessors for s in self._steps]
-        # throws an error if any step's predecessors attr has been inappropriately mutated.
+        # throws an exception if any step's predecessors attr has been inappropriately mutated.
 
     def __repr__(self) -> str:
-        return f"\nPipelineGraph steps:\n{self._format_steps()}"
+        return f"PipelineGraph steps:\n{self._format_steps()}"
 
     def _format_steps(self) -> str:
         """Format steps for improved readability in __repr__() function."""

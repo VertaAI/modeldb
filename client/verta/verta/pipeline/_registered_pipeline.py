@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import json
 import copy
+import json
+import tempfile
 from typing import Any, Dict, Optional
 
-import tempfile
-
-from verta._internal_utils._utils import Configuration, Connection
 from verta.endpoint.resources import Resources
 from verta.pipeline import PipelineGraph
 from verta.registry.entities import RegisteredModelVersion
@@ -16,17 +14,23 @@ class RegisteredPipeline:
     """Object representing a version of a registered inference pipeline.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.create_registered_pipeline() <verta.Client.create_registered_piepline>`
+    :meth:`Client.create_registered_pipeline() <verta.Client.create_registered_pipeline>`
     for creating a new pipeline, or
-    :meth:`Client.get-registered_pipeline() <verta.Client.get_registered_piepline>`
-    for fetching existing pipelines.
+    :meth:`Client.get_registered_pipeline() <verta.Client.get_registered_pipeline>`
+    for fetching an existing pipeline.
+
+    .. note::
+        Registered pipelines are immutable once registered with Verta. A new version
+        must be created and registered with any desired changes. Use the ``copy_graph()``
+        function to create a local copy of this pipeline's graph that can be modified
+        and used to create the new version.
 
     Attributes
     ----------
     name: str
         Name of this pipeline.
     id: int
-        Auto-assigned ID of this Pipeline.
+        ID of this Pipeline, auto-assigned by the Verta backend.
     graph: :class:`~verta.pipeline.PipelineGraph`
         PipelineGraph object containing all possible steps in the Pipline.
     """
@@ -47,10 +51,10 @@ class RegisteredPipeline:
         self._id = self._registered_model_version.id
         self._graph = graph
         self._graph_steps = self._graph.steps
-        # throws an error if the graph's steps attr has been inappropriately mutated
+        # throws an exception if the graph's steps attr has been inappropriately mutated.
 
     def __repr__(self):
-        return "\n".join(
+        return "\n    ".join(
             (
                 "RegisteredPipeline:",
                 f"pipeline name: {self.name}",
@@ -72,7 +76,7 @@ class RegisteredPipeline:
         return self._graph
 
     def copy_graph(self) -> PipelineGraph:
-        """Return a deep copy of the PipelineGraph of this pipeline.
+        """Return a deep copy of the PipelineGraph object for this pipeline.
 
         RegisteredPipeline objects are immutable once registered with Verta. This
         function returns a PipelineGraph object that can be modified and used to
@@ -93,7 +97,9 @@ class RegisteredPipeline:
         """Create a complete pipeline definition dict from a name and PipelineGraph.
 
         Used in conjunction with the client function for creating a registered
-        pipeline from a pipeline graph.
+        pipeline from a pipeline graph.  This gets converted to JSON and uploaded
+        as an artifact to the registered model version for the pipeline by the
+        _log_pipeline_definition_artifact function.
         """
         return {
             "pipeline_version_id": self.id,
@@ -106,8 +112,11 @@ class RegisteredPipeline:
     ) -> Dict[str, Any]:
         """Build a pipeline configuration dict for this pipeline.
 
-        The `env` and `build` keys are not included in the configuration
-        resulting in default values being used by the backend.
+        Used in conjunction with the client function for creating a registered
+        pipeline from a pipeline graph. This gets included in the update request
+        for an endpoint when the pipeline is deployed. The `env` and `build` keys
+        are not included in the configuration resulting in default values being
+        used by the backend.
 
         Parameters
         ----------
@@ -118,6 +127,14 @@ class RegisteredPipeline:
         -------
         dict
             Representation of a pipeline configuration.
+
+        Raises
+        ------
+        TypeError
+            If pipeline_resources is not a dict of str to Resources.
+        ValueError
+            If pipeline_resources contains resources for a step name that is not
+            in the pipeline.
         """
         if pipeline_resources:
             for res in pipeline_resources.values():
@@ -156,6 +173,9 @@ class RegisteredPipeline:
     ) -> Dict[str, Any]:
         """Get the pipeline definition artifact from the registered model version.
 
+        This is used to fetch the pipeline definition from the pipeline RMV when an
+        existing registered pipeline is fetched from the backend.
+
         Parameters
         ----------
         registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
@@ -175,16 +195,17 @@ class RegisteredPipeline:
         cls,
         registered_model_version: RegisteredModelVersion,
     ) -> "RegisteredPipeline":
-        """Create a Pipeline instance from a specification dict.
+        """Create a local RegisteredPipeline object from a pipeline's registered
+        model version.
 
-        Used when fetching a registered pipeline from the Verta backend.
+        Used when fetching a registered pipeline from the Verta backend. The
+        `pipeline.json` artifact is fetched from the RMV and used to build a
+        local RegisteredPipeline object.
 
         Parameters
         ----------
         registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
             RegisteredModelVersion object associated with this pipeline.
-        pipeline_definition : dict
-            Specification dict from which to create the Pipeline.
         """
         pipeline_definition = cls._get_pipeline_definition_artifact(
             registered_model_version
