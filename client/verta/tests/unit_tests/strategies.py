@@ -270,9 +270,7 @@ def pipeline_definition(draw):
     """
 
     # step names in a pipeline must be unique
-    step_names = draw(
-        st.lists(st.text(min_size=1), min_size=2, unique=True)
-    )
+    step_names = draw(st.lists(st.text(min_size=1), min_size=2, unique=True))
     model_versions = draw(
         st.lists(
             # limit max value to prevent protobuf "Value out of range" error
@@ -288,9 +286,7 @@ def pipeline_definition(draw):
         if i == 0:
             graph.append({"predecessors": [], "name": step_names[i]})
         else:
-            graph.append(
-                {"predecessors": [step_names[i - 1]], "name": step_names[i]}
-            )
+            graph.append({"predecessors": [step_names[i - 1]], "name": step_names[i]})
 
     steps = list()
     for i in range(len(step_names)):
@@ -313,7 +309,9 @@ def resources(draw):
     """Return a strategy emulating the Resources class."""
     return Resources(
         cpu=draw(st.integers(min_value=1)),
-        memory=draw(st.from_regex(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", fullmatch=True)),
+        memory=draw(
+            st.from_regex(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", fullmatch=True)
+        ),
         nvidia_gpu=NvidiaGPU(
             model=draw(st.sampled_from([NvidiaGPUModel.T4, NvidiaGPUModel.V100])),
             number=draw(st.integers(min_value=1)),
