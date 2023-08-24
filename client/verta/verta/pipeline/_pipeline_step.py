@@ -7,8 +7,7 @@ from verta.registry.entities import RegisteredModel, RegisteredModelVersion
 
 
 class PipelineStep:
-    """A single step within an inference pipeline, representing a single model
-    version to be run.
+    """Object representing a single step to be run within an inference pipeline.
 
     Parameters
     ----------
