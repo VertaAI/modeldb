@@ -265,7 +265,9 @@ def mock_workspace(draw):
 
 @st.composite
 def pipeline_definition(draw):
-    """Generate a mocked pipeline specification dictionary"""
+    """Return a strategy for a mocked linear pipeline specification
+    dictionary with an arbitrary number of steps.
+    """
 
     # step names in a pipeline must be unique
     step_names = draw(
