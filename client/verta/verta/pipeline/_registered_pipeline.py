@@ -76,11 +76,15 @@ class RegisteredPipeline:
         return self._graph
 
     def copy_graph(self) -> PipelineGraph:
-        """Return a deep copy of the PipelineGraph object for this pipeline.
+        """Return a copy of the PipelineGraph object for this pipeline.
 
         RegisteredPipeline objects are immutable once registered with Verta. This
-        function returns a PipelineGraph object that can be modified and used to
-        create and register a new RegisteredPipeline.
+        copy can be modified and used to create and register a new RegisteredPipeline.
+
+        Returns
+        -------
+        :class:`~verta.pipeline.PipelineGraph`
+            A deep copy of the PipelineGraph object for this pipeline.
         """
         return copy.deepcopy(self._graph)
 

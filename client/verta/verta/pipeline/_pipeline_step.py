@@ -120,8 +120,8 @@ class PipelineStep:
 
         Returns
         -------
-        name: str
-            The string value of the name now set for this step.
+        str
+            The new name now set for this step.
 
         Raises
         ------

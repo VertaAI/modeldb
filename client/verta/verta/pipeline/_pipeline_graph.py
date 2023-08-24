@@ -49,6 +49,16 @@ class PipelineGraph:
         ----------
         steps : set of :class:`~verta.deployment.PipelineStep`
             Set of all possible steps of the pipline graph.
+
+        Returns
+        -------
+        set of :class:`~verta.deployment.PipelineStep`
+            The steps now set for this graph, if validation is successful.
+
+        Raises
+        ------
+        TypeError
+            If ``steps`` is not a set of PipelineStep objects.
         """
         self._steps = self._validate_steps(steps)
         return self.steps
