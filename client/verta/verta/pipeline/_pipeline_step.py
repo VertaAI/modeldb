@@ -90,7 +90,7 @@ class PipelineStep:
         Raises
         ------
         TypeError
-            If the provided value is not type RegisteredModelVersion
+            If the provided value is not type RegisteredModelVersion.
 
         """
         if not isinstance(registered_model_version, RegisteredModelVersion):
@@ -117,7 +117,7 @@ class PipelineStep:
         Parameters
         ----------
         name : str
-            New name to use for the step
+            New name to use for the step.
 
         Returns
         -------
@@ -191,8 +191,8 @@ class PipelineStep:
     def _get_registered_model(self) -> RegisteredModel:
         """Fetch the registered model associated with this step's model version.
 
-        This is to provide important context to the user via the _repr_ method
-        when a registered pipeline is fetched from the backend.
+        This is to provide important context to the user when a registered
+        pipeline is fetched from the backend.
 
         Returns
         -------
@@ -219,16 +219,17 @@ class PipelineStep:
         Parameters
         ----------
         pipeline_definition : dict
-            Specification dictionary for the whole pipeline
+            Specification dictionary for the whole pipeline.
         conn : :class:`~verta._internal_utils._utils.Connection`
-            Connection object for fetching the model version associated with the step
+            Connection object for fetching the model version associated with each step.
         conf: :class:`~verta._internal_utils._utils.Configuration`
-            Configuration object for fetching the model version associated with the step
+            Configuration object for fetching the model version associated with each
+            step.
 
         Returns
         -------
-        list of :class:`~verta._pipelines.PipelineStep`
-            List of steps in the pipeline spec as PipelineStep objects
+        set of :class:`~verta._pipelines.PipelineStep`
+            Set of steps in the pipeline spec as PipelineStep objects.
         """
         steps: Set["PipelineStep"] = set()
         for step in pipeline_definition["steps"]:
@@ -252,20 +253,28 @@ class PipelineStep:
             )
         return steps
 
-    def _to_step_spec(self) -> Dict[str, Any]:
-        """Return a dictionary representation of this step, formatted for a
-        pipeline definition.
-        """
-        return {
-            "name": self.name,
-            "model_version_id": self.registered_model_version.id,
-        }
-
     def _to_graph_spec(self) -> Dict[str, Any]:
         """Return a dictionary representation of predecessors for this step,
         formatted for a pipeline definition.
+
+        The back-end expects a list of steps and their predecessors as part of the
+        `graph` object within a PipelineDefinition. This method converts this individual
+        PipelineStep to a formatted dict for that purpose.
         """
         return {
             "name": self.name,
             "predecessors": [s.name for s in self.predecessors],
+        }
+
+    def _to_step_spec(self) -> Dict[str, Any]:
+        """Return a dictionary representation of this step, formatted for a
+        pipeline definition.
+
+        The back-end expects a list of steps and their model version as part of the
+        `steps` object within a PipelineDefinition. This method converts this individual
+        PipelineStep to a formatted dict for that purpose.
+        """
+        return {
+            "name": self.name,
+            "model_version_id": self.registered_model_version.id,
         }
