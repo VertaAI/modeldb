@@ -69,9 +69,10 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 
 @pytest.fixture(scope="session")
 def make_mock_simple_pipeline_definition() -> Callable:
-    """
-    Return a callable function for creating a simple mocked pipeline
-    definition for use in tests, including a parameter for the pipeline
+    """Return a callable function for creating a simple mocked pipeline
+    definition.
+
+    For use in tests, including a parameter for the pipeline
     id to ensure consistency in tests that mock creation of a pipeline
     object from a pipeline definition.
     """
@@ -128,8 +129,7 @@ def make_mock_registered_model_version(
     mock_conn, mock_config, make_mock_simple_pipeline_definition
 ) -> Callable:
     """Return a callable function for creating mocked objects of the
-    RegisteredModelVersion class for use in tests that require multiple
-    unique instances.
+    RegisteredModelVersion class.
     """
 
     class MockRegisteredModelVersion(RegisteredModelVersion):
@@ -176,10 +176,10 @@ def make_mock_registered_model_version(
 @pytest.fixture(scope="session")
 def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
     """Return a callable function for creating mocked objects of the PipelineStep
-    class for use in tests that require multiple unique instances.
+    class.
 
-    The optional `name` parameter is for use in tests where more than one unique
-    step is required for a singe test.
+    The optional `name` parameter is for use in tests where names must be
+    known for assertions.
     """
 
     class MockPipelineStep(PipelineStep):
@@ -198,9 +198,8 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
 
 @pytest.fixture(scope="session")
 def make_mock_pipeline_graph(make_mock_pipeline_step) -> Callable:
-    """
-    Return a callable function for creating mocked objects of the PipelineGraph
-    class for use in tests that require multiple unique instances.
+    """Return a callable function for creating mocked objects of the PipelineGraph
+    class.
     """
 
     class MockPipelineGraph(PipelineGraph):
