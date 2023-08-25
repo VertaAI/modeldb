@@ -168,7 +168,7 @@ class PipelineStep:
 
     def _validate_predecessors(
         self, predecessors: Set["PipelineStep"]
-    ) -> set["PipelineStep"]:
+    ) -> Set["PipelineStep"]:
         """Validate that the provided predecessors are a set of PipelineStep objects.
 
         Parameters
