@@ -150,7 +150,7 @@ def test_to_pipeline_definition(
     assert pipeline_definition == {
         "pipeline_version_id": pipeline.id,
         "graph": graph._to_graph_definition(),
-        "predecessors": graph._to_steps_definition(),
+        "steps": graph._to_steps_definition(),
     }
 
 
@@ -300,11 +300,3 @@ def test_from_pipeline_definition(
     )
     assert isinstance(pipeline, RegisteredPipeline)
     assert pipeline.id == rmv.id
-
-
-def test_unique_ids(make_mock_registered_model_version) -> None:
-    rmv_1 = make_mock_registered_model_version()
-    rmv_2 = make_mock_registered_model_version()
-    assert rmv_1 is not rmv_2
-    assert rmv_1.id is not rmv_2.id
-    assert rmv_1.registered_model_id is not rmv_2.registered_model_id

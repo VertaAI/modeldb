@@ -93,7 +93,7 @@ class RegisteredPipeline:
         Log the pipeline definition as an artifact of the registered model version.
         """
         with tempfile.NamedTemporaryFile("w+") as temp_file:
-            json.dump(pipeline._to_pipeline_definition(), temp_file)
+            json.dump(self._to_pipeline_definition(), temp_file)
             self._registered_model_version.log_artifact("pipeline.json", temp_file)
 
     def _to_pipeline_definition(self) -> Dict[str, Any]:

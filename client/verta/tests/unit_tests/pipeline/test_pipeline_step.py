@@ -88,7 +88,7 @@ def test_steps_from_pipeline_definition(
         assert isinstance(gen_step, PipelineStep)
         # predecessors for each step are also converted to PipelineStep objects
         for predecessor in gen_step.predecessors:
-            assert isinstance(i, PipelineStep)
+            assert isinstance(predecessor, PipelineStep)
         # the predecessors for each step are all included and have the same name as in the definition
         assert [s.name for s in gen_step.predecessors] == [
             s["predecessors"] for s in graph if gen_step.name == s["name"]

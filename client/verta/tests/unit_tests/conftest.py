@@ -181,15 +181,23 @@ def make_mock_pipeline_step(make_mock_registered_model_version) -> Callable:
     The optional `name` parameter is for use in tests where names must be
     known for assertions.
     """
+    unique_names = set()
 
     class MockPipelineStep(PipelineStep):
         def __repr__(self):  # avoid network calls when displaying test results
             return object.__repr__(self)
 
+    def _make_unique_name():
+        name = f"step{random.randint(1, 1000000)}"
+        while name in unique_names:
+            name = f"step{random.randint(1, 1000000)}"
+        unique_names.add(name)
+        return name
+
     def _make_mock_pipeline_step(name: Optional[str] = None):
         return MockPipelineStep(
             registered_model_version=make_mock_registered_model_version(),
-            name=name if name else "test_pipeline_step_name",
+            name=name if name else _make_unique_name(),
             predecessors=set(),
         )
 
