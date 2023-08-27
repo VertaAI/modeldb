@@ -52,7 +52,7 @@ def test_from_definition(
 
     The model version is fetched for each step, so a response
     is mocked for each.  In depth testing of each step is handled in
-    test_pipeline_step.test_steps_from_pipeline_spec.
+    test_pipeline_step.test_steps_from_pipeline_definition.
     """
     for step in pipeline_definition["steps"]:
         mocked_responses.get(
