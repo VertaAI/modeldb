@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from verta._internal_utils._utils import Configuration, Connection
 from verta.registry.entities import RegisteredModel, RegisteredModelVersion
@@ -15,9 +15,9 @@ class PipelineStep:
         Name of the step, for use within the scope of the pipeline only.
     registered_model_version : :class:`~verta.registry.entities.RegisteredModelVersion`
         Registered model version to run for this step.
-    predecessors : set, optional
-        Set of unique PipelineSteps whose outputs will be treated as inputs to this
-        step. If not included, the step is assumed to be an initial step.
+    predecessors : list, optional
+        List of unique PipelineSteps whose outputs will be treated as inputs to
+        this step. If not included, the step is assumed to be an initial step.
 
     Attributes
     ----------
@@ -34,7 +34,7 @@ class PipelineStep:
         name: str,
         registered_model_version: RegisteredModelVersion,
         predecessors: Optional[
-            Set["PipelineStep"]
+            List["PipelineStep"]
         ] = None,  # Optional because it could be the first step with no predecessors
     ):
         self._name = self.set_name(name)
@@ -145,7 +145,7 @@ class PipelineStep:
             "can't set attribute 'predecessors'; please use set_predecessors()"
         )
 
-    def set_predecessors(self, steps: Set["PipelineStep"]) -> Set["PipelineStep"]:
+    def set_predecessors(self, steps: List["PipelineStep"]) -> Set["PipelineStep"]:
         """Set the predecessors associated with this step.
 
         Parameters
@@ -168,7 +168,7 @@ class PipelineStep:
 
     @staticmethod
     def _validate_predecessors(
-        predecessors: Set["PipelineStep"]
+        predecessors: List["PipelineStep"]
     ) -> Set["PipelineStep"]:
         """Validate that the provided predecessors are a set of PipelineStep objects.
 
@@ -178,15 +178,15 @@ class PipelineStep:
             Set of PipelineStep objects whose outputs will be treated as inputs to
             this step.
         """
-        if not isinstance(predecessors, set):
-            raise TypeError(f"steps must be type set, not {type(predecessors)}")
+        if not isinstance(predecessors, list):
+            raise TypeError(f"steps must be type list, not {type(predecessors)}")
         for step in predecessors:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
                     f"individual predecessors of a PipelineStep must be type"
                     f" PipelineStep, not {type(step)}."
                 )
-        return predecessors
+        return set(predecessors)
 
     def _get_registered_model(self) -> RegisteredModel:
         """Fetch the registered model associated with this step's model version.
@@ -257,9 +257,7 @@ class PipelineStep:
         """Return a dictionary representation of predecessors for this step,
         formatted for a pipeline definition.
 
-        The back-end expects a list of steps and their predecessors as part of the
-        `graph` object within a PipelineDefinition. This method converts this individual
-        PipelineStep to a formatted dict for that purpose.
+        This is fed to the backend as 'graph' in our PipelineDefinition schema
         """
         return {
             "name": self.name,
@@ -270,9 +268,7 @@ class PipelineStep:
         """Return a dictionary representation of this step, formatted for a
         pipeline definition.
 
-        The back-end expects a list of steps and their model version as part of the
-        `steps` object within a PipelineDefinition. This method converts this individual
-        PipelineStep to a formatted dict for that purpose.
+       This is fed to the backend as 'steps' in our PipelineDefinition schema
         """
         return {
             "name": self.name,
