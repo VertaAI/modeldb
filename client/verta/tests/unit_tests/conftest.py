@@ -131,6 +131,7 @@ def make_mock_registered_model_version(
     """Return a callable function for creating mocked objects of the
     RegisteredModelVersion class.
     """
+    unique_ids = set()
 
     class MockRegisteredModelVersion(RegisteredModelVersion):
         def __repr__(self):  # avoid network calls when displaying test results
@@ -149,16 +150,15 @@ def make_mock_registered_model_version(
         test session.
 
         """
-        ids = set()
         model_ver_id = random.randint(1, 1000000)
-        while model_ver_id in ids:
+        while model_ver_id in unique_ids:
             model_ver_id = random.randint(1, 1000000)
-        ids.add(model_ver_id)
+        unique_ids.add(model_ver_id)
 
         reg_model_id = random.randint(1, 1000000)
-        while reg_model_id in ids:
+        while reg_model_id in unique_ids:
             reg_model_id = random.randint(1, 1000000)
-        ids.add(reg_model_id)
+        unique_ids.add(reg_model_id)
 
         return MockRegisteredModelVersion(
             mock_conn,
