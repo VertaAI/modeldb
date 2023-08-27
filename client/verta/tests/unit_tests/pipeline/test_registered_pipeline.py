@@ -132,7 +132,7 @@ def test_to_pipeline_definition(
     RegisteredPipeline object.
 
     In depth testing of the `_to_graph_definition`
-    and `to_steps_definition` functions are handled in unit tests for
+    and `_to_steps_definition` functions are handled in unit tests for
     PipelineGraph.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
