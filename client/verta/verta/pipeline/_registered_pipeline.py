@@ -191,8 +191,7 @@ class RegisteredPipeline:
         dict
             Pipeline definition dictionary.
         """
-        definition = registered_model_version.get_artifact("pipeline.json").read()
-        return json.loads(definition.decode("utf-8"))
+        return json.load(registered_model_version.get_artifact("pipeline.json"))
 
     @classmethod
     def _from_pipeline_definition(
