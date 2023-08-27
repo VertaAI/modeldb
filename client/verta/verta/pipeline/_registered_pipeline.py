@@ -108,7 +108,7 @@ class RegisteredPipeline:
         return {
             "pipeline_version_id": self.id,
             "graph": self._graph._to_graph_definition(),
-            "predecessors": self._graph._to_steps_definition(),
+            "steps": self._graph._to_steps_definition(),
         }
 
     def _to_pipeline_configuration(
