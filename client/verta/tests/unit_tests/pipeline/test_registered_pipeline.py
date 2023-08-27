@@ -57,6 +57,7 @@ def test_log_pipeline_definition_artifact(
     model_version_name,
     mocked_responses,
     make_mock_pipeline_graph,
+    make_mock_registered_model,
     make_mock_registered_model_version,
 ) -> None:
     """Verify the expected sequence of calls when a pipeline definition
@@ -66,6 +67,7 @@ def test_log_pipeline_definition_artifact(
     response to avoid having to pass the RM's id down through multiple
     pytest fixtures.
     """
+    rm = make_mock_registered_model(id=123, name="test_rm")
     rmv = make_mock_registered_model_version()
     # Fetch the registered model version
     mocked_responses.get(
@@ -100,7 +102,7 @@ def test_log_pipeline_definition_artifact(
         status=200,
     )
     with patch.object(
-        verta.pipeline.PipelineStep, "_get_registered_model", return_value=rmv
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=rm
     ):
         pipeline = RegisteredPipeline(
             graph=make_mock_pipeline_graph(),
