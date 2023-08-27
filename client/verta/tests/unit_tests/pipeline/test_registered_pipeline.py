@@ -249,7 +249,7 @@ def test_to_pipeline_configuration_no_resources(
     """Test that a pipeline configuration can be constructed from a
     RegisteredPipeline object without providing any pipeline resources.
     """
-    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
     with patch.object(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
