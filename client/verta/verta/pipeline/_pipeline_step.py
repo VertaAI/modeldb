@@ -166,8 +166,9 @@ class PipelineStep:
         self._predecessors = self._validate_predecessors(steps)
         return self.predecessors
 
+    @staticmethod
     def _validate_predecessors(
-        self, predecessors: Set["PipelineStep"]
+        predecessors: Set["PipelineStep"]
     ) -> Set["PipelineStep"]:
         """Validate that the provided predecessors are a set of PipelineStep objects.
 
