@@ -155,14 +155,15 @@ def test_to_pipeline_definition(
 
 
 @given(resources=resources())
-def test_to_pipeline_configuration_valid(
+def test_to_pipeline_configuration_valid_complete(
     resources,
     make_mock_pipeline_graph,
     make_mock_registered_model_version,
     make_mock_registered_model,
 ) -> None:
     """Test that a pipeline configuration can be constructed from a
-    RegisteredPipeline object and a valid list of pipeline resources.
+    RegisteredPipeline object and a valid list of pipeline resources,
+    where resources are provided for every step.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rm")
     with patch.object(
@@ -179,11 +180,53 @@ def test_to_pipeline_configuration_valid(
         pipeline_resources=step_resources
     )
     assert pipeline_configuration["pipeline_version_id"] == pipeline.id
+    assert len(graph.steps) == len(pipeline_configuration["steps"])
     for graph_step, config_step in zip(graph.steps, pipeline_configuration["steps"]):
-        # All steps are included in the configuration
+        # All steps provided are included in the configuration.
         assert graph_step.name == config_step["name"]
         # All steps in the config have resources
         assert "resources" in config_step.keys()
+
+
+@given(resources=resources())
+def test_to_pipeline_configuration_valid_incomplete(
+        resources,
+        make_mock_pipeline_graph,
+        make_mock_registered_model_version,
+        make_mock_registered_model,
+) -> None:
+    """Test that a pipeline configuration can be constructed from a
+    RegisteredPipeline object and a valid list of pipeline resources,
+    where resources are not provided for every step.
+    """
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
+    with patch.object(
+            verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+        partial_steps = list(graph.steps)[:-1]
+        excluded_step = list(graph.steps)[-1]
+        step_resources = {step.name: resources for step in partial_steps}
+        pipeline = RegisteredPipeline(
+            graph=graph,
+            registered_model_version=make_mock_registered_model_version(),
+        )
+
+    pipeline_configuration = pipeline._to_pipeline_configuration(
+        pipeline_resources=step_resources
+    )
+    assert pipeline_configuration["pipeline_version_id"] == pipeline.id
+    # All steps have been included in the configuration
+    assert len(graph.steps) == len( pipeline_configuration["steps"])
+    # Compare the steps that have resources, allowing zip to drop the excluded step.
+    for graph_step, config_step in zip(partial_steps, pipeline_configuration["steps"]):
+        # All steps provided are included in the configuration.
+        assert graph_step.name == config_step["name"]
+        # All steps for which resource were provided have resources in the config.
+        assert "resources" in config_step.keys()
+    # The step for which no resources were provided is in the config without resources.
+    assert excluded_step.name == pipeline_configuration["steps"][-1]["name"]
+    assert "resources" not in pipeline_configuration["steps"][-1].keys()
 
 
 @given(resources=resources())
