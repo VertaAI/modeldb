@@ -87,7 +87,7 @@ def test_from_definition(
     pipeline_steps_sorted = sorted(
         pipeline_definition["steps"], key=lambda x: x["name"]
     )
-    graph_steps_sorted = sorted(list(graph.steps), key=lambda x: x.name)
+    graph_steps_sorted = sorted(graph.steps, key=lambda x: x.name)
 
     for graph_step, pipeline_step in zip(graph_steps_sorted, pipeline_steps_sorted):
         assert graph_step.name == pipeline_step["name"]
