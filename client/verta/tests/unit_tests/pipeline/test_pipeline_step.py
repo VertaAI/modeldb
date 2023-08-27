@@ -80,9 +80,9 @@ def test_steps_from_pipeline_definition(
         assert gen_step.name == def_step["name"]
         # model version ids are the same for the steps and their definitions
         assert gen_step.registered_model_version.id == def_step["model_version_id"]
-        # registered model ids are the same for the steps and their definitions
+        # the registered model id for each step was fetched and added from the mocked response.
         assert gen_step._registered_model.id == registered_model_id
-        # registered model names are fetched and added
+        # registered model names are fetched and added from the mocked response.
         assert gen_step._registered_model.name == model_name
         # each step is converted to a PipelineStep object
         assert isinstance(gen_step, PipelineStep)
