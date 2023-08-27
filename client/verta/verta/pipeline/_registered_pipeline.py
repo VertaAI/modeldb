@@ -86,7 +86,7 @@ class RegisteredPipeline:
         :class:`~verta.pipeline.PipelineGraph`
             A deep copy of the PipelineGraph object for this pipeline.
         """
-        return copy.deepcopy(self._graph)
+        return copy.deepcopy(self.graph)
 
     def _log_pipeline_definition_artifact(self) -> None:
         """
