@@ -250,12 +250,12 @@ def test_to_pipeline_configuration_invalid_resources(
     ):
         graph = make_mock_pipeline_graph()
         step_resources = {step.name: resources for step in graph.steps}
-        step_resources["invalid_step_name"] = resources
         pipeline = RegisteredPipeline(
             graph=graph,
             registered_model_version=make_mock_registered_model_version(),
         )
     # step name not in pipeline
+    step_resources["invalid_step_name"] = resources
     with pytest.raises(ValueError) as err:
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
         assert (
