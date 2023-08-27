@@ -171,9 +171,9 @@ class RegisteredPipeline:
             "steps": steps,
         }
 
-    @classmethod
+    @staticmethod
     def _get_pipeline_definition_artifact(
-        cls, registered_model_version: RegisteredModelVersion
+        registered_model_version: RegisteredModelVersion
     ) -> Dict[str, Any]:
         """Get the pipeline definition artifact from the registered model version.
 
