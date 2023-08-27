@@ -23,7 +23,7 @@ def test_copy_graph(
     Each step in the copied graph should be a new object, but have the same
     name, predecessors, and model version as the original.
     """
-    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
     with patch.object(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
