@@ -24,7 +24,8 @@ class PipelineGraph:
 
     def __init__(self, steps: Set[PipelineStep]):
         self._steps = self._validate_steps(steps)
-        self._predecessors = [s.predecessors for s in self._steps]
+        for step in self._steps:
+            step._validate_predecessors(step.predecessors)
         # throws an exception if any step's predecessors attr has been inappropriately mutated.
 
     def __repr__(self) -> str:
@@ -36,7 +37,7 @@ class PipelineGraph:
 
     @property
     def steps(self) -> Set[PipelineStep]:
-        return self._validate_steps(self._steps)
+        return self._steps
 
     @steps.setter
     def steps(self, value):
@@ -87,7 +88,7 @@ class PipelineGraph:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
                     f"individual steps of a PipelineGraph must be type"
-                    f" PipelineStep, not {type(step)}"
+                    f" PipelineStep, not {type(step)}."
                 )
         return steps
 

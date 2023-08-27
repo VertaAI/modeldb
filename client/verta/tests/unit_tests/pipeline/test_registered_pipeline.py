@@ -190,10 +190,10 @@ def test_to_pipeline_configuration_valid_complete(
 
 @given(resources=resources())
 def test_to_pipeline_configuration_valid_incomplete(
-        resources,
-        make_mock_pipeline_graph,
-        make_mock_registered_model_version,
-        make_mock_registered_model,
+    resources,
+    make_mock_pipeline_graph,
+    make_mock_registered_model_version,
+    make_mock_registered_model,
 ) -> None:
     """Test that a pipeline configuration can be constructed from a
     RegisteredPipeline object and a valid list of pipeline resources,
@@ -201,7 +201,7 @@ def test_to_pipeline_configuration_valid_incomplete(
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rm")
     with patch.object(
-            verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
         graph = make_mock_pipeline_graph()
         partial_steps = list(graph.steps)[:-1]
@@ -217,7 +217,7 @@ def test_to_pipeline_configuration_valid_incomplete(
     )
     assert pipeline_configuration["pipeline_version_id"] == pipeline.id
     # All steps have been included in the configuration
-    assert len(graph.steps) == len( pipeline_configuration["steps"])
+    assert len(graph.steps) == len(pipeline_configuration["steps"])
     # Compare the steps that have resources, allowing zip to drop the excluded step.
     for graph_step, config_step in zip(partial_steps, pipeline_configuration["steps"]):
         # All steps provided are included in the configuration.
@@ -258,30 +258,27 @@ def test_to_pipeline_configuration_invalid_resources(
     step_resources["invalid_step_name"] = resources
     with pytest.raises(ValueError) as err:
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
-        assert (
-                str(err.value)
-                == "pipeline_resources contains resources for a step not in the "
-                   "pipeline: 'invalid_step_name'"
-        )
+    assert (
+        str(err.value) == "pipeline_resources contains resources for a step not in the "
+        "pipeline: 'invalid_step_name'"
+    )
     step_resources.pop("invalid_step_name")
     # step name not a string
     step_resources.update({123: resources})
     with pytest.raises(TypeError) as err2:
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
-        assert (
-            str(err2.value)
-            == "pipeline_resources keys must be type str, not <class 'int'>"
-        )
+    assert (
+        str(err2.value) == "pipeline_resources keys must be type str, not <class 'int'>"
+    )
     step_resources.pop(123)
     # step resource not a Resources object
     step_resources.update({"step_1": "not_resources"})
     with pytest.raises(TypeError) as err3:
         pipeline._to_pipeline_configuration(pipeline_resources=step_resources)
-        assert (
-            str(err3.value)
-            == "pipeline_resources values must be type Resources, not <class 'str'>"
-        )
-
+    assert (
+        str(err3.value)
+        == "pipeline_resources values must be type Resources, not <class 'str'>"
+    )
 
 
 def test_to_pipeline_configuration_no_resources(
@@ -343,3 +340,27 @@ def test_from_pipeline_definition(
     )
     assert isinstance(pipeline, RegisteredPipeline)
     assert pipeline.id == rmv.id
+
+
+def test_bad_mutation_of_graph_steps_exception(
+    make_mock_registered_model,
+    make_mock_registered_model_version,
+    make_mock_pipeline_graph,
+):
+    """Test that we throw the correct exception when a user tries to mutate
+    the steps of a graph in an inappropriate way.
+    """
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
+    mocked_rmv = make_mock_registered_model_version()
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        graph = make_mock_pipeline_graph()
+
+    graph.steps.add("not_a_step")
+    with pytest.raises(TypeError) as err:
+        RegisteredPipeline(graph=graph, registered_model_version=mocked_rmv)
+    assert (
+        str(err.value) == f"individual steps of a PipelineGraph must be type"
+        f" PipelineStep, not <class 'str'>."
+    )

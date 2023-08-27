@@ -136,7 +136,7 @@ class PipelineStep:
 
     @property
     def predecessors(self) -> Set["PipelineStep"]:
-        return self._validate_predecessors(self._predecessors)
+        return self._predecessors
 
     @predecessors.setter
     def predecessors(self, value) -> None:
@@ -184,7 +184,7 @@ class PipelineStep:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
                     f"individual predecessors of a PipelineStep must be type"
-                    f" PipelineStep, not {type(step)} for predecessor '{step}'"
+                    f" PipelineStep, not {type(step)}."
                 )
         return predecessors
 

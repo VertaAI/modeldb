@@ -50,7 +50,7 @@ class RegisteredPipeline:
         self._name = self._registered_model_version.name
         self._id = self._registered_model_version.id
         self._graph = graph
-        self._graph_steps = self._graph.steps
+        self._graph._validate_steps(self._graph.steps)
         # throws an exception if the graph's steps attr has been inappropriately mutated.
 
     def __repr__(self):

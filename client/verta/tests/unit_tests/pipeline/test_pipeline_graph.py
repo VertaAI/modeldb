@@ -5,11 +5,12 @@ Unit tests for the PipelineGraph class
 
 from unittest.mock import patch
 
+import pytest
 from hypothesis import given, HealthCheck, settings, strategies as st
 
 import verta
 from tests.unit_tests.strategies import pipeline_definition
-from verta.pipeline import PipelineGraph
+from verta.pipeline import PipelineGraph, PipelineStep
 
 
 def test_set_steps(make_mock_pipeline_step, make_mock_registered_model) -> None:
@@ -161,4 +162,31 @@ def test_to_steps_definition(
     ]
     assert sorted(step_specs, key=lambda x: x["name"]) == sorted(
         expected_definition, key=lambda x: x["name"]
+    )
+
+
+def test_bad_mutation_of_step_predecessors_exception(
+        make_mock_registered_model_version, make_mock_registered_model, make_mock_pipeline_step
+):
+    """Test that we throw the correct exception when a user tries to mutate
+    the predecessors of a step in an inappropriate way.
+    """
+    mocked_rmv = make_mock_registered_model_version()
+    mocked_rm = make_mock_registered_model(
+        id=mocked_rmv.registered_model_id, name="test_rmv"
+    )
+    with patch.object(
+            verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step = PipelineStep(
+            registered_model_version=mocked_rmv,
+            name="test_name",
+            predecessors=set(),
+        )
+    step.predecessors.add("not_a_step")
+    with pytest.raises(TypeError) as err:
+        PipelineGraph(steps={step})
+    assert (
+            str(err.value) == f"individual predecessors of a PipelineStep must be type"
+                    f" PipelineStep, not <class 'str'>."
     )
