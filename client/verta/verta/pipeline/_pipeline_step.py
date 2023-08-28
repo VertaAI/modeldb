@@ -141,7 +141,9 @@ class PipelineStep:
             "can't set attribute 'predecessors'; please use set_predecessors()"
         )
 
-    def set_predecessors(self, steps: Optional[Set["PipelineStep"]] = None) -> Set["PipelineStep"]:
+    def set_predecessors(
+        self, steps: Optional[Set["PipelineStep"]] = None
+    ) -> Set["PipelineStep"]:
         """Set the predecessors associated with this step.
 
         Parameters
@@ -168,7 +170,7 @@ class PipelineStep:
 
     @staticmethod
     def _validate_predecessors(
-        predecessors: Set["PipelineStep"]
+        predecessors: Set["PipelineStep"],
     ) -> Set["PipelineStep"]:
         """Validate that the provided predecessors are a set of PipelineStep objects.
 
@@ -265,9 +267,9 @@ class PipelineStep:
 
     def _to_step_spec(self) -> Dict[str, Any]:
         """Return a dictionary representation of this step, formatted for a
-        pipeline definition.
+         pipeline definition.
 
-       This is fed to the backend as 'steps' in our PipelineDefinition schema
+        This is fed to the backend as 'steps' in our PipelineDefinition schema
         """
         return {
             "name": self.name,

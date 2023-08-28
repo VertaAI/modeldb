@@ -166,7 +166,9 @@ def test_to_steps_definition(
 
 
 def test_bad_mutation_of_step_predecessors_exception(
-        make_mock_registered_model_version, make_mock_registered_model, make_mock_pipeline_step
+    make_mock_registered_model_version,
+    make_mock_registered_model,
+    make_mock_pipeline_step,
 ):
     """Test that we throw the correct exception when a user tries to mutate
     the predecessors of a step in an inappropriate way.
@@ -176,7 +178,7 @@ def test_bad_mutation_of_step_predecessors_exception(
         id=mocked_rmv.registered_model_id, name="test_rmv"
     )
     with patch.object(
-            verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
         step = PipelineStep(
             registered_model_version=mocked_rmv,
@@ -187,6 +189,6 @@ def test_bad_mutation_of_step_predecessors_exception(
     with pytest.raises(TypeError) as err:
         PipelineGraph(steps={step})
     assert (
-            str(err.value) == f"individual predecessors of a PipelineStep must be type"
-                    f" PipelineStep, not <class 'str'>."
+        str(err.value) == f"individual predecessors of a PipelineStep must be type"
+        f" PipelineStep, not <class 'str'>."
     )

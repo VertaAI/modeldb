@@ -240,7 +240,7 @@ def test_change_model_version(
         predecessors=set(),
     )
     assert step.registered_model_version == rmv_1
-    assert step._registered_model.id  == rmv_1.registered_model_id
+    assert step._registered_model.id == rmv_1.registered_model_id
     step.set_registered_model_version(rmv_2)
     assert step.registered_model_version == rmv_2
     assert step._registered_model.id == rmv_2.registered_model_id
