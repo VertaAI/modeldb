@@ -50,7 +50,7 @@ class PipelineStep:
     def __repr__(self) -> str:
         return "\n    ".join(
             (
-                "\n    PipelineStep:",
+                "PipelineStep:",
                 f"step name: {self.name}",
                 f"registered_model: {self._registered_model.name}",
                 f"registered_model_id: {self._registered_model_id}",
