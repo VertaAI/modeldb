@@ -203,7 +203,6 @@ class PipelineStep:
             conn=self.registered_model_version._conn,
             conf=self.registered_model_version._conf,
         )
-        self._registered_model = rm
         return rm
 
     @classmethod
