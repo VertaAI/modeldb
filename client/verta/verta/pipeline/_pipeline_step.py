@@ -41,9 +41,7 @@ class PipelineStep:
         self._registered_model_version = self.set_registered_model_version(
             registered_model_version
         )
-        self._predecessors = (
-            self._validate_predecessors(predecessors) if predecessors else set()
-        )
+        self._predecessors = self.set_predecessors(predecessors)
         self._registered_model: RegisteredModel = self._get_registered_model()
 
     def __repr__(self) -> str:
@@ -143,13 +141,14 @@ class PipelineStep:
             "can't set attribute 'predecessors'; please use set_predecessors()"
         )
 
-    def set_predecessors(self, steps: Set["PipelineStep"]) -> Set["PipelineStep"]:
+    def set_predecessors(self, steps: Optional[Set["PipelineStep"]] = None) -> Set["PipelineStep"]:
         """Set the predecessors associated with this step.
 
         Parameters
         ----------
-        steps : set
-            List of PipelineStep objects whose outputs will be treated as inputs to this step.
+        steps : set, optional
+            Set of PipelineStep objects whose outputs will be treated as inputs to this step.
+            Empty set used if no input provided.
 
         Returns
         -------
@@ -161,7 +160,10 @@ class PipelineStep:
         TypeError
             If the provided value for ``steps`` is not a set of PipelineStep objects.
         """
-        self._predecessors = self._validate_predecessors(steps)
+        if steps:
+            self._predecessors = self._validate_predecessors(steps)
+            return self.predecessors
+        self._predecessors = set()
         return self.predecessors
 
     @staticmethod
