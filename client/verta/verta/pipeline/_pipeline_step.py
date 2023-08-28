@@ -44,7 +44,6 @@ class PipelineStep:
         self._predecessors = (
             self._validate_predecessors(predecessors) if predecessors else set()
         )
-        self._registered_model_id = self._registered_model_version.registered_model_id
         self._registered_model: RegisteredModel = self._get_registered_model()
 
     def __repr__(self) -> str:
@@ -53,7 +52,7 @@ class PipelineStep:
                 "PipelineStep:",
                 f"step name: {self.name}",
                 f"registered_model: {self._registered_model.name}",
-                f"registered_model_id: {self._registered_model_id}",
+                f"registered_model_id: {self._registered_model.id}",
                 f"registered_model_version: {self.registered_model_version.name}",
                 f"registered_model_version_id: {self.registered_model_version.id}",
                 f"predecessors: {[s.name for s in self.predecessors]}",
@@ -97,7 +96,6 @@ class PipelineStep:
                 f"registered_model_version must be a RegisteredModelVersion object, not {type(registered_model_version)}"
             )
         self._registered_model_version = registered_model_version
-        self._registered_model_id = registered_model_version.registered_model_id
         self._registered_model = self._get_registered_model()
         return self.registered_model_version
 
@@ -199,7 +197,7 @@ class PipelineStep:
         :class:`~verta.registry.entities.RegisteredModel`
         """
         rm = RegisteredModel._get_by_id(
-            id=self._registered_model_id,
+            id=self._registered_model_version.registered_model_id,
             conn=self.registered_model_version._conn,
             conf=self.registered_model_version._conf,
         )
