@@ -175,7 +175,7 @@ def test_bad_mutation_of_step_predecessors_exception(
     """
     mocked_rmv = make_mock_registered_model_version()
     mocked_rm = make_mock_registered_model(
-        id=mocked_rmv.registered_model_id, name="test_rmv"
+        id=mocked_rmv.registered_model_id, name="test_rm"
     )
     with patch.object(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
