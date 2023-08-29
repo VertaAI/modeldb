@@ -15,8 +15,8 @@ from verta.pipeline import PipelineStep
 
 @given(
     pipeline_definition=pipeline_definition(),
-    registered_model_id=st.integers(min_value=1, max_value=2**63),
     # max value limit avoids protobuf "Value out of range" error
+    registered_model_id=st.integers(min_value=1, max_value=2**63),
     model_version_name=st.text(min_size=1),
     model_name=st.text(min_size=1),
 )
