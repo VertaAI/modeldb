@@ -70,7 +70,7 @@ def test_steps_from_pipeline_definition(
     # we have the same number of steps as in the pipeline definition
     assert len(generated_steps) == len(pipeline_definition["steps"])
     # sort both group of steps for side-by-side comparison
-    generated_steps_sorted = sorted(list(generated_steps), key=lambda x: x.name)
+    generated_steps_sorted = sorted(generated_steps, key=lambda x: x.name)
     definition_steps_sorted = sorted(
         pipeline_definition["steps"], key=lambda x: x["name"]
     )
