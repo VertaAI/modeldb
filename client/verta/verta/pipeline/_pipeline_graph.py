@@ -26,9 +26,7 @@ class PipelineGraph:
         self, steps: Union[List[PipelineStep], Set[PipelineStep], Tuple[PipelineStep]]
     ):
         self._steps = self._validate_steps(steps)
-        for step in self._steps:
-            step._validate_predecessors(step.predecessors)
-        # throws an exception if any step's predecessors attr has been inappropriately mutated.
+
 
     def __repr__(self) -> str:
         return f"PipelineGraph steps:\n{self._format_steps()}"
@@ -100,6 +98,8 @@ class PipelineGraph:
                     f"individual steps of a PipelineGraph must be type"
                     f" PipelineStep, not {type(step)}."
                 )
+            # throw an exception if any step's predecessors attr has been inappropriately mutated.
+            step._validate_predecessors(step.predecessors)
         return steps
 
     @classmethod
