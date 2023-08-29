@@ -215,7 +215,7 @@ def test_change_model_version(
     rmv_1 = make_mock_registered_model_version()
     rmv_2 = make_mock_registered_model_version()
     mocked_responses.get(
-        f"https://test_socket/api/v1/registry/registered_models/{rmv_1.registered_model_id}",
+        f"{rmv_1._conn.scheme}://{rmv_1._conn.socket}/api/v1/registry/registered_models/{rmv_1.registered_model_id}",
         json={
             "registered_model": {
                 "id": rmv_1.registered_model_id,
