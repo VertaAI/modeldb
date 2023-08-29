@@ -47,8 +47,6 @@ class RegisteredPipeline:
         to refresh the cache of the RMV, because pipelines are immutable.
         """
         self._registered_model_version = registered_model_version
-        self._name = self._registered_model_version.name
-        self._id = self._registered_model_version.id
         self._graph = graph
         self._graph._validate_steps(self._graph.steps)
         # throws an exception if the graph's steps attr has been inappropriately mutated.
@@ -65,11 +63,11 @@ class RegisteredPipeline:
 
     @property
     def name(self):
-        return self._name
+        return self._registered_model_version.name
 
     @property
     def id(self):
-        return self._id
+        return self._registered_model_version.id
 
     @property
     def graph(self):
