@@ -142,7 +142,7 @@ def test_to_steps_definition(
 
     Definitions are type list to remain json serializable.
     """
-    mocked_rm = make_mock_registered_model(id=123, name="test_rmv")
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
     with patch.object(
         verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
     ):
@@ -192,3 +192,22 @@ def test_bad_mutation_of_step_predecessors_exception(
         str(err.value) == f"individual predecessors of a PipelineStep must be type"
         f" PipelineStep, not <class 'str'>."
     )
+
+
+def test_step_name_uniqueness_exception(
+    make_mock_registered_model, make_mock_pipeline_step
+):
+    mocked_rm = make_mock_registered_model(id=123, name="test_rm")
+    with patch.object(
+        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    ):
+        step_1 = make_mock_pipeline_step(name="step_1")
+        step_2 = make_mock_pipeline_step(name="step_2")
+        step_3 = make_mock_pipeline_step(name="step_1")
+
+    with pytest.raises(ValueError) as err:
+        PipelineGraph(steps={step_1, step_2, step_3})
+    assert (
+        str(err.value) == "step names must be unique within a PipelineGraph"
+    )
+ª
