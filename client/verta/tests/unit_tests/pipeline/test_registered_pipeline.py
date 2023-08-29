@@ -34,8 +34,8 @@ def test_copy_graph(
         )
     copied_graph = pipeline.copy_graph()
     # convert from sets to lists and sort for side-by-side comparison
-    graph_steps_sorted = sorted(list(graph.steps), key=lambda x: x.name)
-    copied_graph_steps_sorted = sorted(list(copied_graph.steps), key=lambda x: x.name)
+    graph_steps_sorted = sorted(graph.steps, key=lambda x: x.name)
+    copied_graph_steps_sorted = sorted(copied_graph.steps, key=lambda x: x.name)
 
     for orig_step, copied_step in zip(graph_steps_sorted, copied_graph_steps_sorted):
         assert orig_step is not copied_step
