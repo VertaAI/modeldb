@@ -154,7 +154,7 @@ class PipelineStep:
         steps : list, set, or tuple, optional
             List, set, or tuple of PipelineStep objects whose outputs will be treated as
             inputs to this step. All options are converted to a set, so order is irrelevant
-            and duplicates are removed. An empty set used if no input is provided.
+            and duplicates are removed. An empty set is used if no input is provided.
 
         Returns
         -------
