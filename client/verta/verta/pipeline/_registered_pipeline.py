@@ -57,7 +57,7 @@ class RegisteredPipeline:
                 "RegisteredPipeline:",
                 f"pipeline name: {self.name}",
                 f"pipeline id: {self.id}",
-                f"\n{self.graph}",
+                f"{self.graph}",
             )
         )
 
