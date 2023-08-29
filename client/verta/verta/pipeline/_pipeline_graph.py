@@ -51,7 +51,7 @@ class PipelineGraph:
         Parameters
         ----------
         steps : list, set, tuple of :class:`~verta.deployment.PipelineStep`
-            List, set, or tuple of all possible steps of the pipline graph.
+            List, set, or tuple of all possible steps of the pipeline graph.
             All options are converted to a set, so order is irrelevant and
             duplicates are removed.
 
