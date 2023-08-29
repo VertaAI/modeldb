@@ -141,12 +141,12 @@ class Build:
     def message(self) -> str:
         return self._json.get("message") or self._EMPTY_MESSAGE
 
-    @message.setter
-    def message(self, message: str) -> None:
-        self._json["message"] = message
+    def set_message(self, message: str) -> None:
         url = f"{self._conn.scheme}://{self._conn.socket}/api/v1/deployment/builds/{self.id}/message"
         response = _utils.make_request("PUT", url, self._conn, json=message)
         _utils.raise_for_http_error(response)
+        self._json["message"] = message
+
 
     @property
     def is_complete(self) -> bool:
