@@ -42,7 +42,7 @@ def test_steps_from_pipeline_definition(
     graph = pipeline_definition["graph"]
     for step in pipeline_definition["steps"]:
         mocked_responses.get(
-            f"https://test_socket/api/v1/registry/model_versions/{step['model_version_id']}",
+            f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/registry/model_versions/{step['model_version_id']}",
             json={
                 "model_version": {
                     "id": step["model_version_id"],
