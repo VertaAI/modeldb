@@ -91,7 +91,8 @@ class PipelineStep:
         """
         if not isinstance(registered_model_version, RegisteredModelVersion):
             raise TypeError(
-                f"registered_model_version must be a RegisteredModelVersion object, not {type(registered_model_version)}"
+                f"registered_model_version must be a RegisteredModelVersion object, "
+                f"not {type(registered_model_version)}"
             )
         self._registered_model_version = registered_model_version
         self._registered_model = self._get_registered_model()

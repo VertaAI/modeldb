@@ -207,7 +207,4 @@ def test_step_name_uniqueness_exception(
 
     with pytest.raises(ValueError) as err:
         PipelineGraph(steps={step_1, step_2, step_3})
-    assert (
-        str(err.value) == "step names must be unique within a PipelineGraph"
-    )
-ª
+    assert str(err.value) == "step names must be unique within a PipelineGraph"

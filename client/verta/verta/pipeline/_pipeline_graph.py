@@ -27,7 +27,6 @@ class PipelineGraph:
     ):
         self._steps = self._validate_steps(steps)
 
-
     def __repr__(self) -> str:
         return f"PipelineGraph steps:\n{self._format_steps()}"
 
@@ -101,9 +100,7 @@ class PipelineGraph:
             # throw an exception if any step's predecessors attr has been inappropriately mutated.
             step._validate_predecessors(step.predecessors)
         if [s.name for s in steps] is not set([s.name for s in steps]):
-            raise ValueError(
-                "step names must be unique within a PipelineGraph"
-            )
+            raise ValueError("step names must be unique within a PipelineGraph")
         return steps
 
     @classmethod
