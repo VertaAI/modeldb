@@ -318,23 +318,22 @@ def test_from_pipeline_definition(
     mocked RMV fixture to return a simple, consistent pipeline definition.
     Calls related to the fetching of the RMV and RM are mocked.
     """
-    mocked_responses.get(
-        "https://test_socket/api/v1/registry/model_versions/1",
-        json={},
-        status=200,
-    )
-    mocked_responses.get(
-        "https://test_socket/api/v1/registry/model_versions/2",
-        json={},
-        status=200,
-    )
-    mocked_responses.get(
-        "https://test_socket/api/v1/registry/registered_models/0",
-        json={},
-        status=200,
-    )
-
     rmv = make_mock_registered_model_version()
+    mocked_responses.get(
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/1",
+        json={},
+        status=200,
+    )
+    mocked_responses.get(
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/model_versions/2",
+        json={},
+        status=200,
+    )
+    mocked_responses.get(
+        f"{rmv._conn.scheme}://{rmv._conn.socket}/api/v1/registry/registered_models/0",
+        json={},
+        status=200,
+    )
     pipeline = RegisteredPipeline._from_pipeline_definition(
         registered_model_version=rmv,
     )
