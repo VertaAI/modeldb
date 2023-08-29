@@ -22,7 +22,9 @@ class PipelineGraph:
         Set of PipelineSteps comprising all possible steps in this PiplineGraph.
     """
 
-    def __init__(self, steps: Set[PipelineStep]):
+    def __init__(
+        self, steps: Union[List[PipelineStep], Set[PipelineStep], Tuple[PipelineStep]]
+    ):
         self._steps = self._validate_steps(steps)
         for step in self._steps:
             step._validate_predecessors(step.predecessors)
