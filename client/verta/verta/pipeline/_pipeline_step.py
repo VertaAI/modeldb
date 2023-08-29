@@ -167,7 +167,7 @@ class PipelineStep:
             If the provided value for ``steps`` is not a set of PipelineStep objects.
         """
         if steps:
-            self._predecessors = self._validate_predecessors(steps)
+            self._predecessors = set(self._validate_predecessors(steps))
             return self.predecessors
         self._predecessors = set()
         return self.predecessors
@@ -196,7 +196,7 @@ class PipelineStep:
                     f"individual predecessors of a PipelineStep must be type"
                     f" PipelineStep, not {type(step)}."
                 )
-        return set(predecessors)
+        return predecessors
 
     def _get_registered_model(self) -> RegisteredModel:
         """Fetch the registered model associated with this step's model version.

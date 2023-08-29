@@ -65,7 +65,7 @@ class PipelineGraph:
         TypeError
             If ``steps`` is not a set of PipelineStep objects.
         """
-        self._steps = self._validate_steps(steps)
+        self._steps = set(self._validate_steps(steps))
         return self.steps
 
     def _validate_steps(
@@ -98,7 +98,7 @@ class PipelineGraph:
                     f"individual steps of a PipelineGraph must be type"
                     f" PipelineStep, not {type(step)}."
                 )
-        return set(steps)
+        return steps
 
     @classmethod
     def _from_definition(
