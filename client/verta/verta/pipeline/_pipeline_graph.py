@@ -130,19 +130,13 @@ class PipelineGraph:
     def _to_graph_definition(self) -> List[Dict[str, Any]]:
         """Create a pipeline graph specification from this PipelineGraph.
 
-        The back-end expects a list of steps and their predecessors as part of the
-        `graph` object within a PipelineDefinition. This method converts this PipelineGraph
-        to a formatted list of steps with predecessors for that purpose. A list is used
-        to remain json serializable, as this will be converted and uploaded as an artifact.
+        This is fed to the backend as 'graph' in our PipelineDefinition schema.
         """
         return [step._to_graph_spec() for step in self.steps]
 
     def _to_steps_definition(self) -> List[Dict[str, Any]]:
         """Create a pipeline steps specification from this PipelineGraph.
 
-        The back-end expects a list of steps and their model versions as part of the
-        `steps` object within a PipelineDefinition. This method converts this PipelineGraph
-        to a formatted list of steps with model versions for that purpose. A list is used
-        to remain json serializable, as this will be converted and uploaded as an artifact.
+        This is fed to the backend as 'steps' in our PipelineDefinition schema.
         """
         return [step._to_step_spec() for step in self.steps]
