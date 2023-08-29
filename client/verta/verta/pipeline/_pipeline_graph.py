@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Tuple, Union
 
 from verta._internal_utils._utils import Configuration, Connection
 from ._pipeline_step import PipelineStep
@@ -12,7 +12,7 @@ class PipelineGraph:
 
     Parameters
     ----------
-    steps : set of :class:`~verta.pipeline.PipelineStep`
+    steps : list, set, or tuple of :class:`~verta.pipeline.PipelineStep`
         Set of all possible steps of the pipeline. Ordering of steps in the pipeline
         itself is determined by the predecessors provided to each step.
 
@@ -43,13 +43,17 @@ class PipelineGraph:
     def steps(self, value):
         raise AttributeError("can't set attribute 'steps'; please use set_steps()")
 
-    def set_steps(self, steps: Set[PipelineStep]) -> Set[PipelineStep]:
+    def set_steps(
+        self, steps: Union[List[PipelineStep], Set[PipelineStep], Tuple[PipelineStep]]
+    ) -> Set[PipelineStep]:
         """Update the set of steps for this PipelineGraph to the provided value.
 
         Parameters
         ----------
-        steps : set of :class:`~verta.deployment.PipelineStep`
-            Set of all possible steps of the pipline graph.
+        steps : list, set, tuple of :class:`~verta.deployment.PipelineStep`
+            List, set, or tuple of all possible steps of the pipline graph.
+            All options are converted to a set, so order is irrelevant and
+            duplicates are removed.
 
         Returns
         -------
@@ -64,13 +68,15 @@ class PipelineGraph:
         self._steps = self._validate_steps(steps)
         return self.steps
 
-    def _validate_steps(self, steps: Set[PipelineStep]) -> Set[PipelineStep]:
+    def _validate_steps(
+        self, steps: Union[List[PipelineStep], Set[PipelineStep], Tuple[PipelineStep]]
+    ) -> Set[PipelineStep]:
         """Validate that the provided steps are a set of  PipelineStep objects.
 
         Parameters
         ----------
-        steps : set of :class:`~verta.deployment.PipelineStep`
-            Set of steps provided by a user.
+        steps : list, set, or tuple of :class:`~verta.deployment.PipelineStep`
+            List, set, or tuple of steps provided by a user.
 
         Returns
         -------
@@ -82,15 +88,17 @@ class PipelineGraph:
         TypeError
             If steps is not a set of PipelineStep objects.
         """
-        if not isinstance(steps, set):
-            raise TypeError(f"steps must be type set, not {type(steps)}")
+        if not isinstance(steps, (list, set, tuple)):
+            raise TypeError(
+                f"steps must be type list, set, or tuple, not {type(steps)}"
+            )
         for step in steps:
             if not isinstance(step, PipelineStep):
                 raise TypeError(
                     f"individual steps of a PipelineGraph must be type"
                     f" PipelineStep, not {type(step)}."
                 )
-        return steps
+        return set(steps)
 
     @classmethod
     def _from_definition(
