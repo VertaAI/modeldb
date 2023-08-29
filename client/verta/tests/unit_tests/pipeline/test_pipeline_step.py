@@ -53,7 +53,7 @@ def test_steps_from_pipeline_definition(
             status=200,
         )
         mocked_responses.get(
-            f"https://test_socket/api/v1/registry/registered_models/{registered_model_id}",
+            f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/registry/registered_models/{registered_model_id}",
             json={
                 "registered_model": {
                     "id": registered_model_id,
