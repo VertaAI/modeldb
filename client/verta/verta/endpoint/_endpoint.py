@@ -337,14 +337,14 @@ class Endpoint(object):
                 "`resources` must be a Resources object when updating an endpoint with a "
                 "RegisteredModelVersion, ExperimentRun, or Build"
             )
-        if isinstance(model_reference, pipeline_module.RegisteredPipeline) and not isinstance(
+        if isinstance(model_reference, RegisteredPipeline) and not isinstance(
             resources, dict
         ):
             raise TypeError(
                 "`resources` must be a dict, where keys are step names and values are Resources,"
                 " when updating an endpoint with a RegisteredPipeline"
             )
-        if isinstance(model_reference, pipeline_module.RegisteredPipeline):
+        if isinstance(model_reference, RegisteredPipeline):
             pipeline_config_dict = model_reference._to_pipeline_configuration()
         else:
             pipeline_config_dict = None
