@@ -19,6 +19,7 @@
 
     <modules>
         <module>common</module>
+        <module>common-testing</module>
         <module>server</module>
     </modules>
 </project>
