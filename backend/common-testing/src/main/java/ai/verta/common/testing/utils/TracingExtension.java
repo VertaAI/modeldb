@@ -36,7 +36,7 @@ public class TracingExtension
               .getTestClass()
               .map(clas -> "TestClass: " + clas.getSimpleName())
               .orElse(context.getDisplayName());
-      System.out.println("Starting root span with name: " + spanName);
+      log.info("Starting root span with name: " + spanName);
       Span classSpan = getTracer().spanBuilder(spanName).startSpan();
       Scope scope = classSpan.makeCurrent();
       store.put("rootScope", scope);
