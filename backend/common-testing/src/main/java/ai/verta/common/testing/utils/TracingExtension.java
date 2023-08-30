@@ -8,7 +8,6 @@ import io.opentelemetry.context.Scope;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
-import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.extension.*;
 
 @Log4j2
@@ -37,7 +36,7 @@ public class TracingExtension
               .getTestClass()
               .map(clas -> "TestClass: " + clas.getSimpleName())
               .orElse(context.getDisplayName());
-      log.info("Starting root span with name: " + spanName);
+      System.out.println("Starting root span with name: " + spanName);
       Span classSpan = getTracer().spanBuilder(spanName).startSpan();
       Scope scope = classSpan.makeCurrent();
       store.put("rootScope", scope);
@@ -125,7 +124,7 @@ public class TracingExtension
       ExtensionContext extensionContext)
       throws Throwable {
     maybeStartRootSpan(extensionContext);
-    runInSpan("AfterAll: " + extensionContext.getDisplayName(), invocation::proceed);
+    runInSpan("BeforeAll: " + extensionContext.getDisplayName(), invocation::proceed);
   }
 
   @Override
@@ -156,7 +155,7 @@ public class TracingExtension
       ReflectiveInvocationContext<Method> invocationContext,
       ExtensionContext extensionContext)
       throws Throwable {
-    runInSpan("AfterEach : " + extensionContext.getDisplayName(), invocation::proceed);
+    runInSpan("AfterEach: " + extensionContext.getDisplayName(), invocation::proceed);
   }
 
   @Override
