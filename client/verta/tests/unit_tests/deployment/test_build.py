@@ -60,14 +60,15 @@ def test_endpoint_get_current_build(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(build_dicts=st.lists(build_dict(), unique_by=lambda d: d["id"]))
 def test_model_version_list_builds(
-    mock_registered_model_version,
+    make_mock_registered_model_version,
     mock_conn,
     mocked_responses,
     build_dicts,
 ):
     """Verify we can construct Build objects from list_builds()."""
+    rmv = make_mock_registered_model_version()
     registry_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/registry"
-    model_version_url = f"{registry_url}/registered_models/{mock_registered_model_version.registered_model_id}"
+    model_version_url = f"{registry_url}/registered_models/{rmv.registered_model_id}"
     deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
     list_builds_url = f"{deployment_url}/builds"
 
@@ -77,7 +78,7 @@ def test_model_version_list_builds(
             status=200,
             match=[
                 query_param_matcher(
-                    {"model_version_id": mock_registered_model_version.id},
+                    {"model_version_id": rmv.id},
                 ),
             ],
             json={"builds": build_dicts},
@@ -88,7 +89,7 @@ def test_model_version_list_builds(
             json={"workspace_id": "123"},
         )
 
-        builds = mock_registered_model_version.list_builds()
+        builds = rmv.list_builds()
 
     # verify builds are ordered by creation date
     assert [b.id for b in builds] == [

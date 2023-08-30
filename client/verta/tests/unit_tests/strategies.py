@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """Hypothesis composite strategies for use in client unit tests."""
-
 from string import ascii_letters, ascii_lowercase, hexdigits
 from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
+from tests.strategies import json_strategy
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS, python_to_val_proto
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
-from verta.endpoint import KafkaSettings, build
-
-from tests.strategies import json_strategy
+from verta.endpoint import build, KafkaSettings
+from verta.endpoint.resources import NvidiaGPU, NvidiaGPUModel, Resources
 
 
 @st.composite
@@ -262,3 +261,59 @@ def mock_workspace(draw):
         )
     )
     return workspace
+
+
+@st.composite
+def pipeline_definition(draw):
+    """Return a strategy for a mocked linear pipeline specification
+    dictionary with an arbitrary number of steps.
+    """
+
+    # step names in a pipeline must be unique
+    step_names = draw(st.lists(st.text(min_size=1), min_size=2, unique=True))
+    model_versions = draw(
+        st.lists(
+            # limit max value to prevent protobuf "Value out of range" error
+            st.integers(min_value=1, max_value=2**63),
+            min_size=len(step_names),
+            max_size=len(step_names),
+            unique=True,
+        )
+    )
+
+    graph = list()
+    for i in range(len(step_names)):
+        if i == 0:
+            graph.append({"predecessors": [], "name": step_names[i]})
+        else:
+            graph.append({"predecessors": [step_names[i - 1]], "name": step_names[i]})
+
+    steps = list()
+    for i in range(len(step_names)):
+        steps.append(
+            {
+                "model_version_id": model_versions[i],
+                "name": step_names[i],
+            }
+        )
+
+    return {
+        "graph": graph,
+        "pipeline_version_id": draw(st.integers(min_value=1)),
+        "steps": steps,
+    }
+
+
+@st.composite
+def resources(draw):
+    """Return a strategy emulating the Resources class."""
+    return Resources(
+        cpu=draw(st.integers(min_value=1)),
+        memory=draw(
+            st.from_regex(r"^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$", fullmatch=True)
+        ),
+        nvidia_gpu=NvidiaGPU(
+            model=draw(st.sampled_from([NvidiaGPUModel.T4, NvidiaGPUModel.V100])),
+            number=draw(st.integers(min_value=1)),
+        ),
+    )

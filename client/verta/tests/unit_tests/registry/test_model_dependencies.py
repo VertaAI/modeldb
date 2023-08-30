@@ -145,6 +145,7 @@ def test_class_module_names(dependency_testing_model) -> None:
         'requests',
         'sklearn',
         'torch',
+        'typing',
         'urllib3',
         'verta',
         'yaml',
