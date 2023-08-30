@@ -15,6 +15,8 @@ class Build:
         Moved from ``verta.endpoint.Build`` to ``verta.endpoint.build.Build``.
     .. versionadded:: 0.23.0
         The ``date_created`` property.
+    .. versionadded:: 0.24.1
+        The `location`, `requires_root`, `scan_external`, and `self_contained` properties.
 
     Represents an initiated docker build process. A build can be complete or in
     progress. Completed builds may be successful or failed. End-users of this
@@ -38,7 +40,7 @@ class Build:
     status : str
         Status of the build (e.g. ``"building"``, ``"finished"``).
     message : str
-        Message or logs associated with the build.
+        Message or logs associated with this build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
     location: str or None
@@ -87,7 +89,14 @@ class Build:
 
     @classmethod
     def _create_external(
-        cls, conn: _utils.Connection, workspace: str, model_version_id: int, location: str, requires_root: Optional[bool] = None, scan_external: Optional[bool] = None, self_contained: Optional[bool] = None
+        cls,
+        conn: _utils.Connection,
+        workspace: str,
+        model_version_id: int,
+        location: str,
+        requires_root: Optional[bool] = None,
+        scan_external: Optional[bool] = None,
+        self_contained: Optional[bool] = None,
     ) -> "Build":
         data = {
             "external_location": location,
@@ -122,7 +131,9 @@ class Build:
     def location(self) -> Optional[str]:
         location = self._json.get("location")
         if location is None:
-            location = self._json.get("creator_request", dict()).get("external_location")
+            location = self._json.get("creator_request", dict()).get(
+                "external_location",
+            )
         return location
 
     @property
@@ -142,11 +153,20 @@ class Build:
         return self._json.get("message") or self._EMPTY_MESSAGE
 
     def set_message(self, message: str) -> None:
+        """Set the message or logs associated with this build.
+
+        .. versionadded:: 0.24.1
+
+        Parameters
+        ----------
+        message : str
+            Message or logs to associate with this build.
+
+        """
         url = f"{self._conn.scheme}://{self._conn.socket}/api/v1/deployment/builds/{self.id}/message"
         response = _utils.make_request("PUT", url, self._conn, json=message)
         _utils.raise_for_http_error(response)
         self._json["message"] = message
-
 
     @property
     def is_complete(self) -> bool:
