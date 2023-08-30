@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Set, Tuple, Union
 
-from verta._internal_utils._utils import Configuration, Connection
+from .._internal_utils._utils import Configuration, Connection
 from ._pipeline_step import PipelineStep
 
 

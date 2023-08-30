@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from verta._internal_utils._utils import Configuration, Connection
-from verta.registry.entities import RegisteredModel, RegisteredModelVersion
+from .._internal_utils._utils import Configuration, Connection
+from ..registry.entities import RegisteredModel, RegisteredModelVersion
 
 
 class PipelineStep:

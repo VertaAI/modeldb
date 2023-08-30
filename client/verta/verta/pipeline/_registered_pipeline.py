@@ -5,9 +5,9 @@ import json
 import tempfile
 from typing import Any, Dict, Optional
 
-from verta.endpoint.resources import Resources
-from verta.pipeline import PipelineGraph
-from verta.registry.entities import RegisteredModelVersion
+from ..endpoint.resources import Resources
+from ._pipeline_graph import PipelineGraph
+from ..registry.entities import RegisteredModelVersion
 
 
 class RegisteredPipeline:
