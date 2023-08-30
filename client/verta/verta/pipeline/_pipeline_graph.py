@@ -99,7 +99,7 @@ class PipelineGraph:
                 )
             # throw an exception if any step's predecessors attr has been inappropriately mutated.
             step._validate_predecessors(step.predecessors)
-        if len([s.name for s in steps]) is not len(set([s.name for s in steps])):
+        if len([s.name for s in steps]) != len(set([s.name for s in steps])):
             raise ValueError("step names must be unique within a PipelineGraph")
         return steps
 
