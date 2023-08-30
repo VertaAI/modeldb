@@ -11,6 +11,7 @@ from verta._vendored import six
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler, kafka
+from verta.pipeline import RegisteredPipeline
 import verta.tracking.entities as tracking_entities
 import verta.registry.entities as registry_entities
 from verta.visibility import _visibility
@@ -293,14 +294,15 @@ class Endpoint(object):
 
         Parameters
         ----------
-        model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion` or :class:`~verta.endpoint.Build`
-            An Experiment Run, Model Version with a model logged, or a Build.
+        model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion` or :class:`~verta.endpoint.build.Build` or :class:`~verta.pipeline.RegisteredPipeline`
+            An Experiment Run, Model Version with a model logged, a Build, or a Registered Pipeline.
         strategy : :mod:`~verta.endpoint.update`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         wait : bool, default False
             Whether to wait for the endpoint to finish updating before returning.
-        resources : :class:`~verta.endpoint.resources.Resources`, optional
-            Resources allowed for the updated endpoint.
+        resources : :class:`~verta.endpoint.resources.Resources`, or dict of str to :class:`~verta.endpoint.resources.Resources`, optional
+            Resources allowed for the updated endpoint. If declaring resources for a Registered
+            Pipeline, dict keys are step names and values are :class:`~verta.endpoint.resources.Resources`.
         autoscaling : :class:`~verta.endpoint.autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
@@ -320,17 +322,38 @@ class Endpoint(object):
                 registry_entities.RegisteredModelVersion,
                 tracking_entities.ExperimentRun,
                 Build,
+                RegisteredPipeline,
             ),
         ):
             raise TypeError(
-                "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
+                "`model_reference` must be an ExperimentRun, RegisteredModelVersion, Build, "
+                "or RegisteredPipeline"
             )
+
+        if isinstance(resources, dict) and not isinstance(
+            model_reference, RegisteredPipeline
+        ):
+            raise TypeError(
+                "`resources` must be a Resources object when updating an endpoint with a "
+                "RegisteredModelVersion, ExperimentRun, or Build"
+            )
+        if isinstance(model_reference, pipeline_module.RegisteredPipeline) and not isinstance(
+            resources, dict
+        ):
+            raise TypeError(
+                "`resources` must be a dict, where keys are step names and values are Resources,"
+                " when updating an endpoint with a RegisteredPipeline"
+            )
+        if isinstance(model_reference, pipeline_module.RegisteredPipeline):
+            pipeline_config_dict = model_reference._to_pipeline_configuration()
+        else:
+            pipeline_config_dict = None
 
         if not strategy:
             strategy = DirectUpdateStrategy()
 
         update_body = self._create_update_body(
-            strategy, resources, autoscaling, env_vars
+            strategy, resources, autoscaling, env_vars, pipeline_config_dict
         )
 
         self._update_kafka_settings(kafka_settings)
@@ -340,7 +363,10 @@ class Endpoint(object):
         else:
             # create new build
             if resources is not None and resources.nvidia_gpu is not None:
-                build = self._create_build(model_reference, resources.nvidia_gpu._to_hardware_compatibility_dict())
+                build = self._create_build(
+                    model_reference,
+                    resources.nvidia_gpu._to_hardware_compatibility_dict(),
+                )
             else:
                 build = self._create_build(model_reference)
             update_body["build_id"] = build.id
@@ -463,9 +489,7 @@ class Endpoint(object):
         if hardware_compatibility is not None:
             build_json["hardware_compatibility"] = hardware_compatibility
 
-        response = _utils.make_request(
-            "POST", url, self._conn, json=build_json
-        )
+        response = _utils.make_request("POST", url, self._conn, json=build_json)
         _utils.raise_for_http_error(response)
         return Build(self._conn, self.workspace, response.json())
 
@@ -788,7 +812,9 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
 
     @staticmethod
-    def _create_update_body(strategy, resources=None, autoscaling=None, env_vars=None):
+    def _create_update_body(
+        strategy, resources=None, autoscaling=None, env_vars=None, pipeline=None
+    ):
         """Convert endpoint config util classes into a JSON-friendly dict."""
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError(
@@ -828,6 +854,9 @@ class Endpoint(object):
                     key=lambda env_elem: env_elem["name"],
                 )
             )
+
+        if pipeline is not None:
+            update_body["pipeline"] = pipeline
 
         return update_body
 
