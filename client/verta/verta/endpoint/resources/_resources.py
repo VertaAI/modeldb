@@ -14,6 +14,9 @@ class Resources(object):
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes>`__
     allowed for an endpoint's model, to be passed to :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
+    .. versionadded:: 0.24.1
+        The `nvidia_gpu` parameter.
+
     The JSON equivalent for this is:
 
     .. code-block:: json
@@ -100,5 +103,7 @@ class Resources(object):
     def _from_dict(cls, resources_dict):
         resources_dict = resources_dict.copy()
         if "nvidia_gpu" in resources_dict:
-            resources_dict["nvidia_gpu"] = NvidiaGPU._from_dict(resources_dict["nvidia_gpu"])
+            resources_dict["nvidia_gpu"] = NvidiaGPU._from_dict(
+                resources_dict["nvidia_gpu"]
+            )
         return cls(**resources_dict)

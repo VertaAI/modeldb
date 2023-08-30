@@ -44,7 +44,7 @@ New Features
 ^^^^^^^^^^^^
 - add ``nvidia_gpu`` to :class:`~verta.endpoint.resources.Resources` for platforms that support GPU workers
   (`#4003 <https://github.com/VertaAI/modeldb/pull/4003>`__)
-- (alpha) add new attributes to :class:`~verta.endpoint.build.Build`
+- (alpha) add new properties to :class:`~verta.endpoint.build.Build`
   (`#4021 <https://github.com/VertaAI/modeldb/pull/4021>`__)
 
 

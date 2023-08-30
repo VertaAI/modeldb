@@ -2,8 +2,9 @@ from enum import auto, Enum
 
 
 class NvidiaGPU:
-    """
-    Nvidia GPU resources
+    """Nvidia GPU resources.
+
+    .. versionadded:: 0.24.1
 
     The JSON equivalent for this is:
 
@@ -74,7 +75,11 @@ class NvidiaGPU:
 
 
 class NvidiaGPUModel(Enum):
-    """An :class:`~enum.Enum` for supported Nvidia GPU models."""
+    """An :class:`~enum.Enum` for supported Nvidia GPU models.
+
+    .. versionadded:: 0.24.1
+
+    """
 
     T4 = auto()
     """"""
