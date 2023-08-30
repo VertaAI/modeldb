@@ -41,6 +41,14 @@ class Build:
         Message or logs associated with the build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
+    location: str or None
+        (alpha) The location of the build. This is only available for completed or external builds.
+    requires_root: bool or None
+        (alpha) Whether the build requires root access.
+    scan_external: bool or None
+        (alpha) Whether the build should be scanned by an external provider.
+    self_contained: bool or None
+        (alpha) Whether the build is self-contained.
 
     """
 
@@ -77,6 +85,27 @@ class Build:
             for build_json in response.json().get("builds", [])
         ]
 
+    @classmethod
+    def _create_external(
+        cls, conn: _utils.Connection, workspace: str, model_version_id: int, location: str, requires_root: Optional[bool] = None, scan_external: Optional[bool] = None, self_contained: Optional[bool] = None
+    ) -> "Build":
+        data = {
+            "external_location": location,
+            "model_version_id": model_version_id,
+        }
+        if requires_root is not None:
+            data["requires_root"] = requires_root
+        if scan_external is not None:
+            data["scan_external"] = scan_external
+        if self_contained is not None:
+            data["self_contained"] = self_contained
+
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/workspace/{workspace}/builds"
+        response = _utils.make_request("POST", url, conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        return cls(conn, workspace, response.json())
+
     @property
     def id(self) -> int:
         return self._json["id"]
@@ -90,8 +119,34 @@ class Build:
         return self._json["status"]
 
     @property
+    def location(self) -> Optional[str]:
+        location = self._json.get("location")
+        if location is None:
+            location = self._json.get("creator_request", dict()).get("external_location")
+        return location
+
+    @property
+    def requires_root(self) -> Optional[bool]:
+        return self._json.get("requires_root")
+
+    @property
+    def scan_external(self) -> Optional[bool]:
+        return self._json.get("scan_external")
+
+    @property
+    def self_contained(self) -> Optional[bool]:
+        return self._json.get("self_contained")
+
+    @property
     def message(self) -> str:
         return self._json.get("message") or self._EMPTY_MESSAGE
+
+    def set_message(self, message: str) -> None:
+        url = f"{self._conn.scheme}://{self._conn.socket}/api/v1/deployment/builds/{self.id}/message"
+        response = _utils.make_request("PUT", url, self._conn, json=message)
+        _utils.raise_for_http_error(response)
+        self._json["message"] = message
+
 
     @property
     def is_complete(self) -> bool:

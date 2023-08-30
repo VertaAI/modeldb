@@ -1761,3 +1761,27 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         builds = Build._list_model_version_builds(self._conn, self.workspace, self.id)
         return sorted(builds, key=lambda build: build.date_created, reverse=True)
+
+    def create_external_build(self, location: str, requires_root: Optional[bool] = None, scan_external: Optional[bool] = None, self_contained: Optional[bool] = None) -> Build:
+        """
+        (alpha) Creates a new external build for this model version.
+
+        .. versionadded:: 0.24.1
+
+        Parameters
+        ----------
+        location : str
+            The location of the build.
+        requires_root : bool, optional
+            Whether the build requires root access.
+        scan_external : bool, optional
+            Whether to scan the build for vulnerabilities using the external provider.
+        self_contained : bool, optional
+            Whether the build is self-contained.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.Build`
+
+        """
+        return Build._create_external(self._conn, self.workspace, self.id, location, requires_root, scan_external, self_contained)
