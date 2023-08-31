@@ -3,7 +3,6 @@ package ai.verta.common.testing;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.verta.common.testing.utils.TracingExtension;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
@@ -18,7 +17,6 @@ public class TracingExtensionTest {
   private static final InMemorySpanExporter inMemorySpanExporter;
 
   static {
-    GlobalOpenTelemetry.resetForTest();
     inMemorySpanExporter = InMemorySpanExporter.create();
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
@@ -27,7 +25,7 @@ public class TracingExtensionTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(inMemorySpanExporter))
                     .build())
             .build();
-    GlobalOpenTelemetry.set(openTelemetry);
+    TracingExtension.setOpenTelemetry(openTelemetry);
   }
 
   // register this _after_ the above static initializer, so that we have a clean global otel
@@ -54,19 +52,15 @@ public class TracingExtensionTest {
     // a little weird here, since we won't get a couple of the spans for the test class itself.
     // we should have: BeforeAll, BeforeEach, TestCase, test(), AfterEach
     // we're missing AfterAll and TestClass itself
-    try {
-      assertThat(inMemorySpanExporter.getFinishedSpanItems())
-          .hasSize(5)
-          .extracting(SpanData::getName)
-          .containsExactly(
-              "BeforeAll: TracingExtensionTest",
-              "BeforeEach: test()",
-              "test()",
-              "AfterEach: test()",
-              "TestCase: test()");
-    } finally {
-      GlobalOpenTelemetry.resetForTest();
-    }
+    assertThat(inMemorySpanExporter.getFinishedSpanItems())
+        .hasSize(5)
+        .extracting(SpanData::getName)
+        .containsExactly(
+            "BeforeAll: TracingExtensionTest",
+            "BeforeEach: test()",
+            "test()",
+            "AfterEach: test()",
+            "TestCase: test()");
   }
 
   @Test
