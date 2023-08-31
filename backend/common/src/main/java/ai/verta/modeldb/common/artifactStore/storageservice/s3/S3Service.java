@@ -25,6 +25,7 @@ import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -192,7 +193,7 @@ public class S3Service implements ArtifactStoreService {
                 .withKey(artifactPath)
                 .withUploadId(uploadId)
                 .withPartNumber(partNumber.intValue())
-                .withInputStream(request.getInputStream())
+                .withInputStream(new BufferedInputStream(request.getInputStream()))
                 .withPartSize(request.getContentLength());
         var uploadPartResult = client.getClient().uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
@@ -210,7 +211,11 @@ public class S3Service implements ArtifactStoreService {
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
                 .build();
         var upload =
-            transferManager.upload(bucketName, artifactPath, request.getInputStream(), metadata);
+            transferManager.upload(
+                bucketName,
+                artifactPath,
+                new BufferedInputStream(request.getInputStream()),
+                metadata);
         upload.waitForCompletion();
         var uploadResult = upload.waitForUploadResult();
         return uploadResult.getETag();
