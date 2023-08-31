@@ -193,8 +193,8 @@ public class TracingExtension
 
   /**
    * This method initiates an OpenTelemetrySdk instance using AutoConfiguredOpenTelemetrySdk
-   * builder. It also configures various properties including
-   * tracing exporter, propagators, and disabled resource providers.
+   * builder. It also configures various properties including tracing exporter, propagators, and
+   * disabled resource providers.
    *
    * <p>For tracing in tests, consider the following steps:
    *
