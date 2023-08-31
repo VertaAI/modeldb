@@ -1,6 +1,6 @@
 package ai.verta.common.testing.utils;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -20,11 +20,14 @@ public class TracingExtension
         InvocationInterceptor,
         TestWatcher,
         TestInstancePostProcessor {
+
+  private static OpenTelemetry openTelemetry = OpenTelemetry.noop();
+
   private static final ExtensionContext.Namespace NAMESPACE =
       ExtensionContext.Namespace.create("tracing");
 
   private Tracer getTracer() {
-    return GlobalOpenTelemetry.getTracer("tracingExtension");
+    return openTelemetry.getTracer("tracingExtension");
   }
 
   @Override
@@ -190,7 +193,7 @@ public class TracingExtension
 
   /**
    * This method initiates an OpenTelemetrySdk instance using AutoConfiguredOpenTelemetrySdk
-   * builder. It sets the global OpenTelemetry SDK, and configures various properties including
+   * builder. It also configures various properties including
    * tracing exporter, propagators, and disabled resource providers.
    *
    * <p>For tracing in tests, consider the following steps:
@@ -212,7 +215,6 @@ public class TracingExtension
     log.info("initializing otel");
     var autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal()
             .addPropertiesSupplier(
                 () ->
                     Map.of(
@@ -236,5 +238,9 @@ public class TracingExtension
     var openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     log.debug("openTelemetrySdk initialized = " + openTelemetrySdk);
     return openTelemetrySdk;
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    TracingExtension.openTelemetry = openTelemetry;
   }
 }
