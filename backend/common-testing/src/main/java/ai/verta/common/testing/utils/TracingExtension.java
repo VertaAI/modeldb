@@ -1,6 +1,6 @@
 package ai.verta.common.testing.utils;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -17,11 +17,14 @@ public class TracingExtension
         InvocationInterceptor,
         TestWatcher,
         TestInstancePostProcessor {
+
+  private static OpenTelemetry openTelemetry = OpenTelemetry.noop();
+
   private static final ExtensionContext.Namespace NAMESPACE =
       ExtensionContext.Namespace.create("tracing");
 
   private Tracer getTracer() {
-    return GlobalOpenTelemetry.getTracer("tracingExtension");
+    return openTelemetry.getTracer("tracingExtension");
   }
 
   @Override
@@ -183,5 +186,9 @@ public class TracingExtension
   @Override
   public void postProcessTestInstance(Object o, ExtensionContext extensionContext) {
     maybeStartRootSpan(extensionContext);
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    TracingExtension.openTelemetry = openTelemetry;
   }
 }
