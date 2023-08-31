@@ -92,7 +92,9 @@ class RegisteredPipeline:
         """
         with tempfile.NamedTemporaryFile("w+") as temp_file:
             json.dump(self._to_pipeline_definition(), temp_file)
-            self._registered_model_version.log_artifact("pipeline.json", temp_file)
+            self._registered_model_version.log_artifact(
+                "pipeline.json", temp_file, overwrite=True
+            )
 
     def _to_pipeline_definition(self) -> Dict[str, Any]:
         """Create a complete pipeline definition dict from a name and PipelineGraph.

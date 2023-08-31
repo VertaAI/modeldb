@@ -11,7 +11,6 @@ from verta._vendored import six
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler, kafka
-from verta.pipeline import RegisteredPipeline
 import verta.tracking.entities as tracking_entities
 import verta.registry.entities as registry_entities
 from verta.visibility import _visibility
@@ -316,6 +315,8 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
+        from verta.pipeline import RegisteredPipeline
+
         if not isinstance(
             model_reference,
             (
@@ -329,21 +330,21 @@ class Endpoint(object):
                 "`model_reference` must be an ExperimentRun, RegisteredModelVersion, Build, "
                 "or RegisteredPipeline"
             )
-
-        if isinstance(resources, dict) and not isinstance(
-            model_reference, RegisteredPipeline
-        ):
-            raise TypeError(
-                "`resources` must be a Resources object when updating an endpoint with a "
-                "RegisteredModelVersion, ExperimentRun, or Build"
-            )
-        if isinstance(model_reference, RegisteredPipeline) and not isinstance(
-            resources, dict
-        ):
-            raise TypeError(
-                "`resources` must be a dict, where keys are step names and values are Resources,"
-                " when updating an endpoint with a RegisteredPipeline"
-            )
+        if resources:
+            if isinstance(resources, dict) and not isinstance(
+                model_reference, RegisteredPipeline
+            ):
+                raise TypeError(
+                    "`resources` must be a Resources object when updating an endpoint with a "
+                    "RegisteredModelVersion, ExperimentRun, or Build"
+                )
+            if isinstance(model_reference, RegisteredPipeline) and not isinstance(
+                resources, dict
+            ):
+                raise TypeError(
+                    "`resources` must be a dict, where keys are step names and values are Resources,"
+                    " when updating an endpoint with a RegisteredPipeline"
+                )
         if isinstance(model_reference, RegisteredPipeline):
             pipeline_config_dict = model_reference._to_pipeline_configuration()
         else:
@@ -471,13 +472,15 @@ class Endpoint(object):
         return current_build
 
     def _create_build(self, model_reference, hardware_compatibility=None):
+        from verta.pipeline import RegisteredPipeline
+
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
         )
         build_json = {}
-        if isinstance(model_reference, registry_entities.RegisteredModelVersion):
+        if isinstance(model_reference, (registry_entities.RegisteredModelVersion, RegisteredPipeline)):
             build_json["model_version_id"] = model_reference.id
         elif isinstance(model_reference, tracking_entities.ExperimentRun):
             build_json["run_id"] = model_reference.id
@@ -858,6 +861,7 @@ class Endpoint(object):
         if pipeline is not None:
             update_body["pipeline"] = pipeline
 
+        print(f"Update body: {update_body}")
         return update_body
 
     def get_deployed_model(self, credentials=None):
