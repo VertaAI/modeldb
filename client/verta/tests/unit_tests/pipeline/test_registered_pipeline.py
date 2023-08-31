@@ -166,8 +166,8 @@ def test_to_pipeline_configuration_valid_complete(
     where resources are provided for every step.
     """
     mocked_rm = make_mock_registered_model(id=123, name="test_rm")
-    with patch.object(
-        verta.pipeline.PipelineStep, "_get_registered_model", return_value=mocked_rm
+    with patch.multiple(
+        verta.pipeline.PipelineStep, _get_registered_model=mocked_rm
     ):
         graph = make_mock_pipeline_graph()
         step_resources = {step.name: resources for step in graph.steps}

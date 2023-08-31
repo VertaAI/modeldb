@@ -16,6 +16,7 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from verta.client import Client
 from verta.credentials import EmailCredentials
 from verta.endpoint import Endpoint
+from verta.endpoint.build import Build
 from verta.pipeline import PipelineGraph, PipelineStep
 from verta.registry.entities import RegisteredModel, RegisteredModelVersion
 
@@ -224,3 +225,18 @@ def make_mock_pipeline_graph(make_mock_pipeline_step) -> Callable:
         return MockPipelineGraph(steps={step1, step2, step3})
 
     return _make_mock_pipeline_graph
+
+
+@pytest.fixture(scope="session")
+def make_mock_build(mock_conn) -> Callable:
+    """Return a callable function for creating mocked objects of the Build class"""
+
+    class MockBuild(Build):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    def _make_mock_build():
+        build = MockBuild(
+            conn=mock_conn,
+
+        )

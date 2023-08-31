@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from .._internal_utils._utils import Configuration, Connection
 from ..registry.entities import RegisteredModel, RegisteredModelVersion
+from ..endpoint.build import Build
 
 
 class PipelineStep:
@@ -284,3 +285,20 @@ class PipelineStep:
             "name": self.name,
             "model_version_id": self.registered_model_version.id,
         }
+
+    def get_latest_build_id(self) -> int:
+        """Return the ID for the most recent, completed build for the model version
+        associated with this step.
+
+        This is passed into the pipeline config when the pipeline is deployed to an
+        endpoint.
+        """
+        builds: List[Build] = self.registered_model_version.list_builds()
+        if builds:
+            for b in builds:
+                if b.status == "finished":
+                    return b.id
+        raise RuntimeError(
+            f"no build found for registered model version "
+            f"'{self.registered_model_version.name}'"
+        )

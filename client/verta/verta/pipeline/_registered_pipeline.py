@@ -157,6 +157,7 @@ class RegisteredPipeline:
         for step in self._graph.steps:
             step_config = {
                 "name": step.name,
+                "build_id": step.get_latest_build_id(),
             }
             if pipeline_resources:
                 step_res = pipeline_resources.get(step.name, None)
