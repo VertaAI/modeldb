@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import java.io.*;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.HashMap;
@@ -220,14 +220,25 @@ public class S3Service implements ArtifactStoreService {
       // Restore interrupted state...
       Thread.currentThread().interrupt();
       throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
+    } finally {
+      LOGGER.info("Deleting temp file " + tempFile);
+      try {
+        if (tempFile.delete()) {
+          LOGGER.info("temp file " + tempFile + " deleted successfully");
+        } else {
+          LOGGER.warn("temp file " + tempFile + " not deleted successfully");
+        }
+      } catch (Exception e) {
+        LOGGER.warn("failed to delete temp file " + tempFile, e);
+      }
     }
   }
 
   private static File copyRequestInputToTempFile(String artifactPath, HttpServletRequest request)
       throws IOException {
     File tempFile = File.createTempFile(artifactPath, "");
-    Path p = tempFile.toPath();
-    java.nio.file.Files.copy(request.getInputStream(), p, StandardCopyOption.REPLACE_EXISTING);
+    LOGGER.info("Copying requested upload to temp file " + tempFile);
+    Files.copy(request.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     return tempFile;
   }
 
