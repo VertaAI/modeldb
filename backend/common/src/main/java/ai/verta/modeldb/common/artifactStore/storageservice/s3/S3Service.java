@@ -11,23 +11,13 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.UploadPartRequest;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -180,6 +170,7 @@ public class S3Service implements ArtifactStoreService {
   public String uploadFile(
       String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
+    File tempFile = copyRequestInputToTempFile(artifactPath, request);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
@@ -193,7 +184,7 @@ public class S3Service implements ArtifactStoreService {
                 .withKey(artifactPath)
                 .withUploadId(uploadId)
                 .withPartNumber(partNumber.intValue())
-                .withInputStream(new BufferedInputStream(request.getInputStream()))
+                .withFile(tempFile)
                 .withPartSize(request.getContentLength());
         var uploadPartResult = client.getClient().uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
@@ -212,10 +203,7 @@ public class S3Service implements ArtifactStoreService {
                 .build();
         var upload =
             transferManager.upload(
-                bucketName,
-                artifactPath,
-                new BufferedInputStream(request.getInputStream()),
-                metadata);
+                bucketName, artifactPath, new FileInputStream(tempFile), metadata);
         upload.waitForCompletion();
         var uploadResult = upload.waitForUploadResult();
         return uploadResult.getETag();
@@ -232,7 +220,26 @@ public class S3Service implements ArtifactStoreService {
       // Restore interrupted state...
       Thread.currentThread().interrupt();
       throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
+    } finally {
+      LOGGER.info("Deleting temp file " + tempFile);
+      try {
+        if (tempFile.delete()) {
+          LOGGER.info("temp file " + tempFile + " deleted successfully");
+        } else {
+          LOGGER.warn("temp file " + tempFile + " not deleted successfully");
+        }
+      } catch (Exception e) {
+        LOGGER.warn("failed to delete temp file " + tempFile, e);
+      }
     }
+  }
+
+  private static File copyRequestInputToTempFile(String artifactPath, HttpServletRequest request)
+      throws IOException {
+    File tempFile = File.createTempFile(artifactPath, "");
+    LOGGER.info("Copying requested upload to temp file " + tempFile);
+    Files.copy(request.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    return tempFile;
   }
 
   public ResponseEntity<Resource> loadFileAsResource(String fileName, String artifactPath)
