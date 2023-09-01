@@ -236,6 +236,7 @@ public class TracingExtension
                 })
             .build();
     var openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    TracingExtension.setOpenTelemetry(openTelemetrySdk);
     log.debug("openTelemetrySdk initialized = " + openTelemetrySdk);
     return openTelemetrySdk;
   }
