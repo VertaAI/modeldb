@@ -5,7 +5,10 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.extension.*;
@@ -186,6 +189,56 @@ public class TracingExtension
   @Override
   public void postProcessTestInstance(Object o, ExtensionContext extensionContext) {
     maybeStartRootSpan(extensionContext);
+  }
+
+  /**
+   * This method initiates an OpenTelemetrySdk instance using AutoConfiguredOpenTelemetrySdk
+   * builder. It also configures various properties including tracing exporter, propagators, and
+   * disabled resource providers.
+   *
+   * <p>For tracing in tests, consider the following steps:
+   *
+   * <ul>
+   *   <li>Run Jaeger locally using: {@code docker run --rm --name jaeger -p 16686:16686 -p
+   *       4317:4317 jaegertracing/all-in-one:1.48}
+   *   <li>Set the OTEL_TRACES_EXPORTER environment variable to "otlp" when running the tests.
+   *   <li>Extend your test with the TracingExtension: {@code @ExtendWith(TracingExtension.class)}
+   * </ul>
+   *
+   * Note: This method sets the 'otel.traces.exporter' as 'none', the 'otel.propagators' as
+   * 'jaeger,tracecontext', and the 'otel.java.disabled.resource.providers' as
+   * 'io.opentelemetry.instrumentation.resources.ProcessResourceProvider'.
+   *
+   * @return OpenTelemetrySdk instance with the provided configurations
+   */
+  public static OpenTelemetrySdk initializeOpenTelemetrySdk() {
+    log.info("initializing otel");
+    var autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(
+                () ->
+                    Map.of(
+                        "otel.traces.exporter",
+                        "none",
+                        "otel.propagators",
+                        "jaeger,tracecontext",
+                        "otel.java.disabled.resource.providers",
+                        "io.opentelemetry.instrumentation.resources.ProcessResourceProvider"))
+            .addPropertiesCustomizer(
+                configProperties -> {
+                  return Map.of(
+                      "otel.metrics.exporter",
+                      "none",
+                      "otel.logs.exporter",
+                      "none",
+                      "otel.service.name",
+                      "registry-local-its");
+                })
+            .build();
+    var openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    TracingExtension.setOpenTelemetry(openTelemetrySdk);
+    log.debug("openTelemetrySdk initialized = " + openTelemetrySdk);
+    return openTelemetrySdk;
   }
 
   public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
