@@ -28,6 +28,7 @@ Verta
         deployment
         endpoint
         environment
+        finetune
         integrations
         pipeline
         registry
