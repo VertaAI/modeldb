@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -89,7 +90,9 @@ public abstract class Reconciler<T> {
           }
         };
 
-    var executorService = Executors.newSingleThreadScheduledExecutor();
+    var executorService =
+        Executors.newSingleThreadScheduledExecutor(
+            new DaemonThreadFactory(getClass().getSimpleName() + "-resyncer"));
     executorService.scheduleAtFixedRate(
         runnable,
         30L /*as per last parameter timeunit*/,
@@ -98,7 +101,10 @@ public abstract class Reconciler<T> {
   }
 
   private void startWorkers() {
-    var executorService = Executors.newFixedThreadPool(config.getWorkerCount());
+    var executorService =
+        Executors.newFixedThreadPool(
+            config.getWorkerCount(),
+            new DaemonThreadFactory(getClass().getSimpleName() + "-workers"));
     for (var i = 0; i < config.getWorkerCount(); i++) {
       Runnable runnable =
           () -> {
