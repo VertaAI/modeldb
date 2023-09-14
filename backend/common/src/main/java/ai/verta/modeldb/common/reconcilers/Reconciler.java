@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -20,8 +21,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
