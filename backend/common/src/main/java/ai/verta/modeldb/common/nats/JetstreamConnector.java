@@ -11,9 +11,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.DisposableBean;
 
 @Log4j2
-public class JetstreamConnector {
+public class JetstreamConnector implements DisposableBean {
   private static final Duration RECONNECT_WAIT_INTERVAL = Duration.ofSeconds(2L);
   private static final int MEGABYTE = 1024 * 1024;
   private static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
@@ -203,6 +204,7 @@ public class JetstreamConnector {
   }
 
   public Dispatcher createDispatcher() {
+    checkNatsConnection();
     return natsConnection.createDispatcher();
   }
 
@@ -256,6 +258,12 @@ public class JetstreamConnector {
     } catch (IOException | JetStreamApiException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    log.warn("Destroying jetstream connector...closing the nats connection.");
+    close();
   }
 
   public static class StreamNotFoundException extends Exception {}

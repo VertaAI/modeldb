@@ -20,6 +20,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -89,7 +91,9 @@ public abstract class Reconciler<T> {
           }
         };
 
-    var executorService = Executors.newSingleThreadScheduledExecutor();
+    var executorService =
+        Executors.newSingleThreadScheduledExecutor(
+            new DaemonThreadFactory(getClass().getSimpleName() + "-resyncer"));
     executorService.scheduleAtFixedRate(
         runnable,
         30L /*as per last parameter timeunit*/,
@@ -98,7 +102,10 @@ public abstract class Reconciler<T> {
   }
 
   private void startWorkers() {
-    var executorService = Executors.newFixedThreadPool(config.getWorkerCount());
+    var executorService =
+        Executors.newFixedThreadPool(
+            config.getWorkerCount(),
+            new DaemonThreadFactory(getClass().getSimpleName() + "-workers"));
     for (var i = 0; i < config.getWorkerCount(); i++) {
       Runnable runnable =
           () -> {
