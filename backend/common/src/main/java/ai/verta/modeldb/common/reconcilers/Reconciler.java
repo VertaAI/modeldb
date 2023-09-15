@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.reconcilers;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -13,10 +14,10 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,6 +29,7 @@ public abstract class Reconciler<T> {
   private static final AttributeKey<String> RECONCILER_NAME_ATTRIBUTE_KEY =
       AttributeKey.stringKey("reconciler");
   private static final AttributeKey<Long> NUMBER_OF_ITEMS_ATTRIBUTE_KEY = longKey("numberOfItems");
+  private static final Random random = new Random();
   protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
@@ -41,16 +43,6 @@ public abstract class Reconciler<T> {
   protected final FutureJdbi futureJdbi;
   protected final FutureExecutor executor;
   private final Tracer tracer;
-
-  @Deprecated(forRemoval = true)
-  protected Reconciler(
-      ReconcilerConfig config,
-      Logger logger,
-      FutureJdbi futureJdbi,
-      FutureExecutor executor,
-      boolean deduplicate) {
-    this(config, futureJdbi, executor, OpenTelemetry.noop(), deduplicate);
-  }
 
   protected Reconciler(
       ReconcilerConfig config,
@@ -72,7 +64,7 @@ public abstract class Reconciler<T> {
   }
 
   private void startResync() {
-    Runnable runnable =
+    Runnable resyncJob =
         () -> {
           Span span =
               tracer
@@ -91,13 +83,41 @@ public abstract class Reconciler<T> {
         };
 
     var executorService =
-        Executors.newSingleThreadScheduledExecutor(
+        Executors.newSingleThreadExecutor(
             new DaemonThreadFactory(getClass().getSimpleName() + "-resyncer"));
-    executorService.scheduleAtFixedRate(
-        runnable,
-        30L /*as per last parameter timeunit*/,
-        config.getResyncPeriodSeconds(),
-        TimeUnit.SECONDS);
+
+    long initialDelayMilliseconds = SECONDS.toMillis(30);
+    long resyncPeriodMillis = SECONDS.toMillis(config.getResyncPeriodSeconds());
+    executorService.submit(
+        () -> {
+          if (!sleepWithJitter(initialDelayMilliseconds)) {
+            return;
+          }
+
+          while (true) {
+            try {
+              resyncJob.run();
+            } catch (Exception e) {
+              logger.error("Resync job failed", e);
+            }
+            if (!sleepWithJitter(resyncPeriodMillis)) {
+              return;
+            }
+          }
+        });
+  }
+
+  private boolean sleepWithJitter(long milliseconds) {
+    try {
+      float plusOrMinus20Percent = (random.nextFloat() * 0.4f) - 0.2f;
+      long millisWithJitter = (long) (milliseconds * (1f + plusOrMinus20Percent));
+      logger.trace("sleeping {} milliseconds", millisWithJitter);
+      Thread.sleep(millisWithJitter);
+      return true;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    }
   }
 
   private void startWorkers() {
@@ -150,7 +170,7 @@ public abstract class Reconciler<T> {
     }
   }
 
-  private ReconcileResult traceReconcile(Set<T> idsToProcess) throws Exception {
+  private void traceReconcile(Set<T> idsToProcess) throws Exception {
     Span span =
         tracer
             .spanBuilder(getClass().getSimpleName() + " reconcile")
@@ -158,7 +178,7 @@ public abstract class Reconciler<T> {
             .setAttribute(NUMBER_OF_ITEMS_ATTRIBUTE_KEY, (long) idsToProcess.size())
             .startSpan();
     try (Scope ignored = span.makeCurrent()) {
-      return reconcile(idsToProcess);
+      reconcile(idsToProcess);
     } catch (Exception e) {
       span.recordException(e);
       span.setStatus(StatusCode.ERROR, e.getMessage());
@@ -185,7 +205,9 @@ public abstract class Reconciler<T> {
     Set<T> ret = new HashSet<>();
     lock.lock();
     try {
-      while (elements.isEmpty()) notEmpty.await();
+      while (elements.isEmpty()) {
+        notEmpty.await();
+      }
 
       while (!elements.isEmpty() && ret.size() < config.getBatchSize()) {
         T obj = order.pop();
