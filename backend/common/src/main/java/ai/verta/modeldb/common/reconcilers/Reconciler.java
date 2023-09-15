@@ -111,7 +111,7 @@ public abstract class Reconciler<T> {
     try {
       float plusOrMinus20Percent = (random.nextFloat() * 0.4f) - 0.2f;
       long millisWithJitter = (long) (milliseconds * (1f + plusOrMinus20Percent));
-      logger.debug("sleeping {} milliseconds", millisWithJitter);
+      logger.trace("sleeping {} milliseconds", millisWithJitter);
       Thread.sleep(millisWithJitter);
       return true;
     } catch (InterruptedException e) {
