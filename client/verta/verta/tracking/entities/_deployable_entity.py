@@ -42,6 +42,7 @@ _CACHE_DIR = os.path.join(
 )
 
 _INTERNAL_ATTR_PREFIX = "__verta_"
+_RESERVED_ATTR_PREFIX = f"{_INTERNAL_ATTR_PREFIX}reserved__"
 
 
 @six.add_metaclass(abc.ABCMeta)
