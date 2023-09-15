@@ -50,7 +50,7 @@ class TestLoraConfig:
         if include_r:
             kwargs["r"] = r
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="must be a"):
             LoraConfig(**kwargs)
 
     @given(
