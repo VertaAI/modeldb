@@ -13,7 +13,7 @@ class LoraConfig(_FinetuneConfig):
 
     Parameters
     ----------
-    alpha : positive int, default 8
+    alpha : positive int, default 32
         Scaling factor for update matrices.
     dropout : float between 0.0 and 1.0 inclusive, default 0.0
         Dropout probability for LoRA layers.
@@ -26,7 +26,7 @@ class LoraConfig(_FinetuneConfig):
 
     """
 
-    alpha: int = 8
+    alpha: int = 32
     dropout: float = 0.0
     r: int = 8
 
