@@ -24,7 +24,7 @@ class _FinetuningConfig(abc.ABC):
         raise NotImplementedError
 
     def _as_dict(self) -> Dict[str, Any]:
-        """Return the item in FineTuningJobCreate for this config.
+        """Return fine-tuning config value for FineTuningJobCreate.
 
         Examples
         --------
@@ -42,7 +42,7 @@ class _FinetuningConfig(abc.ABC):
 
     @classmethod
     def _from_job_dict(cls, job_dict: Dict[str, Any]) -> "_FinetuningConfig":
-        """Return a fine-tuning config object from FineTuningJobResponse.
+        """Return fine-tuning config object from FineTuningJobResponse.
 
         Examples
         --------
