@@ -26,7 +26,7 @@ class LoraConfig(_FinetuningConfig):
     dropout: float = 0.0
     r: int = 8
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         msg = f"`alpha` must be a positive integer, not {self.alpha}"
         if not isinstance(self.alpha, int):
             raise TypeError(msg)

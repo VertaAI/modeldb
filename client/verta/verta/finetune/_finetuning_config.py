@@ -9,7 +9,7 @@ class _FinetuningConfig(abc.ABC):
     """Abstract base class for fine-tuning algorithm configurations."""
 
     @abc.abstractmethod
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate types and values of fields on `self`."""
         raise NotImplementedError
 
