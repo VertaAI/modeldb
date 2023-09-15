@@ -70,8 +70,6 @@ class _FinetuningConfig(abc.ABC):
                 if any(hydrated_config_dict.values()):
                     # config_dict has at least one non-zero-value item
                     config = subcls(**hydrated_config_dict)
-                    break
-        else:
-            raise ValueError("fine-tuning config not found")
+                    return config
 
-        return config
+        raise ValueError("fine-tuning config not found")
