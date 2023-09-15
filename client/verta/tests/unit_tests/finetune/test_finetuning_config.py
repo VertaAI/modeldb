@@ -21,22 +21,33 @@ class TestFinetuningConfig:
 
 class TestLoraConfig:
     @hypothesis.given(
-        alpha=st.one_of(st.none(), st.integers(max_value=0)),
-        dropout=st.one_of(st.none(), st.floats()),
-        r=st.one_of(st.none(), st.integers(max_value=0)),
+        include_alpha=st.booleans(),
+        alpha=st.integers(max_value=0),
+        include_dropout=st.booleans(),
+        dropout=st.floats(),
+        include_r=st.booleans(),
+        r=st.integers(max_value=0),
     )
-    def test_init_error(self, alpha, dropout, r):
+    def test_init_error(
+        self,
+        include_alpha,
+        alpha,
+        include_dropout,
+        dropout,
+        include_r,
+        r,
+    ):
         """Verify argument value validation."""
-        hypothesis.assume(not all(arg is None for arg in [alpha, dropout, r]))
-        if dropout is not None:
+        hypothesis.assume(any([include_alpha, include_dropout, include_r]))
+        if include_dropout:
             hypothesis.assume(dropout < 0.0 or dropout > 1.0)
 
         kwargs = dict()
-        if alpha is not None:
+        if include_alpha:
             kwargs["alpha"] = alpha
-        if dropout is not None:
+        if include_dropout:
             kwargs["dropout"] = dropout
-        if r is not None:
+        if include_r:
             kwargs["r"] = r
 
         with pytest.raises(ValueError):
