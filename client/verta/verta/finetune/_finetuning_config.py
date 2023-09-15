@@ -5,7 +5,7 @@ import dataclasses
 from typing import Any, Dict
 
 
-class _FinetuneConfig(abc.ABC):
+class _FinetuningConfig(abc.ABC):
     """Abstract base class for fine-tuning algorithm configurations."""
 
     @abc.abstractmethod
@@ -41,8 +41,8 @@ class _FinetuneConfig(abc.ABC):
         return dataclasses.asdict(self)
 
     @classmethod
-    def _from_job_dict(cls, job_dict: Dict[str, Any]) -> "_FinetuneConfig":
-        """Return a fine-tune config object from FineTuningJobResponse.
+    def _from_job_dict(cls, job_dict: Dict[str, Any]) -> "_FinetuningConfig":
+        """Return a fine-tuning config object from FineTuningJobResponse.
 
         Examples
         --------
@@ -58,7 +58,7 @@ class _FinetuneConfig(abc.ABC):
 
         """
         for subcls in cls.__subclasses__():
-            config_dict = job_dict.get(subcls._request_body_key)
+            config_dict = job_dict.get(subcls._JOB_DICT_KEY)
             if config_dict:
                 hydrated_config_dict = {
                     field.name: config_dict.get(
@@ -72,6 +72,6 @@ class _FinetuneConfig(abc.ABC):
                     config = subcls(**hydrated_config_dict)
                     break
         else:
-            raise ValueError("fine-tune config not found")
+            raise ValueError("fine-tuning config not found")
 
         return config

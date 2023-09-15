@@ -2,12 +2,12 @@
 
 import dataclasses
 
-from ._finetune_config import _FinetuneConfig
+from ._finetuning_config import _FinetuningConfig
 
 
 @dataclasses.dataclass(order=False, frozen=True)
-class LoraConfig(_FinetuneConfig):
-    """LoRA [#]_ fine-tuning configuration.
+class LoraConfig(_FinetuningConfig):
+    """LoRA fine-tuning configuration.
 
     For use with :meth:`RegisteredModelVersion.finetune() <verta.registry.entities.RegisteredModelVersion.finetune>`
 
@@ -19,10 +19,6 @@ class LoraConfig(_FinetuneConfig):
         Dropout probability for LoRA layers.
     r : positive int, default 8
         Rank of update matrices.
-
-    References
-    ----------
-    .. [#] https://github.com/microsoft/LoRA
 
     """
 

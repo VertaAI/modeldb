@@ -3,13 +3,13 @@
 
 from verta._internal_utils import documentation
 
-from ._finetune_config import _FinetuneConfig
+from ._finetuning_config import _FinetuningConfig
 from ._lora_config import LoraConfig
 
 
 documentation.reassign_module(
     [
-        _FinetuneConfig,
+        _FinetuningConfig,
         LoraConfig,
     ],
     module_name=__name__,
