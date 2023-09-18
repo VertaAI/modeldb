@@ -537,7 +537,11 @@ class Client(object):
         visibility=None,
         id=None,
     ):
-        """:meth:`set_project` but static."""
+        """:meth:`set_project`, but static.
+
+        Requires either `ctx.workspace_name` or `id`.
+
+        """
         resource_name = "Project"
         param_names = "`desc`, `tags`, `attrs`, `public_within_org`, or `visibility`"
         params = (desc, tags, attrs, public_within_org, visibility)
@@ -648,29 +652,54 @@ class Client(object):
 
         name = self._set_from_config_if_none(name, "experiment")
 
+        if id is None and self._ctx.proj is None:
+            self.set_project()
+
+        return self._get_or_create_experiment(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            id=id,
+        )
+
+    @staticmethod
+    def _get_or_create_experiment(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        id=None,
+    ):
+        """:meth:`set_experiment`, but static.
+
+        Requires either `ctx.proj` or `id`
+
+        """
         resource_name = "Experiment"
         param_names = "`desc`, `tags`, or `attrs`"
         params = (desc, tags, attrs)
         if id is not None:
-            self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
+            ctx.expt = Experiment._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
-            self._ctx.populate()
+            ctx.populate()
         else:
-            if self._ctx.proj is None:
-                self.set_project()
-
-            self._ctx.expt = Experiment._get_or_create_by_name(
-                self._conn,
+            ctx.expt = Experiment._get_or_create_by_name(
+                conn,
                 name,
-                lambda name: Experiment._get_by_name(
-                    self._conn, self._conf, name, self._ctx.proj.id
-                ),
+                lambda name: Experiment._get_by_name(conn, conf, name, ctx.proj.id),
                 lambda name: Experiment._create(
-                    self._conn,
-                    self._conf,
-                    self._ctx,
+                    conn,
+                    conf,
+                    ctx,
                     name=name,
                     desc=desc,
                     tags=tags,
@@ -681,7 +710,7 @@ class Client(object):
                 ),
             )
 
-        return self._ctx.expt
+        return ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
         """
@@ -928,7 +957,11 @@ class Client(object):
         data_type=None,
         pii=False,
     ):
-        """:meth:`get_or_create_registered_model` but static."""
+        """:meth:`get_or_create_registered_model`, but static.
+
+        Requires either `ctx.workspace_name` or `id`.
+
+        """
         resource_name = "Registered Model"
         param_names = "`desc`, `labels`, `public_within_org`, or `visibility`"
         params = (desc, labels, public_within_org, visibility)

@@ -39,13 +39,7 @@ from verta import utils
 from verta import _blob, code, data_types, environment
 from verta.endpoint.build import Build
 import verta.finetune
-<<<<<<< Updated upstream
 from verta.tracking import _Context
-=======
-import verta.registry.entities
-from verta.tracking import _Context
-import verta.tracking.entities
->>>>>>> Stashed changes
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
@@ -1844,7 +1838,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             name=destination_registered_model.name
             + verta.finetune._PROJECT_NAME_SUFFIX,
         )
-        # TODO: create experiment
+        ctx.expt = Client._get_or_create_experiment(
+            self._conn,
+            self._conf,
+            ctx,
+            name=verta.finetune._EXPERIMENT_NAME,
+        )
         # TODO: create ER
         # TODO: log attributes
         # TODO: log dataset versions
