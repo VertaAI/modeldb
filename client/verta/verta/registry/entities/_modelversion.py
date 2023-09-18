@@ -8,7 +8,7 @@ import os
 import pathlib
 import pickle
 import tempfile
-from typing import List, Optional
+from typing import List, Optional, Union
 import warnings
 
 from google.protobuf.struct_pb2 import Value
@@ -38,6 +38,8 @@ from verta import utils
 
 from verta import _blob, code, data_types, environment
 from verta.endpoint.build import Build
+import verta.finetune
+from verta.tracking import _Context
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
@@ -1762,7 +1764,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         builds = Build._list_model_version_builds(self._conn, self.workspace, self.id)
         return sorted(builds, key=lambda build: build.date_created, reverse=True)
 
-    def create_external_build(self, location: str, requires_root: Optional[bool] = None, scan_external: Optional[bool] = None, self_contained: Optional[bool] = None) -> Build:
+    def create_external_build(
+        self,
+        location: str,
+        requires_root: Optional[bool] = None,
+        scan_external: Optional[bool] = None,
+        self_contained: Optional[bool] = None,
+    ) -> Build:
         """
         (alpha) Creates a new external build for this model version.
 
@@ -1784,4 +1792,46 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         :class:`~verta.endpoint.build.Build`
 
         """
-        return Build._create_external(self._conn, self.workspace, self.id, location, requires_root, scan_external, self_contained)
+        return Build._create_external(
+            self._conn,
+            self.workspace,
+            self.id,
+            location,
+            requires_root,
+            scan_external,
+            self_contained,
+        )
+
+    def finetune(
+        self,
+        destination_registered_model: "verta.registry.entities.RegisteredModel",
+        # TODO: how to specify/determine project [name]?
+        train_dataset: _dataset_version.DatasetVersion,
+        eval_dataset: Optional[_dataset_version.DatasetVersion] = None,
+        test_dataset: Optional[_dataset_version.DatasetVersion] = None,
+        name: Optional[str] = None,
+        finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
+    ):
+        """"""
+        from verta import Client
+
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = self.workspace
+        if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
+            raise ValueError("this model version is not eligible for fine-tuning")
+
+        ctx.proj = Client._get_or_create_project(
+            self._conn,
+            self._conf,
+            ctx,
+            name=destination_registered_model.name
+            + verta.finetune._PROJECT_NAME_SUFFIX,
+        )
+        # TODO: create experiment
+        # TODO: create ER
+        # TODO: log attributes
+        # TODO: log dataset versions
+
+        # TODO: create RMV from ER
+
+        # TODO: POST fine-tune job

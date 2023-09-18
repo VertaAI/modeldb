@@ -154,7 +154,9 @@ class Client(object):
         _connect=True,
     ):
         if organization_id is not None and organization_name is not None:
-            raise ValueError("cannot provide both `organization_id` and `organization_name`")
+            raise ValueError(
+                "cannot provide both `organization_id` and `organization_name`"
+            )
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
@@ -225,10 +227,10 @@ class Client(object):
             # )
             # response = conn.must_proto_response(request, OrganizationV2_pb2.GetOrganizationByNameV2.Response)
             # organization_id = response.organization.id
-            request = conn.make_proto_request(
-                "GET", "/api/v2/uac-proxy/organization"
+            request = conn.make_proto_request("GET", "/api/v2/uac-proxy/organization")
+            response = conn.must_proto_response(
+                request, OrganizationV2_pb2.ListOrganizationsV2.Response
             )
-            response = conn.must_proto_response(request, OrganizationV2_pb2.ListOrganizationsV2.Response)
             for org in response.organizations:
                 if org.name == organization_name:
                     organization_id = org.id
@@ -509,26 +511,55 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
+        return self._get_or_create_project(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            public_within_org=public_within_org,
+            visibility=visibility,
+            id=id,
+        )
+
+    @staticmethod
+    def _get_or_create_project(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
         resource_name = "Project"
         param_names = "`desc`, `tags`, `attrs`, `public_within_org`, or `visibility`"
         params = (desc, tags, attrs, public_within_org, visibility)
         if id is not None:
-            self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
+            ctx.proj = Project._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
-            self._ctx.populate()
+            ctx.populate()
         else:
-            self._ctx.proj = Project._get_or_create_by_name(
-                self._conn,
+            ctx.proj = Project._get_or_create_by_name(
+                conn,
                 name,
                 lambda name: Project._get_by_name(
-                    self._conn, self._conf, name, self._ctx.workspace_name
+                    conn,
+                    conf,
+                    name,
+                    ctx.workspace_name,
                 ),
                 lambda name: Project._create(
-                    self._conn,
-                    self._conf,
-                    self._ctx,
+                    conn,
+                    conf,
+                    ctx,
                     name=name,
                     desc=desc,
                     tags=tags,
@@ -537,11 +568,14 @@ class Client(object):
                     visibility=visibility,
                 ),
                 lambda: check_unnecessary_params_warning(
-                    resource_name, "name {}".format(name), param_names, params
+                    resource_name,
+                    "name {}".format(name),
+                    param_names,
+                    params,
                 ),
             )
 
-        return self._ctx.proj
+        return ctx.proj
 
     def get_experiment(self, name=None, id=None):
         """
