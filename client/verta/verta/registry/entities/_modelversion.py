@@ -39,7 +39,13 @@ from verta import utils
 from verta import _blob, code, data_types, environment
 from verta.endpoint.build import Build
 import verta.finetune
+<<<<<<< Updated upstream
 from verta.tracking import _Context
+=======
+import verta.registry.entities
+from verta.tracking import _Context
+import verta.tracking.entities
+>>>>>>> Stashed changes
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
@@ -1804,7 +1810,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def finetune(
         self,
-        destination_registered_model: "verta.registry.entities.RegisteredModel",
+        destination_registered_model: Union[
+            str,
+            "verta.registry.entities.RegisteredModel",
+        ],
         # TODO: how to specify/determine project [name]?
         train_dataset: _dataset_version.DatasetVersion,
         eval_dataset: Optional[_dataset_version.DatasetVersion] = None,
@@ -1817,8 +1826,16 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = self.workspace
+
         if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
             raise ValueError("this model version is not eligible for fine-tuning")
+        if isinstance(destination_registered_model, str):
+            destination_registered_model = Client._get_or_create_registered_model(
+                self._conn,
+                self._conf,
+                ctx,
+                name=destination_registered_model,
+            )
 
         ctx.proj = Client._get_or_create_project(
             self._conn,

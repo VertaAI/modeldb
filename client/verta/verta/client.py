@@ -537,6 +537,7 @@ class Client(object):
         visibility=None,
         id=None,
     ):
+        """:meth:`set_project` but static."""
         resource_name = "Project"
         param_names = "`desc`, `tags`, `attrs`, `public_within_org`, or `visibility`"
         params = (desc, tags, attrs, public_within_org, visibility)
@@ -550,12 +551,7 @@ class Client(object):
             ctx.proj = Project._get_or_create_by_name(
                 conn,
                 name,
-                lambda name: Project._get_by_name(
-                    conn,
-                    conf,
-                    name,
-                    ctx.workspace_name,
-                ),
+                lambda name: Project._get_by_name(conn, conf, name, ctx.workspace_name),
                 lambda name: Project._create(
                     conn,
                     conf,
@@ -568,10 +564,7 @@ class Client(object):
                     visibility=visibility,
                 ),
                 lambda: check_unnecessary_params_warning(
-                    resource_name,
-                    "name {}".format(name),
-                    param_names,
-                    params,
+                    resource_name, "name {}".format(name), param_names, params
                 ),
             )
 
@@ -906,24 +899,54 @@ class Client(object):
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
+        return self._get_or_create_registered_model(
+            self._conn,
+            self._conf,
+            self._ctx,
+            desc=desc,
+            labels=labels,
+            public_within_org=public_within_org,
+            visibility=visibility,
+            id=id,
+            task_type=task_type,
+            data_type=data_type,
+            pii=pii,
+        )
+
+    @staticmethod
+    def _get_or_create_registered_model(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        labels=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+        task_type=None,
+        data_type=None,
+        pii=False,
+    ):
+        """:meth:`get_or_create_registered_model` but static."""
         resource_name = "Registered Model"
         param_names = "`desc`, `labels`, `public_within_org`, or `visibility`"
         params = (desc, labels, public_within_org, visibility)
         if id is not None:
-            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            registered_model = RegisteredModel._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
         else:
             registered_model = RegisteredModel._get_or_create_by_name(
-                self._conn,
+                conn,
                 name,
                 lambda name: RegisteredModel._get_by_name(
-                    self._conn, self._conf, name, ctx.workspace_name
+                    conn, conf, name, ctx.workspace_name
                 ),
                 lambda name: RegisteredModel._create(
-                    self._conn,
-                    self._conf,
+                    conn,
+                    conf,
                     ctx,
                     name=name,
                     desc=desc,
