@@ -31,7 +31,7 @@ class _FinetuningConfig(abc.ABC):
         .. code-block:: python
             :emphasize-lines: 1
 
-            data[self._JOB_DICT_KEY] = config._as_dict()
+            data[config._JOB_DICT_KEY] = config._as_dict()
             url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
                 conn.scheme, conn.socket, workspace
             )
