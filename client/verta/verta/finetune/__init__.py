@@ -8,7 +8,7 @@ from ._finetuning_config import _FinetuningConfig
 from ._lora_config import LoraConfig
 
 
-_PROJECT_NAME_SUFFIX = " Fine-Tuning"  # append to registered model name
+_TRACKING_NAME_SUFFIX = " Fine-Tuning"  # append to RM and RMV names for project and run
 _EXPERIMENT_NAME = "Fine-Tuning"
 _TRAIN_DATASET_NAME = "train"
 _EVAL_DATASET_NAME = "eval"

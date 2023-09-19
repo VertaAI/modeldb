@@ -1839,7 +1839,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             self._conf,
             ctx,
             name=destination_registered_model.name
-            + verta.finetune._PROJECT_NAME_SUFFIX,
+            + verta.finetune._TRACKING_NAME_SUFFIX,
         )
         ctx.expt = Client._get_or_create_experiment(
             self._conn,
@@ -1851,6 +1851,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             self._conn,
             self._conf,
             ctx,
+            # TODO: make this match the RMV when `name` is None
+            name=name + verta.finetune._TRACKING_NAME_SUFFIX if name else None,
             attrs={verta.finetune._FINETUNE_ATTR_KEY: True},
         )
 
