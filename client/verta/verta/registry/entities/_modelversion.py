@@ -1808,7 +1808,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             str,
             "verta.registry.entities.RegisteredModel",
         ],
-        # TODO: how to specify/determine project [name]?
         train_dataset: _dataset_version.DatasetVersion,
         eval_dataset: Optional[_dataset_version.DatasetVersion] = None,
         test_dataset: Optional[_dataset_version.DatasetVersion] = None,
