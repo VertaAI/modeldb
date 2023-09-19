@@ -63,7 +63,9 @@ class _FinetuningConfig(abc.ABC):
                 hydrated_config_dict = {
                     field.name: config_dict.get(
                         field.name,
-                        field.type(),  # zero-value if not present
+                        # use the field's type's zero value if not present
+                        # because they are equivalent in Go
+                        field.type(),
                     )
                     for field in dataclasses.fields(subcls)
                 }
