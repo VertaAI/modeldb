@@ -63,10 +63,11 @@ public class CommonUtils {
   }
 
   public static void logAmazonServiceExceptionErrorCodes(Logger logger, AmazonServiceException e) {
-    logger.debug("Amazon Service Status Code: {}", e.getStatusCode());
-    logger.debug("Amazon Service Error Code: {}", e.getErrorCode());
-    logger.debug("Amazon Service Error Type: {}", e.getErrorType());
-    logger.debug("Amazon Service Error Message: {}", e.getErrorMessage());
+    logger.error("Amazon Service Exception", e);
+    logger.warn("Amazon Service Status Code: {}", e.getStatusCode());
+    logger.warn("Amazon Service Error Code: {}", e.getErrorCode());
+    logger.warn("Amazon Service Error Type: {}", e.getErrorType());
+    logger.warn("Amazon Service Error Message: {}", e.getErrorMessage());
   }
 
   public static boolean isEnvSet(String envVar) {
