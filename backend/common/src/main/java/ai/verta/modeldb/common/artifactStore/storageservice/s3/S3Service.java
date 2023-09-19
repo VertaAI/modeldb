@@ -68,12 +68,12 @@ public class S3Service implements ArtifactStoreService {
     } catch (AmazonServiceException e) {
       CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existance for artifact store : "
+          "AWS S3 could not be checked for object existance for artifact store : "
               + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existance for artifact store : "
+          "AWS S3 could not be checked for object existance for artifact store : "
               + e.getMessage());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
