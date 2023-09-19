@@ -123,6 +123,15 @@ class JetstreamConnectorTest {
   }
 
   @Test
+  void nonPreconfiguredStream() {
+    // verify the pre-configured streams
+    connector.verifyStreams();
+    // ask for a new one, non-preconfigured...
+    JetStream stream = connector.getJetStream("fish");
+    assertThat(stream).isNotNull();
+  }
+
+  @Test
   void existingConsumer_changeFromPullToPush() throws Exception {
     JetstreamConfig config =
         new JetstreamConfig(
