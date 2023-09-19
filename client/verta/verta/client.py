@@ -931,7 +931,8 @@ class Client(object):
         return self._get_or_create_registered_model(
             self._conn,
             self._conf,
-            self._ctx,
+            ctx,
+            name=name,
             desc=desc,
             labels=labels,
             public_within_org=public_within_org,

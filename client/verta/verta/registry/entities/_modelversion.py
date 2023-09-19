@@ -1814,15 +1814,18 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         test_dataset: Optional[_dataset_version.DatasetVersion] = None,
         name: Optional[str] = None,
         finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
-    ):
+    ) -> "verta.registry.entities.RegisteredModelVersion":
         """"""
         from verta import Client
+        from verta.tracking.entities import ExperimentRun
+
+        # TODO: check `enable_mdb_versioning`
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = self.workspace
 
-        if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
-            raise ValueError("this model version is not eligible for fine-tuning")
+        # if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
+        #     raise ValueError("this model version is not eligible for fine-tuning")
         if isinstance(destination_registered_model, str):
             destination_registered_model = Client._get_or_create_registered_model(
                 self._conn,
@@ -1831,6 +1834,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 name=destination_registered_model,
             )
 
+        # create experiment run
         ctx.proj = Client._get_or_create_project(
             self._conn,
             self._conf,
@@ -1844,10 +1848,34 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             ctx,
             name=verta.finetune._EXPERIMENT_NAME,
         )
-        # TODO: create ER
-        # TODO: log attributes
-        # TODO: log dataset versions
+        run = ExperimentRun._create(
+            self._conn,
+            self._conf,
+            ctx,
+            attrs={verta.finetune._FINETUNE_ATTR_KEY: True},
+        )
 
-        # TODO: create RMV from ER
+        # log dataset versions
+        run.log_dataset_version(verta.finetune._TRAIN_DATASET_NAME, train_dataset)
+        if eval_dataset is not None:
+            run.log_dataset_version(verta.finetune._EVAL_DATASET_NAME, eval_dataset)
+        if test_dataset is not None:
+            run.log_dataset_version(verta.finetune._TEST_DATASET_NAME, test_dataset)
 
-        # TODO: POST fine-tune job
+        model_ver = destination_registered_model.create_version_from_run(run, name=name)
+
+        # launch fine-tuning
+        data = {
+            "base_model_version_id": self.id,
+            "run_id": run.id,
+            finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
+        }
+        url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+        )
+        response = _utils.make_request("POST", url, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        return model_ver
