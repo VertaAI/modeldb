@@ -35,7 +35,7 @@ public class JetstreamConnector implements DisposableBean {
   public JetStream getJetStream(String streamName) {
     log.info("Getting JetStream for stream {}", streamName);
     checkNatsConnection();
-    return jetStreamMap.get(streamName);
+    return jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
   }
 
   public void checkNatsConnection() {
@@ -45,7 +45,6 @@ public class JetstreamConnector implements DisposableBean {
       natsConnection = getConnection();
       verifyStreams();
     }
-    log.info("Ensuring stream exists");
   }
 
   private Connection getConnection() {
