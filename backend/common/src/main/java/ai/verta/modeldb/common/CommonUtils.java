@@ -63,7 +63,12 @@ public class CommonUtils {
   }
 
   public static void logAmazonServiceExceptionErrorCodes(Logger logger, AmazonServiceException e) {
-    logger.error("Amazon Service Exception", e);
+    logAmazonServiceExceptionErrorCodes(logger, "", e);
+  }
+
+  public static void logAmazonServiceExceptionErrorCodes(
+      Logger logger, String context, AmazonServiceException e) {
+    logger.error("Amazon Service Exception. context: " + context, e);
     logger.warn("Amazon Service Status Code: {}", e.getStatusCode());
     logger.warn("Amazon Service Error Code: {}", e.getErrorCode());
     logger.warn("Amazon Service Error Type: {}", e.getErrorType());

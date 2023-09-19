@@ -50,14 +50,15 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(
+          LOGGER, "bucket existence check for bucket: '" + bucketName + "'", e);
       throw new UnavailableException(
           "S3 bucket existence check failed for bucket '"
               + bucketName
               + "' : "
               + e.getErrorMessage());
     } catch (SdkClientException e) {
-      LOGGER.warn("Exception in doesBucketExist call", e);
+      LOGGER.warn("Exception in doesBucketExist call. bucket: '" + bucketName + "'", e);
       throw new UnavailableException(
           "S3 bucket existence check failed for bucket '" + bucketName + "' : " + e.getMessage());
     }
@@ -67,7 +68,10 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(
+          LOGGER,
+          "object existence check. bucket: '" + bucketName + "'" + ", path: '" + path + "'",
+          e);
       throw new UnavailableException(
           "S3 object existence check failed. bucket name: '"
               + bucketName
@@ -85,7 +89,13 @@ public class S3Service implements ArtifactStoreService {
               + "'"
               + e.getMessage());
     } catch (Exception e) {
-      LOGGER.warn("Failure when checking for object existence.", e);
+      LOGGER.warn(
+          "S3 object existence check failed. bucket name: '"
+              + bucketName
+              + "' ; object path: '"
+              + path
+              + "'",
+          e);
       throw e;
     }
   }
@@ -218,12 +228,17 @@ public class S3Service implements ArtifactStoreService {
         return uploadResult.getETag();
       }
     } catch (AmazonServiceException e) {
-      // Amazon S3 couldn't be contacted for a response, or the client
-      // couldn't parse the response from Amazon S3.
-      String errorMessage = e.getMessage();
-      LOGGER.warn("S3 file upload failed.", e);
+      LOGGER.warn(
+          "S3 file upload failed. artifactPath: '" + artifactPath + "', part number: " + partNumber,
+          e);
       throw new ModelDBException(
-          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+          "S3 file upload failed. artifactPath: '"
+              + artifactPath
+              + "', part number: "
+              + partNumber
+              + " S3 message: "
+              + e.getMessage(),
+          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (InterruptedException e) {
       LOGGER.warn(e.getMessage(), e);
       // Restore interrupted state...
