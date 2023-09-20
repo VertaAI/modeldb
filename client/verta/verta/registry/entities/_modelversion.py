@@ -1830,7 +1830,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         name : str, optional
             Name for the new fine-tuned model version. If no name is provided, one will
             be generated.
-        finetuning_config : :mod:`verta.finetune <fine-tuning configuration>`, default :class:`~verta.finetune.LoraConfig>`
+        finetuning_config : :mod:`fine-tuning configuration <verta.finetune>`, default :class:`~verta.finetune.LoraConfig`
             Fine-tuning algorithm and configuration.
 
         Returns

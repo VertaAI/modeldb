@@ -39,6 +39,9 @@ def test_finetune(client, registered_model, dataset):
 
     # check attributes
     for entity in [model_ver, run]:
-        assert entity.get_attributes() >= {
-            finetune._FINETUNE_ATTR_KEY: True,
-        }
+        assert (
+            entity.get_attributes().items()
+            >= {
+                finetune._FINETUNE_ATTR_KEY: True,
+            }.items()
+        )
