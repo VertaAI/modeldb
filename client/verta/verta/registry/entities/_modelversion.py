@@ -1814,7 +1814,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         name: Optional[str] = None,
         finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
     ) -> "RegisteredModelVersion":
-        """Fine-tune this model version using provided datasets.
+        """Fine-tune this model version using the provided dataset(s).
 
         Parameters
         ----------
