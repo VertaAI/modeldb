@@ -1819,7 +1819,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         from verta.dataset.entities import Dataset
         from verta.tracking.entities import ExperimentRun
 
-        # TODO: check `enable_mdb_versioning`
+        if finetuning_config is None:
+            finetuning_config = verta.finetune.LoraConfig()
+
+        # TODO: [VRD-1131] check `enable_mdb_versioning`
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = self.workspace
