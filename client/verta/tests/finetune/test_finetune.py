@@ -19,14 +19,13 @@ def test_finetune(client, registered_model, dataset):
         destination_registered_model=reg_model,
         train_dataset=train_dataset_version,
         name=name,
-        finetuning_config=finetune.LoraConfig(),
     )
     run = client.get_experiment_run(id=model_ver.experiment_run_id)
 
     # check entity names
     assert client.proj.name == reg_model.name + finetune._PROJECT_NAME_SUFFIX
     assert client.expt.name == finetune._EXPERIMENT_NAME_PREFIX + dataset.name
-    ## TODO: wait for fine-tuning to launch, then check ER name
+    # TODO: wait for fine-tuning to launch, then check ER name
     assert model_ver.name == name
 
     # check dataset association

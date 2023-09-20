@@ -1839,12 +1839,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             New fine-tuned model version.
 
         """
+        # import here to circumvent circular imports
         from verta import Client
         from verta.dataset.entities import Dataset
         from verta.tracking.entities import ExperimentRun
-
-        if finetuning_config is None:
-            finetuning_config = verta.finetune.LoraConfig()
 
         # TODO: [VRD-1131] check `enable_mdb_versioning`
 
@@ -1861,6 +1859,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 ctx,
                 name=destination_registered_model,
             )
+        if finetuning_config is None:
+            finetuning_config = verta.finetune.LoraConfig()
 
         # create experiment run
         ctx.proj = Client._get_or_create_project(
