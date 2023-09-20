@@ -1818,7 +1818,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         Parameters
         ----------
-        destinantion_registered_model : str or :class:`~verta.registry.entities.RegisteredModel`
+        destination_registered_model : str or :class:`~verta.registry.entities.RegisteredModel`
             Registered model (or simply its name) in which to create the new fine-tuned
             model version.
         train_dataset : :class:`~verta.dataset.entities.DatasetVersion`
