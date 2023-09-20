@@ -1816,6 +1816,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     ) -> "RegisteredModelVersion":
         """"""
         from verta import Client
+        from verta.dataset.entities import Dataset
         from verta.tracking.entities import ExperimentRun
 
         # TODO: check `enable_mdb_versioning`
@@ -1823,6 +1824,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = self.workspace
 
+        # TODO: check base RMV for fine-tunability
         # if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
         #     raise ValueError("this model version is not eligible for fine-tuning")
         if isinstance(destination_registered_model, str):
@@ -1839,20 +1841,20 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             self._conf,
             ctx,
             name=destination_registered_model.name
-            + verta.finetune._TRACKING_NAME_SUFFIX,
+            + verta.finetune._PROJECT_NAME_SUFFIX,
         )
         ctx.expt = Client._get_or_create_experiment(
             self._conn,
             self._conf,
             ctx,
-            name=verta.finetune._EXPERIMENT_NAME,
+            name=verta.finetune._EXPERIMENT_NAME_PREFIX
+            + Dataset._get_by_id(self._conn, self._conf, train_dataset.dataset_id).name,
         )
         run = ExperimentRun._create(
             self._conn,
             self._conf,
             ctx,
-            # TODO: make this match the RMV when `name` is None
-            name=name + verta.finetune._TRACKING_NAME_SUFFIX if name else None,
+            name=None,  # autogenerate unique name, to be set later by fine-tuning job
             attrs={verta.finetune._FINETUNE_ATTR_KEY: True},
         )
 
@@ -1871,8 +1873,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             )
 
             try:
-                # TODO: rename ER
-
                 # launch fine-tuning
                 data = {
                     "base_model_version_id": self.id,
