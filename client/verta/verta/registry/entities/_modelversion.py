@@ -1813,7 +1813,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         test_dataset: Optional[_dataset_version.DatasetVersion] = None,
         name: Optional[str] = None,
         finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
-    ) -> "verta.registry.entities.RegisteredModelVersion":
+    ) -> "RegisteredModelVersion":
         """"""
         from verta import Client
         from verta.tracking.entities import ExperimentRun
@@ -1856,27 +1856,41 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             attrs={verta.finetune._FINETUNE_ATTR_KEY: True},
         )
 
-        # log dataset versions
-        run.log_dataset_version(verta.finetune._TRAIN_DATASET_NAME, train_dataset)
-        if eval_dataset is not None:
-            run.log_dataset_version(verta.finetune._EVAL_DATASET_NAME, eval_dataset)
-        if test_dataset is not None:
-            run.log_dataset_version(verta.finetune._TEST_DATASET_NAME, test_dataset)
+        try:
+            # log dataset versions
+            run.log_dataset_version(verta.finetune._TRAIN_DATASET_NAME, train_dataset)
+            if eval_dataset is not None:
+                run.log_dataset_version(verta.finetune._EVAL_DATASET_NAME, eval_dataset)
+            if test_dataset is not None:
+                run.log_dataset_version(verta.finetune._TEST_DATASET_NAME, test_dataset)
 
-        model_ver = destination_registered_model.create_version_from_run(run, name=name)
+            # create model version
+            model_ver = destination_registered_model.create_version_from_run(
+                run,
+                name=name,
+            )
 
-        # launch fine-tuning
-        data = {
-            "base_model_version_id": self.id,
-            "run_id": run.id,
-            finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
-        }
-        url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-        )
-        response = _utils.make_request("POST", url, self._conn, json=data)
-        _utils.raise_for_http_error(response)
+            try:
+                # TODO: rename ER
+
+                # launch fine-tuning
+                data = {
+                    "base_model_version_id": self.id,
+                    "run_id": run.id,
+                    finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
+                }
+                url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.workspace,
+                )
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            except:
+                model_ver.delete()
+                raise
+        except:
+            run.delete()
+            raise
 
         return model_ver
