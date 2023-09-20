@@ -7,6 +7,7 @@ from verta import finetune
 
 
 def test_finetune(client, registered_model, dataset):
+    """Verify that happy-path ``finetune()`` works."""
     base_model_ver = registered_model.create_version()  # mocked base LLM RMV
     name = "v1"
 

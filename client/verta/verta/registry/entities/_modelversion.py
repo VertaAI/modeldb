@@ -1814,7 +1814,31 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         name: Optional[str] = None,
         finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
     ) -> "RegisteredModelVersion":
-        """"""
+        """Fine-tune this model version using provided datasets.
+
+        Parameters
+        ----------
+        destinantion_registered_model : str or :class:`~verta.registry.entities.RegisteredModel`
+            Registered model (or simply its name) in which to create the new fine-tuned
+            model version.
+        train_dataset : :class:`~verta.dataset.entities.DatasetVersion`
+            Dataset to use for training.
+        eval_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
+            Dataset to use for evaluation.
+        test_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
+            Dataset to use for final testing at the end of fine-tuning.
+        name : str, optional
+            Name for the new fine-tuned model version. If no name is provided, one will
+            be generated.
+        finetuning_config : :mod:`verta.finetune <fine-tuning configuration>`, default :class:`~verta.finetune.LoraConfig>`
+            Fine-tuning algorithm and configuration.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+            New fine-tuned model version.
+
+        """
         from verta import Client
         from verta.dataset.entities import Dataset
         from verta.tracking.entities import ExperimentRun
