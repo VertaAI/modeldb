@@ -385,7 +385,7 @@ class _Dataset(_blob.Blob):
 
 class Component(object):
     """
-    A dataset component returned by ``dataset.list_components()``.
+    A dataset component returned by ``dataset_version.get_content().list_components()``.
 
     Attributes
     ----------
