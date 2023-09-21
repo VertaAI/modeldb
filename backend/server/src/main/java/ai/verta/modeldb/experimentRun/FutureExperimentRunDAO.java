@@ -366,8 +366,6 @@ public class FutureExperimentRunDAO {
         .thenSupply(() -> tagsHandler.getTags(runId).toInternalFuture(), executor);
   }
 
-  // TODO: refactor all usages to use updateVersionNumberV2
-  @Deprecated
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
     return jdbi.useHandle(
         handle -> {
