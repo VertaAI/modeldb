@@ -6,7 +6,7 @@ from string import ascii_letters
 from typing import List, Optional
 from unittest.mock import patch
 
-import hypothesis
+from hypothesis import given, settings, HealthCheck
 import hypothesis.strategies as st
 
 from verta._internal_utils._utils import timestamp_to_str
@@ -90,7 +90,7 @@ def model_ver_proto(
 
 
 @patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
-@hypothesis.given(
+@given(
     model_ver_proto=model_ver_proto(),
     workspace=st.text(ascii_letters, min_size=1),
 )
@@ -145,7 +145,11 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
 
 
 @patch.object(RegisteredModelVersion, "_refresh_cache", return_value=None)
-@hypothesis.given(
+@settings(
+    # this test generates *two* model versions!
+    suppress_health_check=[HealthCheck.data_too_large, HealthCheck.too_slow],
+)
+@given(
     model_ver_proto=model_ver_proto(with_experiment_run_id=False),
     model_ver_from_run_proto=model_ver_proto(with_experiment_run_id=True),
 )
