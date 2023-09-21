@@ -1,120 +1,31 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.CodeVersion;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.Pagination;
-import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.AddExperimentRunTags;
-import ai.verta.modeldb.CloneExperimentRun;
-import ai.verta.modeldb.CommitArtifactPart;
-import ai.verta.modeldb.CommitMultipartArtifact;
-import ai.verta.modeldb.CreateExperimentRun;
-import ai.verta.modeldb.DeleteArtifact;
-import ai.verta.modeldb.DeleteExperimentRunAttributes;
-import ai.verta.modeldb.DeleteExperimentRunTags;
-import ai.verta.modeldb.DeleteExperimentRuns;
-import ai.verta.modeldb.DeleteHyperparameters;
-import ai.verta.modeldb.DeleteMetrics;
-import ai.verta.modeldb.DeleteObservations;
-import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.ExperimentRun.Builder;
-import ai.verta.modeldb.Feature;
-import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetCommittedArtifactParts;
-import ai.verta.modeldb.GetDatasets;
-import ai.verta.modeldb.GetExperimentRunCodeVersion;
-import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
-import ai.verta.modeldb.GetExperimentRunsInExperiment;
-import ai.verta.modeldb.GetHyperparameters;
-import ai.verta.modeldb.GetMetrics;
-import ai.verta.modeldb.GetObservations;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.GetVersionedInput;
-import ai.verta.modeldb.LogArtifacts;
-import ai.verta.modeldb.LogAttributes;
-import ai.verta.modeldb.LogDatasets;
-import ai.verta.modeldb.LogEnvironment;
-import ai.verta.modeldb.LogExperimentRunCodeVersion;
-import ai.verta.modeldb.LogHyperparameters;
-import ai.verta.modeldb.LogMetrics;
-import ai.verta.modeldb.LogObservations;
-import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.UpdateExperimentRunDescription;
-import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.exceptions.*;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
-import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
-import ai.verta.modeldb.experimentRun.subtypes.CodeVersionFromBlobHandler;
-import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
-import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
-import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
-import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
-import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
-import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
-import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedVersionedInputsHandler;
-import ai.verta.modeldb.experimentRun.subtypes.HyperparametersFromConfigHandler;
-import ai.verta.modeldb.experimentRun.subtypes.KeyValueBaseHandler;
-import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
-import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
-import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
-import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
-import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
+import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.uac.Action;
+import ai.verta.uac.*;
 import ai.verta.uac.Empty;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.Resources;
-import ai.verta.uac.ServiceEnum;
 import com.google.protobuf.Value;
-import com.google.rpc.Code;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1519,8 +1430,7 @@ public class FutureExperimentRunDAO {
             () -> {
               // Validate request parameter
               if (request.getDatasetVersionId().isEmpty()) {
-                throw new ModelDBException(
-                    "DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+                throw new InvalidArgumentException("DatasetVersion Id should not be empty");
               }
             },
             executor);
@@ -1875,5 +1785,32 @@ public class FutureExperimentRunDAO {
     query.setParameter("repoIds", repoIds);
     query.executeUpdate();
     LOGGER.debug("ExperimentRun versioning deleted successfully");
+  }
+
+  public Future<Void> updateExperimentRunName(UpdateExperimentRunName request) {
+    final var runId = request.getId();
+    final var name = request.getName();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .toFuture()
+        .thenCompose(
+            unused ->
+                jdbi.run(
+                    handle -> {
+                      String updateQueryString =
+                          " UPDATE experiment_run "
+                              + "   SET name = :name, "
+                              + "     date_updated = :date_updated, "
+                              + "     version_number = (version_number + 1) "
+                              + " WHERE id = :runId ";
+                      handle
+                          .createUpdate(updateQueryString)
+                          .bind("name", name)
+                          .bind("date_updated", now)
+                          .bind("runId", runId)
+                          .execute();
+                    }));
   }
 }

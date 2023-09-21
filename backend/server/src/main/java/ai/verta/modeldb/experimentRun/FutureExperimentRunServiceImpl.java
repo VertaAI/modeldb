@@ -1,5 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
@@ -10,6 +12,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -218,8 +221,22 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void updateExperimentRunName(
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
+    try {
+
+      if (isBlank(request.getName())) {
+        var errorMessage = "Name is not present";
+        throw new InvalidArgumentException(errorMessage);
+      }
+
+      final var response =
+          futureExperimentRunDAO
+              .updateExperimentRunName(request)
+              .thenSupply(() -> Future.of(UpdateExperimentRunName.Response.getDefaultInstance()));
+
+      FutureGrpc.serverResponse(responseObserver, response);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
