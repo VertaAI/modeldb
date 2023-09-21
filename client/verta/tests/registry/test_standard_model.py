@@ -7,15 +7,14 @@ import re
 import warnings
 
 import hypothesis
-import hypothesis.strategies as st
 import pytest
 
 from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
 from verta.registry import _constants, verify_io
 
-from ..models import standard_models
-from ..strategies import json_strategy
+from tests.models import standard_models
+from tests.unit_tests.strategies import json_strategy
 
 
 verta_models = standard_models.verta_models()
