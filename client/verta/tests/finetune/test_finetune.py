@@ -102,7 +102,7 @@ class TestHappyPaths:
 
 class TestErrors:
     def test_dataset_not_mdb_versioned_error(self, make_registered_model, dataset):
-        """Verify that non-ModelDB-versioned datasets cause exceptions."""
+        """Verify that using non-ModelDB-versioned datasets raises an exception."""
         base_model_ver = make_registered_model().create_version()  # mocked base LLM RMV
         destination_registered_model = make_registered_model()
         unversioned_dataset = dataset.create_version(
