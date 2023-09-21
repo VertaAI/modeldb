@@ -384,37 +384,8 @@ public class FutureExperimentRunDAO {
         });
   }
 
-  private Future<Void> updateModifiedTimestampV2(String runId, Long now) {
-    return jdbi.run(
-        handle -> {
-          try (var findQuery =
-              handle.createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")) {
-            final var currentDateUpdated = findQuery.bind("run_id", runId).mapTo(Long.class).one();
-            final var dateUpdated = Math.max(currentDateUpdated, now);
-            try (var updateQuery =
-                handle.createUpdate(
-                    "update experiment_run set date_updated=:date_updated where id=:run_id")) {
-              updateQuery.bind("run_id", runId).bind("date_updated", dateUpdated).execute();
-            }
-          }
-        });
-  }
-
-  // TODO: refactor all usages to use updateVersionNumberV2
-  @Deprecated
   private InternalFuture<Void> updateVersionNumber(String erId) {
     return jdbi.useHandle(
-        handle -> {
-          try (var updateQuery =
-              handle.createUpdate(
-                  "update experiment_run set version_number=(version_number + 1) where id=:er_id")) {
-            updateQuery.bind("er_id", erId).execute();
-          }
-        });
-  }
-
-  private Future<Void> updateVersionNumberV2(String erId) {
-    return jdbi.run(
         handle -> {
           try (var updateQuery =
               handle.createUpdate(
@@ -1831,15 +1802,17 @@ public class FutureExperimentRunDAO {
                 jdbi.run(
                     handle -> {
                       String updateQueryString =
-                          "UPDATE experiment_run SET name=:name, date_updated=:date_updated WHERE id=:runId";
+                          " UPDATE experiment_run "
+                              + "   SET name = :name, "
+                              + "     date_updated = :date_updated, "
+                              + "     version_number = (version_number + 1) "
+                              + " WHERE id = :runId ";
                       handle
                           .createUpdate(updateQueryString)
                           .bind("name", name)
                           .bind("date_updated", now)
                           .bind("runId", runId)
                           .execute();
-                    }))
-        .thenCompose(unused -> updateModifiedTimestampV2(runId, now))
-        .thenCompose(unused -> updateVersionNumberV2(runId));
+                    }));
   }
 }

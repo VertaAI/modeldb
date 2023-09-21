@@ -7085,6 +7085,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   void shouldUpdateExperimentRunNameSuccessfully() {
     var newName = "Run 007";
 
+    var previousExperimentRun =
+        experimentRunServiceStub
+            .getExperimentRunById(
+                GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build())
+            .getExperimentRun();
+
     assertDoesNotThrow(
         () ->
             experimentRunServiceStub.updateExperimentRunName(
@@ -7101,6 +7107,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     assertThat(foundExperimentRun).isNotNull();
     assertThat(foundExperimentRun.getName()).isEqualTo(newName);
+    assertThat(foundExperimentRun.getVersionNumber())
+        .isEqualTo(previousExperimentRun.getVersionNumber() + 1);
   }
 
   @Test
