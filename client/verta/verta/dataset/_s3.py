@@ -96,6 +96,9 @@ class S3(_dataset._Dataset):
                 for component_msg in blob_msg.dataset.s3.components
             ]
         )
+        obj._mdb_versioned = any(
+            component._internal_versioned_path for component in obj.list_components()
+        )
 
         return obj
 
