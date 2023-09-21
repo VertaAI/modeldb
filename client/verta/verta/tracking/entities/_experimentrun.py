@@ -1898,6 +1898,20 @@ class ExperimentRun(_DeployableEntity):
             )
             return os.path.abspath(downloaded_to_path)
 
+    def rename(self, name: str) -> None:
+        """Rename this experiment run
+
+        Parameters
+        ----------
+        name : str
+            New name for this experiment run.
+
+        """
+        msg = _ExperimentRunService.UpdateExperimentRunName(id=self.id, name=name)
+        endpoint = "/api/v1/modeldb/experiment-run/updateExperimentRunName"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
