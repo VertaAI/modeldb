@@ -2,13 +2,11 @@
 
 from datetime import timedelta
 import os
-import re
 import string
 import warnings
 
 import hypothesis
 import hypothesis.strategies as st
-from hypothesis import given
 
 from tests.registry.pydantic_models import AnInnerClass, InputClass, OutputClass
 from verta._internal_utils.time_utils import duration_millis
@@ -23,15 +21,6 @@ def duration_millis_ignore_warn(delta):
 millis_timedelta_strategy = st.timedeltas(min_value=timedelta(milliseconds=1))
 
 millis_uint64_strategy = millis_timedelta_strategy.map(duration_millis_ignore_warn)
-
-
-# from https://hypothesis.readthedocs.io/en/latest/data.html#recursive-data
-json_strategy = st.recursive(
-    st.none() | st.booleans() | st.floats() | st.text(string.printable),
-    lambda children: st.lists(children)
-    | st.dictionaries(st.text(string.printable), children),
-    max_leaves=500,
-)
 
 
 @st.composite
