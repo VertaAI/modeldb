@@ -38,7 +38,7 @@ class TestFromRun:
             assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
     def test_experiment_run_id_property(self, experiment_run, registered_model):
-        """Verify ``ModelVersion.experiment_run_id`` value."""
+        """Verify ``ModelVersion.experiment_run_id`` has the expected value."""
         model_version = registered_model.create_version()
         assert model_version.experiment_run_id is None
 
@@ -46,6 +46,16 @@ class TestFromRun:
             experiment_run,
         )
         assert model_version_from_run.experiment_run_id == experiment_run.id
+
+    def test_get_experiment_run(self, experiment_run, registered_model):
+        """Verify ``ModelVersion.get_experiment_run`` returns the expected run."""
+        model_version = registered_model.create_version()
+        assert model_version.get_experiment_run() is None
+
+        model_version_from_run = registered_model.create_version_from_run(
+            experiment_run,
+        )
+        assert model_version_from_run.get_experiment_run().id == experiment_run.id
 
     def test_from_run_diff_workspaces(
         self, client, experiment_run, workspace, created_entities
