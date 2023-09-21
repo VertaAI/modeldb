@@ -28,10 +28,12 @@ from verta.tracking.entities import ExperimentRun
 @pytest.fixture(scope="session")
 def mock_client(mock_conn) -> Client:
     """Return a mocked object of the Client class for use in tests"""
-    # with patch.dict(os.environ, {'VERTA_EMAIL': 'test_email@verta.ai', 'VERTA_DEV_KEY':'123test1232dev1232key123'}):
-    client = Client(_connect=False)
-    client._conn = mock_conn
-    return client
+    return Client(
+        host=f"{mock_conn.scheme}://{mock_conn.socket}",
+        email=mock_conn.credentials.email,
+        dev_key=mock_conn.credentials.dev_key,
+        _connect=False,
+    )
 
 
 @pytest.fixture(scope="session")
