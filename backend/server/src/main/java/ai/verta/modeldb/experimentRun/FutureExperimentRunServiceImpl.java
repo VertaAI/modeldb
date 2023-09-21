@@ -218,8 +218,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void updateExperimentRunName(
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .updateExperimentRunName(request)
+              .thenApply(unused -> UpdateExperimentRunName.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
