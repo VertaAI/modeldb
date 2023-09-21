@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -222,8 +223,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       final var response =
           futureExperimentRunDAO
               .updateExperimentRunName(request)
-              .thenApply(unused -> UpdateExperimentRunName.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              .thenSupply(() -> Future.of(UpdateExperimentRunName.Response.getDefaultInstance()));
+
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }

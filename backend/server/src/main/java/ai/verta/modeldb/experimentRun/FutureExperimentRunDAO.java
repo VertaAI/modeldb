@@ -10,10 +10,7 @@ import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.*;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
@@ -369,6 +366,8 @@ public class FutureExperimentRunDAO {
         .thenSupply(() -> tagsHandler.getTags(runId).toInternalFuture(), executor);
   }
 
+  // TODO: refactor all usages to use updateVersionNumberV2
+  @Deprecated
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
     return jdbi.useHandle(
         handle -> {
@@ -385,8 +384,37 @@ public class FutureExperimentRunDAO {
         });
   }
 
+  private Future<Void> updateModifiedTimestampV2(String runId, Long now) {
+    return jdbi.run(
+        handle -> {
+          try (var findQuery =
+              handle.createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")) {
+            final var currentDateUpdated = findQuery.bind("run_id", runId).mapTo(Long.class).one();
+            final var dateUpdated = Math.max(currentDateUpdated, now);
+            try (var updateQuery =
+                handle.createUpdate(
+                    "update experiment_run set date_updated=:date_updated where id=:run_id")) {
+              updateQuery.bind("run_id", runId).bind("date_updated", dateUpdated).execute();
+            }
+          }
+        });
+  }
+
+  // TODO: refactor all usages to use updateVersionNumberV2
+  @Deprecated
   private InternalFuture<Void> updateVersionNumber(String erId) {
     return jdbi.useHandle(
+        handle -> {
+          try (var updateQuery =
+              handle.createUpdate(
+                  "update experiment_run set version_number=(version_number + 1) where id=:er_id")) {
+            updateQuery.bind("er_id", erId).execute();
+          }
+        });
+  }
+
+  private Future<Void> updateVersionNumberV2(String erId) {
+    return jdbi.run(
         handle -> {
           try (var updateQuery =
               handle.createUpdate(
@@ -1790,16 +1818,17 @@ public class FutureExperimentRunDAO {
     LOGGER.debug("ExperimentRun versioning deleted successfully");
   }
 
-  public InternalFuture<Empty> updateExperimentRunName(UpdateExperimentRunName request) {
+  public Future<Void> updateExperimentRunName(UpdateExperimentRunName request) {
     final var runId = request.getId();
     final var name = request.getName();
     final var now = Calendar.getInstance().getTimeInMillis();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .toFuture()
         .thenCompose(
             unused ->
-                jdbi.withHandle(
+                jdbi.run(
                     handle -> {
                       String updateQueryString =
                           "UPDATE experiment_run SET name=:name, date_updated=:date_updated WHERE id=:runId";
@@ -1809,8 +1838,8 @@ public class FutureExperimentRunDAO {
                           .bind("date_updated", now)
                           .bind("runId", runId)
                           .execute();
-                      return Empty.newBuilder().build();
-                    }),
-            executor);
+                    }))
+        .thenCompose(unused -> updateModifiedTimestampV2(runId, now))
+        .thenCompose(unused -> updateVersionNumberV2(runId));
   }
 }
