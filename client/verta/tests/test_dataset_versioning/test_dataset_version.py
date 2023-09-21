@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import collections
 import os
+import re
 
 import pytest
 
-import verta
 from verta.dataset import Path, S3
 
 
@@ -191,11 +193,27 @@ class TestManagedVersioning:
             f.write(FILE_CONTENTS)
 
         content = Path(filename, enable_mdb_versioning=True)
-        version = dataset.create_version(content)
 
+        # not downloadable prior to versioning
+        with pytest.raises(
+            type(Path._CANNOT_DOWNLOAD_ERROR),
+            match=re.escape(str(Path._CANNOT_DOWNLOAD_ERROR)),
+        ):
+            content.download()
+
+        # downloadable
+        version = dataset.create_version(content)
         downloaded_filename = version.get_content().download(filename)
         with open(downloaded_filename, "rb") as f:
             assert f.read() == FILE_CONTENTS
+
+        # not downloadable if versioning not enabled
+        version = dataset.create_version(Path(filename))
+        with pytest.raises(
+            type(Path._CANNOT_DOWNLOAD_ERROR),
+            match=re.escape(str(Path._CANNOT_DOWNLOAD_ERROR)),
+        ):
+            version.get_content().download()
 
     def test_s3(self, client, dataset):
         s3 = pytest.importorskip("boto3").client("s3")
@@ -212,8 +230,24 @@ class TestManagedVersioning:
         os.remove(filename)
 
         content = S3(s3_key, enable_mdb_versioning=True)
-        version = dataset.create_version(content)
 
+        # not downloadable prior to versioning
+        with pytest.raises(
+            type(S3._CANNOT_DOWNLOAD_ERROR),
+            match=re.escape(str(S3._CANNOT_DOWNLOAD_ERROR)),
+        ):
+            content.download()
+
+        # downloadable
+        version = dataset.create_version(content)
         downloaded_filename = version.get_content().download(s3_key)
         with open(downloaded_filename, "rb") as f:
             assert f.read() == FILE_CONTENTS
+
+        # not downloadable if versioning not enabled
+        version = dataset.create_version(Path(filename))
+        with pytest.raises(
+            type(S3._CANNOT_DOWNLOAD_ERROR),
+            match=re.escape(str(S3._CANNOT_DOWNLOAD_ERROR)),
+        ):
+            version.get_content().download()
