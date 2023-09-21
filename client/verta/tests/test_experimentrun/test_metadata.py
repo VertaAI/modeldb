@@ -7,6 +7,15 @@ from verta._internal_utils import _utils, importer
 from verta import data_types
 
 
+def test_rename(experiment_run):
+    previous_name = experiment_run.name
+
+    for _ in range(2):
+        new_name = _utils.generate_default_name()
+        experiment_run.rename(new_name)
+        assert experiment_run.name == new_name
+
+
 class TestSimpleAttributes:
     def test_keys(self, experiment_run):
         keys = (c for c in string.printable if c not in _utils._VALID_FLAT_KEY_CHARS)
