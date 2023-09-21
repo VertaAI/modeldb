@@ -154,7 +154,9 @@ class Client(object):
         _connect=True,
     ):
         if organization_id is not None and organization_name is not None:
-            raise ValueError("cannot provide both `organization_id` and `organization_name`")
+            raise ValueError(
+                "cannot provide both `organization_id` and `organization_name`"
+            )
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
@@ -225,10 +227,10 @@ class Client(object):
             # )
             # response = conn.must_proto_response(request, OrganizationV2_pb2.GetOrganizationByNameV2.Response)
             # organization_id = response.organization.id
-            request = conn.make_proto_request(
-                "GET", "/api/v2/uac-proxy/organization"
+            request = conn.make_proto_request("GET", "/api/v2/uac-proxy/organization")
+            response = conn.must_proto_response(
+                request, OrganizationV2_pb2.ListOrganizationsV2.Response
             )
-            response = conn.must_proto_response(request, OrganizationV2_pb2.ListOrganizationsV2.Response)
             for org in response.organizations:
                 if org.name == organization_name:
                     organization_id = org.id
@@ -509,26 +511,55 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
+        return self._get_or_create_project(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            public_within_org=public_within_org,
+            visibility=visibility,
+            id=id,
+        )
+
+    @staticmethod
+    def _get_or_create_project(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
+        """:meth:`set_project`, but static.
+
+        Requires either `ctx.workspace_name` or `id`.
+
+        """
         resource_name = "Project"
         param_names = "`desc`, `tags`, `attrs`, `public_within_org`, or `visibility`"
         params = (desc, tags, attrs, public_within_org, visibility)
         if id is not None:
-            self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
+            ctx.proj = Project._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
-            self._ctx.populate()
+            ctx.populate()
         else:
-            self._ctx.proj = Project._get_or_create_by_name(
-                self._conn,
+            ctx.proj = Project._get_or_create_by_name(
+                conn,
                 name,
-                lambda name: Project._get_by_name(
-                    self._conn, self._conf, name, self._ctx.workspace_name
-                ),
+                lambda name: Project._get_by_name(conn, conf, name, ctx.workspace_name),
                 lambda name: Project._create(
-                    self._conn,
-                    self._conf,
-                    self._ctx,
+                    conn,
+                    conf,
+                    ctx,
                     name=name,
                     desc=desc,
                     tags=tags,
@@ -541,7 +572,7 @@ class Client(object):
                 ),
             )
 
-        return self._ctx.proj
+        return ctx.proj
 
     def get_experiment(self, name=None, id=None):
         """
@@ -621,29 +652,54 @@ class Client(object):
 
         name = self._set_from_config_if_none(name, "experiment")
 
+        if id is None and self._ctx.proj is None:
+            self.set_project()
+
+        return self._get_or_create_experiment(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            id=id,
+        )
+
+    @staticmethod
+    def _get_or_create_experiment(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        id=None,
+    ):
+        """:meth:`set_experiment`, but static.
+
+        Requires either `ctx.proj` or `id`
+
+        """
         resource_name = "Experiment"
         param_names = "`desc`, `tags`, or `attrs`"
         params = (desc, tags, attrs)
         if id is not None:
-            self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
+            ctx.expt = Experiment._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
-            self._ctx.populate()
+            ctx.populate()
         else:
-            if self._ctx.proj is None:
-                self.set_project()
-
-            self._ctx.expt = Experiment._get_or_create_by_name(
-                self._conn,
+            ctx.expt = Experiment._get_or_create_by_name(
+                conn,
                 name,
-                lambda name: Experiment._get_by_name(
-                    self._conn, self._conf, name, self._ctx.proj.id
-                ),
+                lambda name: Experiment._get_by_name(conn, conf, name, ctx.proj.id),
                 lambda name: Experiment._create(
-                    self._conn,
-                    self._conf,
-                    self._ctx,
+                    conn,
+                    conf,
+                    ctx,
                     name=name,
                     desc=desc,
                     tags=tags,
@@ -654,7 +710,7 @@ class Client(object):
                 ),
             )
 
-        return self._ctx.expt
+        return ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
         """
@@ -872,24 +928,59 @@ class Client(object):
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
+        return self._get_or_create_registered_model(
+            self._conn,
+            self._conf,
+            ctx,
+            name=name,
+            desc=desc,
+            labels=labels,
+            public_within_org=public_within_org,
+            visibility=visibility,
+            id=id,
+            task_type=task_type,
+            data_type=data_type,
+            pii=pii,
+        )
+
+    @staticmethod
+    def _get_or_create_registered_model(
+        conn,
+        conf,
+        ctx,
+        name=None,
+        desc=None,
+        labels=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+        task_type=None,
+        data_type=None,
+        pii=False,
+    ):
+        """:meth:`get_or_create_registered_model`, but static.
+
+        Requires either `ctx.workspace_name` or `id`.
+
+        """
         resource_name = "Registered Model"
         param_names = "`desc`, `labels`, `public_within_org`, or `visibility`"
         params = (desc, labels, public_within_org, visibility)
         if id is not None:
-            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            registered_model = RegisteredModel._get_by_id(conn, conf, id)
             check_unnecessary_params_warning(
                 resource_name, "id {}".format(id), param_names, params
             )
         else:
             registered_model = RegisteredModel._get_or_create_by_name(
-                self._conn,
+                conn,
                 name,
                 lambda name: RegisteredModel._get_by_name(
-                    self._conn, self._conf, name, ctx.workspace_name
+                    conn, conf, name, ctx.workspace_name
                 ),
                 lambda name: RegisteredModel._create(
-                    self._conn,
-                    self._conf,
+                    conn,
+                    conf,
                     ctx,
                     name=name,
                     desc=desc,

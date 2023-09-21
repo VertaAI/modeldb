@@ -8,7 +8,7 @@ import os
 import pathlib
 import pickle
 import tempfile
-from typing import List, Optional
+from typing import List, Optional, Union
 import warnings
 
 from google.protobuf.struct_pb2 import Value
@@ -38,6 +38,8 @@ from verta import utils
 
 from verta import _blob, code, data_types, environment
 from verta.endpoint.build import Build
+import verta.finetune
+from verta.tracking import _Context
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
@@ -1762,7 +1764,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         builds = Build._list_model_version_builds(self._conn, self.workspace, self.id)
         return sorted(builds, key=lambda build: build.date_created, reverse=True)
 
-    def create_external_build(self, location: str, requires_root: Optional[bool] = None, scan_external: Optional[bool] = None, self_contained: Optional[bool] = None) -> Build:
+    def create_external_build(
+        self,
+        location: str,
+        requires_root: Optional[bool] = None,
+        scan_external: Optional[bool] = None,
+        self_contained: Optional[bool] = None,
+    ) -> Build:
         """
         (alpha) Creates a new external build for this model version.
 
@@ -1784,4 +1792,138 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         :class:`~verta.endpoint.build.Build`
 
         """
-        return Build._create_external(self._conn, self.workspace, self.id, location, requires_root, scan_external, self_contained)
+        return Build._create_external(
+            self._conn,
+            self.workspace,
+            self.id,
+            location,
+            requires_root,
+            scan_external,
+            self_contained,
+        )
+
+    def finetune(
+        self,
+        destination_registered_model: Union[
+            str,
+            "verta.registry.entities.RegisteredModel",
+        ],
+        train_dataset: _dataset_version.DatasetVersion,
+        eval_dataset: Optional[_dataset_version.DatasetVersion] = None,
+        test_dataset: Optional[_dataset_version.DatasetVersion] = None,
+        name: Optional[str] = None,
+        finetuning_config: Optional[verta.finetune._FinetuningConfig] = None,
+    ) -> "RegisteredModelVersion":
+        """Fine-tune this model version using the provided dataset(s).
+
+        Parameters
+        ----------
+        destination_registered_model : str or :class:`~verta.registry.entities.RegisteredModel`
+            Registered model (or simply its name) in which to create the new fine-tuned
+            model version.
+        train_dataset : :class:`~verta.dataset.entities.DatasetVersion`
+            Dataset version to use for training. The `content` passed to
+            :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
+        eval_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
+            Dataset version to use for evaluation. The `content` passed to
+            :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
+        test_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
+            Dataset version to use for final testing at the end of fine-tuning. The
+            `content` passed to :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
+        name : str, optional
+            Name for the new fine-tuned model version. If no name is provided, one will
+            be generated.
+        finetuning_config : :mod:`fine-tuning configuration <verta.finetune>`, default :class:`~verta.finetune.LoraConfig`
+            Fine-tuning algorithm and configuration.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+            New fine-tuned model version.
+
+        """
+        # import here to circumvent circular imports
+        from verta import Client
+        from verta.dataset.entities import Dataset
+        from verta.tracking.entities import ExperimentRun
+
+        # TODO: [VRD-1131] check `enable_mdb_versioning`
+
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = self.workspace
+
+        # TODO: check base RMV for fine-tunability
+        # if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
+        #     raise ValueError("this model version is not eligible for fine-tuning")
+        if isinstance(destination_registered_model, str):
+            destination_registered_model = Client._get_or_create_registered_model(
+                self._conn,
+                self._conf,
+                ctx,
+                name=destination_registered_model,
+            )
+        if finetuning_config is None:
+            finetuning_config = verta.finetune.LoraConfig()
+
+        # create experiment run
+        ctx.proj = Client._get_or_create_project(
+            self._conn,
+            self._conf,
+            ctx,
+            name=destination_registered_model.name
+            + verta.finetune._PROJECT_NAME_SUFFIX,
+        )
+        ctx.expt = Client._get_or_create_experiment(
+            self._conn,
+            self._conf,
+            ctx,
+            name=verta.finetune._EXPERIMENT_NAME_PREFIX
+            + Dataset._get_by_id(self._conn, self._conf, train_dataset.dataset_id).name,
+        )
+        run = ExperimentRun._create(
+            self._conn,
+            self._conf,
+            ctx,
+            name=None,  # autogenerate unique name, to be set later by fine-tuning job
+            attrs={verta.finetune._FINETUNE_ATTR_KEY: True},
+        )
+
+        try:
+            # log dataset versions
+            run.log_dataset_version(verta.finetune._TRAIN_DATASET_NAME, train_dataset)
+            if eval_dataset is not None:
+                run.log_dataset_version(verta.finetune._EVAL_DATASET_NAME, eval_dataset)
+            if test_dataset is not None:
+                run.log_dataset_version(verta.finetune._TEST_DATASET_NAME, test_dataset)
+
+            # create model version
+            model_ver = destination_registered_model.create_version_from_run(
+                run,
+                name=name,
+            )
+
+            try:
+                # launch fine-tuning
+                data = {
+                    "base_model_version_id": self.id,
+                    "run_id": run.id,
+                    finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
+                }
+                url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.workspace,
+                )
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            except:
+                model_ver.delete()
+                raise
+        except:
+            run.delete()
+            raise
+
+        return model_ver

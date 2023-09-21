@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from verta._protos.public.registry import ModelMetadata_pb2
+from verta.tracking.entities._deployable_entity import _RESERVED_ATTR_PREFIX
 
 
-MODEL_LANGUAGE_ATTR_KEY = "__verta_reserved__model_language"
-MODEL_TYPE_ATTR_KEY = "__verta_reserved__model_type"
+MODEL_LANGUAGE_ATTR_KEY = f"{_RESERVED_ATTR_PREFIX}model_language"
+MODEL_TYPE_ATTR_KEY = f"{_RESERVED_ATTR_PREFIX}model_type"
 
 
 class ModelLanguage(object):
