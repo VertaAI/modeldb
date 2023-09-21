@@ -1,5 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
@@ -220,6 +222,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
     try {
+
+      if (isBlank(request.getName())) {
+        var errorMessage = "Name is not present";
+        throw new InvalidArgumentException(errorMessage);
+      }
+
       final var response =
           futureExperimentRunDAO
               .updateExperimentRunName(request)

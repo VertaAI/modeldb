@@ -7080,4 +7080,38 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     LOGGER.info("logEnvironment test stop................................");
   }
+
+  @Test
+  void shouldUpdateExperimentRunNameSuccessfully() {
+    var newName = "Run 007";
+
+    assertDoesNotThrow(
+        () ->
+            experimentRunServiceStub.updateExperimentRunName(
+                UpdateExperimentRunName.newBuilder()
+                    .setId(experimentRun.getId())
+                    .setName(newName)
+                    .build()));
+
+    var foundExperimentRun =
+        experimentRunServiceStub
+            .getExperimentRunById(
+                GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build())
+            .getExperimentRun();
+
+    assertThat(foundExperimentRun).isNotNull();
+    assertThat(foundExperimentRun.getName()).isEqualTo(newName);
+  }
+
+  @Test
+  void shouldThrowExceptionWhenUpdateExperimentRunWithoutNameArgument() {
+    var exception =
+        assertThrows(
+            StatusRuntimeException.class,
+            () ->
+                experimentRunServiceStub.updateExperimentRunName(
+                    UpdateExperimentRunName.newBuilder().setId(experimentRun.getId()).build()));
+
+    assertThat(exception.getStatus().getDescription()).isEqualTo("Name is not present");
+  }
 }
