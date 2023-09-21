@@ -1822,11 +1822,17 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Registered model (or simply its name) in which to create the new fine-tuned
             model version.
         train_dataset : :class:`~verta.dataset.entities.DatasetVersion`
-            Dataset to use for training.
+            Dataset version to use for training. The `content` passed to
+            :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
         eval_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
-            Dataset to use for evaluation.
+            Dataset version to use for evaluation. The `content` passed to
+            :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
         test_dataset : :class:`~verta.dataset.entities.DatasetVersion`, optional
-            Dataset to use for final testing at the end of fine-tuning.
+            Dataset version to use for final testing at the end of fine-tuning. The
+            `content` passed to :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`
+            must have ``enable_mdb_versioning=True``.
         name : str, optional
             Name for the new fine-tuned model version. If no name is provided, one will
             be generated.
