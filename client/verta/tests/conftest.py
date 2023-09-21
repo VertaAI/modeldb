@@ -434,20 +434,28 @@ def dataset(client, created_entities):
     return dataset
 
 
-def registered_model_factory(client_param, created_entities_param):
-    model = client_param.get_or_create_registered_model()
-    created_entities_param.append(model)
-    return model
+@pytest.fixture
+def make_registered_model(client, created_entities):
+    def _make_registered_model():
+        reg_model = client.create_registered_model()
+        created_entities.append(reg_model)
+
+        return reg_model
+
+    return _make_registered_model
 
 
 @pytest.fixture
-def registered_model(client, created_entities):
-    return registered_model_factory(client, created_entities)
+def registered_model(make_registered_model):
+    return make_registered_model()
 
 
 @pytest.fixture(scope="class")
 def class_registered_model(class_client, class_created_entities):
-    return registered_model_factory(class_client, class_created_entities)
+    reg_model = class_client.create_registered_model()
+    class_created_entities.append(reg_model)
+
+    return reg_model
 
 
 @pytest.fixture(params=utils.sorted_subclasses(_DeployableEntity))
@@ -549,8 +557,10 @@ def workspace(client_sys_admin, created_entities):
             ),
             RoleV2_pb2.RoleResourceActions(
                 resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
-                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
-                                 RoleV2_pb2.ActionTypeV2.UPDATE],
+                allowed_actions=[
+                    RoleV2_pb2.ActionTypeV2.READ,
+                    RoleV2_pb2.ActionTypeV2.UPDATE,
+                ],
             ),
         ],
     )
@@ -558,39 +568,77 @@ def workspace(client_sys_admin, created_entities):
 
 @pytest.fixture
 def workspace2(client_sys_admin, created_entities):
-    return create_workspace(client_sys_admin, created_entities, [
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.CREATE, RoleV2_pb2.ActionTypeV2.READ,
-                                                    RoleV2_pb2.ActionTypeV2.UPDATE, RoleV2_pb2.ActionTypeV2.DELETE]),
-])
+    return create_workspace(
+        client_sys_admin,
+        created_entities,
+        [
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ],
+            ),
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                allowed_actions=[
+                    RoleV2_pb2.ActionTypeV2.CREATE,
+                    RoleV2_pb2.ActionTypeV2.READ,
+                    RoleV2_pb2.ActionTypeV2.UPDATE,
+                    RoleV2_pb2.ActionTypeV2.DELETE,
+                ],
+            ),
+        ],
+    )
 
 
 @pytest.fixture
 def workspace3(client_sys_admin, created_entities):
-    return create_workspace(client_sys_admin, created_entities, [
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
-                                                    RoleV2_pb2.ActionTypeV2.UPDATE]),
-])
+    return create_workspace(
+        client_sys_admin,
+        created_entities,
+        [
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ],
+            ),
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                allowed_actions=[
+                    RoleV2_pb2.ActionTypeV2.READ,
+                    RoleV2_pb2.ActionTypeV2.UPDATE,
+                ],
+            ),
+        ],
+    )
 
 
 @pytest.fixture
 def workspace_mns(client_sys_admin, created_entities, namespace_mns):
-    return create_workspace(client_sys_admin, created_entities, [
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
-    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
-                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
-                                                    RoleV2_pb2.ActionTypeV2.UPDATE]),
-], namespace=namespace_mns)
+    return create_workspace(
+        client_sys_admin,
+        created_entities,
+        [
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ],
+            ),
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                allowed_actions=[
+                    RoleV2_pb2.ActionTypeV2.READ,
+                    RoleV2_pb2.ActionTypeV2.UPDATE,
+                ],
+            ),
+        ],
+        namespace=namespace_mns,
+    )
 
 
 def create_workspace(client, created_entities, roles, namespace=""):
-    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles, namespace)
+    workspace = client._create_workspace(
+        client._conn._get_organization_id(),
+        generate_default_name(),
+        roles,
+        namespace,
+    )
     created_entities.append(workspace)
     return workspace
 
