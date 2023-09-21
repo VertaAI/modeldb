@@ -85,6 +85,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     """
 
     ModelVersionMessage = _RegistryService.ModelVersion
+    _FINETUNE_DATASET_ERR_MSG = (
+        "`{}` must have ``enable_mdb_versioning=True`` on creation"
+    )
 
     def __init__(self, conn, conf, msg):
         super(RegisteredModelVersion, self).__init__(
@@ -1850,14 +1853,22 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         from verta.dataset.entities import Dataset
         from verta.tracking.entities import ExperimentRun
 
-        # TODO: [VRD-1131] check `enable_mdb_versioning`
-
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = self.workspace
 
         # TODO: check base RMV for fine-tunability
         # if not self.get_attributes().get(verta.finetune._FINETUNE_BASE_RMV_ATTR_KEY):
         #     raise ValueError("this model version is not eligible for fine-tuning")
+        if not train_dataset.get_content()._mdb_versioned:
+            raise ValueError(self._FINETUNE_DATASET_ERR_MSG.format("train_dataset"))
+        if (eval_dataset is not None) and (
+            not eval_dataset.get_content()._mdb_versioned
+        ):
+            raise ValueError(self._FINETUNE_DATASET_ERR_MSG.format("eval_dataset"))
+        if (test_dataset is not None) and (
+            not test_dataset.get_content()._mdb_versioned
+        ):
+            raise ValueError(self._FINETUNE_DATASET_ERR_MSG.format("test_dataset"))
         if isinstance(destination_registered_model, str):
             destination_registered_model = Client._get_or_create_registered_model(
                 self._conn,
