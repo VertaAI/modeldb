@@ -7,17 +7,22 @@ import os
 import random
 from typing import Any, Callable, Dict, Optional
 from unittest.mock import patch
+import uuid
 
 import pytest
 import responses
 
 from verta._internal_utils._utils import Configuration, Connection
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
 from verta.client import Client
 from verta.credentials import EmailCredentials
 from verta.endpoint import Endpoint
 from verta.pipeline import PipelineGraph, PipelineStep
 from verta.registry.entities import RegisteredModel, RegisteredModelVersion
+from verta.tracking.entities import ExperimentRun
 
 
 @pytest.fixture(scope="session")
@@ -171,6 +176,30 @@ def make_mock_registered_model_version(
         )
 
     return _make_mock_registered_model_version
+
+
+@pytest.fixture(scope="session")
+def make_mock_experiment_run(mock_conn, mock_config) -> Callable:
+    """Factory fixture for mocked ExperimentRun objects."""
+    unique_ids = set()
+
+    class MockExperimentRun(ExperimentRun):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    def _make_mock_experiment_run():
+        """Return a mocked ``RegisteredModelVersion``.
+
+        ``id`` will be random and unique for the test session.
+
+        """
+        return MockExperimentRun(
+            mock_conn,
+            mock_config,
+            _ExperimentRunService.ExperimentRun(id=str(uuid.uuid4())),
+        )
+
+    return _make_mock_experiment_run
 
 
 @pytest.fixture(scope="session")
