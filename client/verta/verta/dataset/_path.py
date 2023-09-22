@@ -103,6 +103,9 @@ class Path(_dataset._Dataset):
                 for component_msg in blob_msg.dataset.path.components
             ]
         )
+        obj._mdb_versioned = any(
+            component._internal_versioned_path for component in obj.list_components()
+        )
 
         return obj
 

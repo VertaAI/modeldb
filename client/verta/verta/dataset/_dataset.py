@@ -113,15 +113,12 @@ class _Dataset(_blob.Blob):
         self._dataset_version = dataset_version
 
     @property
-    def _is_downloadable(self):
+    def _is_downloadable(self) -> bool:
         """
         Whether this has a linked dataset version to download from.
 
         """
-        if self._dataset_version:
-            return True
-        else:
-            return False
+        return bool(self._dataset_version and self._mdb_versioned)
 
     @property
     def _conn(self):
@@ -385,7 +382,7 @@ class _Dataset(_blob.Blob):
 
 class Component(object):
     """
-    A dataset component returned by ``dataset.list_components()``.
+    A dataset component returned by ``dataset_version.get_content().list_components()``.
 
     Attributes
     ----------
