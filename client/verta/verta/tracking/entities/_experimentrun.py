@@ -1912,6 +1912,8 @@ class ExperimentRun(_DeployableEntity):
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)
 
+        self._clear_cache()
+
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
