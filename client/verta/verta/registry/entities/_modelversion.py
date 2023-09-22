@@ -205,6 +205,22 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._refresh_cache()
         return self._msg.experiment_run_id or None
 
+    def get_experiment_run(self) -> Optional["verta.tracking.entities.ExperimentRun"]:
+        """Get this model's source experiment run, if it was created via :meth:`RegisteredModel.create_version_from_run() <verta.registry.entities.RegisteredModel.create_version_from_run>`.
+
+        Returns
+        -------
+        :class:`~verta.tracking.entities.ExperimentRun` or None
+
+        """
+        # import here to circumvent circular imports
+        from verta.tracking.entities import ExperimentRun
+
+        if self.experiment_run_id is None:
+            return None
+
+        return ExperimentRun._get_by_id(self._conn, self._conf, self.experiment_run_id)
+
     def get_artifact_keys(self):
         """
         Gets the artifact keys of this model version.
