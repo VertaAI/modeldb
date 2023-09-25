@@ -8,7 +8,9 @@ from typing import Type, Union
 
 import click
 import cloudpickle as cp
+import jsonschema
 import pytest
+import pytimeparse
 import requests
 from requests import post
 import urllib3
@@ -22,11 +24,6 @@ from verta.registry import verify_io, VertaModelBase
 @pytest.fixture(scope="session")
 def dependency_testing_model() -> Type[VertaModelBase]:
     """Returns a model class that imports and calls external dependencies."""
-    numpy = pytest.importorskip("numpy")
-    pd = pytest.importorskip("pandas")
-    sklearn = pytest.importorskip("sklearn")
-    torch = pytest.importorskip("torch")
-    PIL = pytest.importorskip("PIL")
 
     class DependencyTestingModel(VertaModelBase):
         """
@@ -44,20 +41,20 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             self,
             w: calendar.Calendar,  # standard library in function arg
             x: dt.datetime,  # standard library in function arg via alias
-            y: numpy.ndarray,  # 3rd-party module in function arg
+            y: click.File,  # 3rd-party module in function arg
             z: Message,  # 3rd-party module in function arg via class
-        ) -> pd.DataFrame:  # 3rd-party module in return type hint
+        ) -> cp.CloudPickler:  # 3rd-party module in return type hint
             hour = x.hour  # standard library usage in function body
             runtime.log("error", "Error")  # 3rd-party module in function body (VERTA)
             yaml_con = yaml.constructor  # 3rd party module in function body
-            z = self.make_dataframe(y)  # 3rd party module called indirectly
+            z = self.do_something(y)  # 3rd party module called indirectly
             return z
 
         def unwrapped_predict(
             self,
             a: json.JSONEncoder,  # standard library in function arg
             b: collecs.OrderedDict,  # standard library in function arg via alias
-            c: sklearn.base.BaseEstimator,  # 3rd-party module in function arg
+            c: yaml.SafeLoader,  # 3rd-party module in function arg
             d: cp.CloudPickler,  # 3rd-party module in function arg via alias
         ) -> requests.Timeout:  # 3rd-party module in return type hint
             _json = a.encode({"x": "y"})  # standard library usage in function body
@@ -70,7 +67,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return z
 
         def make_dataframe(self, input):  # No modules in function signature
-            return pd.DataFrame(input)  # 3rd party module in function body
+            return pytimeparse.parse(input)  # 3rd party module in function body
 
         def make_message(self, input: str):
             msg = Message(input)
@@ -86,11 +83,11 @@ def dependency_testing_model() -> Type[VertaModelBase]:
         # 3rd-party modules nested inside type constructs should still be extracted
         def nested_multiple_returns_hint(
             self,
-        ) -> Union[urllib3.Retry, PIL.UnidentifiedImageError]:
-            return urllib3.Retry or PIL.UnidentifiedImageError
+        ) -> Union[urllib3.Retry, jsonschema.exceptions.ValidationError]:
+            return urllib3.Retry or jsonschema.exceptions.ValidationError
 
         # 3rd-party modules nested inside type constructs should still be extracted
-        def nested_type_hint(self) -> Type[torch.NoneType]:
-            return torch.NoneType
+        def nested_type_hint(self) -> Type[jsonschema.TypeChecker]:
+            return jsonschema.TypeChecker
 
     return DependencyTestingModel
