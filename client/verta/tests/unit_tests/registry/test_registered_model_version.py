@@ -67,20 +67,34 @@ def model_ver_proto(
         hide_output_label=draw(st.booleans()),
         # artifacts
         datasets=draw(
-            st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
+            st.lists(
+                artifact_proto(),
+                max_size=3,
+                unique_by=lambda artifact: artifact.key,
+            ),
         ),
-        code_blob_map=draw(st.dictionaries(st.text(ascii_letters), code_blob_proto())),
+        code_blob_map=draw(
+            st.dictionaries(st.text(ascii_letters), code_blob_proto(), max_size=3)
+        ),
     )
     if allow_attributes:
         msg.attributes.extend(
             draw(
-                st.lists(attribute_proto(), unique_by=lambda attribute: attribute.key),
+                st.lists(
+                    attribute_proto(),
+                    max_size=3,
+                    unique_by=lambda attribute: attribute.key,
+                ),
             )
         )
     if allow_artifacts:
         msg.artifacts.extend(
             draw(
-                st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key),
+                st.lists(
+                    artifact_proto(),
+                    max_size=3,
+                    unique_by=lambda artifact: artifact.key,
+                ),
             ),
         )
     if with_model or (with_model is None and draw(st.booleans())):
@@ -146,10 +160,6 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
         assert f"code version keys: {sorted(msg.code_blob_map.keys())}" in repr_lines
 
 
-@settings(
-    # this test generates *two* model versions!
-    suppress_health_check=[HealthCheck.data_too_large, HealthCheck.too_slow],
-)
 @given(
     model_ver_proto=model_ver_proto(with_experiment_run_id=False),
     model_ver_from_run_proto=model_ver_proto(with_experiment_run_id=True),
@@ -180,10 +190,6 @@ def test_experiment_run_id_property(
         )
 
 
-@settings(
-    # this test generates *two* model versions!
-    suppress_health_check=[HealthCheck.data_too_large, HealthCheck.too_slow],
-)
 @given(
     model_ver_proto=model_ver_proto(with_experiment_run_id=False),
     model_ver_from_run_proto=model_ver_proto(with_experiment_run_id=True),
