@@ -10,8 +10,6 @@ import pytest
 
 from tests import utils
 
-np = pytest.importorskip("numpy")
-pd = pytest.importorskip("pandas")
 from requests import Session, HTTPError
 from requests.exceptions import RetryError
 import responses
@@ -396,6 +394,7 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
 
 def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
     """Call batch_predict with a single batch."""
+    pd = pytest.importorskip("pandas")
     expected_df = pd.DataFrame(
         {
             "A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -421,6 +420,7 @@ def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
 
 def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
     """Call batch_predict with a single batch, where the output has an index."""
+    pd = pytest.importorskip("pandas")
     expected_df = pd.DataFrame(
         {
             "A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -447,6 +447,7 @@ def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
 
 def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> None:
     """Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches."""
+    pd = pytest.importorskip("pandas")
     expected_df_list = [
         pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
         pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
@@ -477,6 +478,7 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
     """Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches.
     Include an example of an index.
     """
+    pd = pytest.importorskip("pandas")
     expected_df_list = [
         pd.DataFrame(
             {"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
@@ -555,6 +557,7 @@ def generate_data(draw, max_rows=50, max_cols=6):
 @given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=10))
 def test_batch(json_df, batch_size) -> None:
     """Test that the batch_predict method works with a variety of inputs."""
+    pd = pytest.importorskip("pandas")
     with responses.RequestsMock() as rsps:
         if "index" in json_df:
             input_df = pd.DataFrame(json_df["data"], index=json_df["index"])
