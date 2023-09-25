@@ -50,7 +50,7 @@ def test_modules_in_function_body_return_line(dependency_testing_model) -> None:
     """Verify that modules used only within a functions return line are extracted
     as expected, including when aliased (which causes them to be stored differently)"""
     func: Callable = dependency_testing_model.make_dataframe
-    expected_modules = {"pandas"}
+    expected_modules = {"pytimeparse"}
     extracted_modules: Set[str] = md.modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
@@ -83,9 +83,9 @@ def test_modules_in_function_signature_wrapped(dependency_testing_model) -> None
     expected_modules = {
         "calendar",
         "datetime",
-        "numpy",
+        "click",
         "google",
-        "pandas",
+        "cloudpickle",
     }
     extracted_modules: Set[str] = md.modules_in_function_signature(func)
     assert extracted_modules == expected_modules
@@ -99,7 +99,7 @@ def test_modules_in_function_signature_unwrapped(dependency_testing_model) -> No
     expected_modules = {
         "json",
         "collections",
-        "sklearn",
+        "yaml",
         "cloudpickle",
         "requests",
     }
@@ -112,7 +112,7 @@ def test_modules_in_function_return_type_hint_nested(dependency_testing_model) -
     as expected when nested inside another type construct.
     """
     func: Callable = dependency_testing_model.nested_type_hint
-    expected_modules = {"torch"}
+    expected_modules = {"jsonschema"}
     extracted_modules: Set[str] = md.modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
@@ -124,7 +124,7 @@ def test_modules_in_function_return_type_hint_multiple(
     as expected when multiple return types are specified.
     """
     func: Callable = dependency_testing_model.nested_multiple_returns_hint
-    expected_modules = {"urllib3", "PIL"}
+    expected_modules = {"urllib3", "jsonschema"}
     extracted_modules: Set[str] = md.modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
@@ -140,13 +140,9 @@ def test_class_module_names(dependency_testing_model) -> None:
         "datetime",
         "google",
         "json",
-        "numpy",
-        "pandas",
-        "PIL",
+        "jsonschema",
+        "pytimeparse",
         "requests",
-        "requests",
-        "sklearn",
-        "torch",
         "typing",
         "urllib3",
         "verta",
@@ -163,11 +159,8 @@ def test_package_names(dependency_testing_model) -> None:
     skipped.
     """
     expected_packages = {
-        "sklearn": ["scikit-learn"],
-        "PIL": ["Pillow"],
+        "google": ["protobuf", "googleapis-common-protos"],
         "yaml": ["PyYAML"],
     }
-    extracted_packages: Dict[str, List[str]] = md.package_names(
-        {"sklearn", "PIL", "yaml"}
-    )
+    extracted_packages: Dict[str, List[str]] = md.package_names({"google", "yaml"})
     assert extracted_packages == expected_packages

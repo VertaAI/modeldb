@@ -16,16 +16,13 @@ def complete_env() -> Python:
     """
     return Python(
         [
-            "click==0.0.1",
-            "googleapis-common-protos==0.0.1",
-            "numpy==0.0.1",
-            "pandas==0.0.1",
-            "Pillow==0.0.1",
-            "requests==0.0.1",
-            "scikit-learn==0.0.1",
-            "torch==0.0.1",
-            "urllib3==0.0.1",
-            "PyYAML==0.0.1",
+            "click",
+            "jsonschema",
+            "googleapis-common-protos",
+            "pytimeparse",
+            "requests",
+            "urllib3",
+            "PyYAML",
         ]
     )  # `verta` and `cloudpickle` included by default
 
@@ -51,7 +48,7 @@ def test_check_model_dependencies_missing_raise(
     correct message, for missing packages when `raise_for_missing` is True.
     """
     incomplete_env = Python(
-        [r for r in complete_env.requirements if r != "click==0.0.1"]
+        [r for r in complete_env.requirements if not r.startswith("click==")]
     )  # drop a single dependency to be caught
     with pytest.raises(RuntimeError) as err:
         check_model_dependencies(
@@ -76,7 +73,7 @@ def test_check_model_dependencies_missing_warning(
         [
             r
             for r in complete_env.requirements
-            if r not in ["PyYAML==0.0.1", "pandas==0.0.1"]
+            if not r.startswith(("PyYAML==", "requests=="))
         ]
     )  # drop a single dependency to be caught
     with warnings.catch_warnings(record=True) as caught_warnings:
@@ -88,6 +85,6 @@ def test_check_model_dependencies_missing_warning(
     warn_msg = caught_warnings[0].message.args[0]
     assert (
         warn_msg == "the following packages are required by the model but missing "
-        "from the environment:\npandas (installed via ['pandas'])"
+        "from the environment:\nrequests (installed via ['requests'])"
         "\nyaml (installed via ['PyYAML'])"
     )
