@@ -138,7 +138,7 @@ def test_to_graph_spec(
         )
     assert step._to_graph_spec() == {
         "name": "test_name",
-        "predecessors": [s.name for s in predecessors],
+        "predecessors": sorted(s.name for s in predecessors),
     }
 
 
