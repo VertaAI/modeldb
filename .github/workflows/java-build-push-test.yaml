@@ -130,7 +130,7 @@ jobs:
             docker push ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }}
 
       - name: Create commit comment
-        uses: peter-evans/commit-comment@v2
+        uses: peter-evans/commit-comment@v3
         if: "!(steps.should_publish.outputs.targets == '')"
         with:
           body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
@@ -184,7 +184,7 @@ jobs:
           title: Backend Code Coverage
 
       - name: Create Code Coverage comment
-        uses: peter-evans/commit-comment@v2
+        uses: peter-evans/commit-comment@v3
         with:
           body: |
             Total coverage (common): ${{ steps.jacoco-common.outputs.coverage-overall }}
