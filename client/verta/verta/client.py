@@ -210,7 +210,7 @@ class Client(object):
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
 
-        conn = _utils.Connection(
+        conn = _utils.Connection
             scheme=scheme,
             socket=socket,
             max_retries=max_retries,
