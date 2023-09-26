@@ -1,0 +1,38 @@
+name: Python package
+
+on:
+  push:
+    paths:
+      - client/verta/verta/**.py
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/verta
+
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install verta
+        run: python -m pip install .
+
+      - name: Import verta
+        run: python -c 'from verta import Client'
+
+      - name: Install pylint
+        run: python -m pip install pylint
+
+      - name: Run pylint
+        run: pylint --disable=R,C,W verta
