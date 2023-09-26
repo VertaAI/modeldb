@@ -1936,9 +1936,15 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 # launch fine-tuning
                 data = {
                     "base_model_version_id": self.id,
+                    "destination_model_version_id": model_ver.id,
                     "run_id": run.id,
+                    "train_dataset_version_id": train_dataset.id,
                     finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
                 }
+                if eval_dataset is not None:
+                    data["eval_dataset_version_id"] = eval_dataset.id
+                if test_dataset is not None:
+                    data["test_dataset_version_id"] = test_dataset.id
                 url = "{}://{}/api/v1/deployment/workspace/{}/finetuning-job".format(
                     self._conn.scheme,
                     self._conn.socket,
