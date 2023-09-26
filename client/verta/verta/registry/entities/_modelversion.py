@@ -1925,7 +1925,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 # launch fine-tuning
                 data = {
                     "base_model_version_id": self.id,
-                    "destination_model_version_id": 0,
+                    "destination_model_version_id": model_ver.id,
                     "run_id": run.id,
                     "train_dataset_version_id": train_dataset.id,
                     finetuning_config._JOB_DICT_KEY: finetuning_config._as_dict(),
