@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
+      - .github/workflows/client-unit-tests.yaml
       - client/verta/verta/**.py
       - client/verta/tests/unit_tests/**.py
   push:
@@ -12,7 +13,7 @@ on:
       - "release/*"
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
