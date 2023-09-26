@@ -1,7 +1,14 @@
-name: Python package
+name: Python client lint
 
 on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - client/verta/verta/**.py
   push:
+    branches:
+      - main
+      - "release/*"
     paths:
       - client/verta/verta/**.py
 
