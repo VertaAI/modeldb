@@ -8,7 +8,7 @@ import hypothesis.strategies as st
 from verta._pipeline_orchestrator._step_handler import ModelObjectStepHandler
 
 from tests.models.standard_models import VertaModelDecorated
-from tests.strategies import json_strategy
+from tests.unit_tests.strategies import json_strategy
 
 
 class TestModelObjectStepHandler:

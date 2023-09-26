@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
 
 """Hypothesis composite strategies for use in client unit tests."""
-from string import ascii_letters, ascii_lowercase, hexdigits
+from string import ascii_letters, ascii_lowercase, hexdigits, printable
 from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
-from tests.strategies import json_strategy
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS, python_to_val_proto
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
 from verta.endpoint import build, KafkaSettings
 from verta.endpoint.resources import NvidiaGPU, NvidiaGPUModel, Resources
+
+
+# from https://hypothesis.readthedocs.io/en/latest/data.html#recursive-data
+json_strategy = st.recursive(
+    st.none() | st.booleans() | st.floats() | st.text(printable),
+    lambda children: st.lists(children) | st.dictionaries(st.text(printable), children),
+    max_leaves=500,
+)
 
 
 @st.composite
