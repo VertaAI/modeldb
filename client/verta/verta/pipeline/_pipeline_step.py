@@ -271,7 +271,7 @@ class PipelineStep:
         """
         return {
             "name": self.name,
-            "predecessors": [s.name for s in self.predecessors],
+            "predecessors": sorted(s.name for s in self.predecessors),
         }
 
     def _to_step_spec(self) -> Dict[str, Any]:
