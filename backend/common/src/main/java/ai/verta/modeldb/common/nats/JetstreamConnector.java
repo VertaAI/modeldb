@@ -209,7 +209,7 @@ public class JetstreamConnector implements DisposableBean {
                   Thread.currentThread().interrupt();
                   throw new RuntimeException(e);
                 }
-              });
+              }).run();
         };
 
     try {
