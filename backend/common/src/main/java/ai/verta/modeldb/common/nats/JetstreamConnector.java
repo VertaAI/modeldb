@@ -5,7 +5,11 @@ import io.nats.client.*;
 import io.nats.client.api.*;
 import io.nats.client.impl.Headers;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.IOException;
@@ -181,10 +185,26 @@ public class JetstreamConnector implements DisposableBean {
                   .getPropagators()
                   .getTextMapPropagator()
                   .extract(Context.current(), msg.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
+
           extractedContext.wrap(
               () -> {
                 try {
-                  handler.onMessage(msg);
+                  Span span =
+                      openTelemetry
+                          .getTracer("jetstream")
+                          .spanBuilder("receive")
+                          .setAttribute("streamName", streamName)
+                          .setSpanKind(SpanKind.CONSUMER)
+                          .startSpan();
+                  try (Scope ignored = span.makeCurrent()) {
+                    handler.onMessage(msg);
+                  } catch (Exception e) {
+                    span.recordException(e);
+                    span.setStatus(StatusCode.ERROR);
+                    throw e;
+                  } finally {
+                    span.end();
+                  }
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();
                   throw new RuntimeException(e);
@@ -383,8 +403,22 @@ public class JetstreamConnector implements DisposableBean {
 
     @Override
     public PublishAck publish(Message message) throws IOException, JetStreamApiException {
-      injectContextIntoHeaders(message);
-      return delegate.publish(message);
+      Span span =
+          openTelemetry
+              .getTracer("jetstream")
+              .spanBuilder("send")
+              .setSpanKind(SpanKind.PRODUCER)
+              .startSpan();
+      try (Scope ignored = span.makeCurrent()) {
+        injectContextIntoHeaders(message);
+        return delegate.publish(message);
+      } catch (Exception e) {
+        span.recordException(e);
+        span.setStatus(StatusCode.ERROR);
+        throw e;
+      } finally {
+        span.end();
+      }
     }
 
     @Override
