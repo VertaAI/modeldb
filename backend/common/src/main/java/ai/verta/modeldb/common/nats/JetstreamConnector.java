@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.nats.client.*;
 import io.nats.client.api.*;
 import io.nats.client.impl.Headers;
+import io.nats.client.impl.NatsMessage;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -186,30 +187,32 @@ public class JetstreamConnector implements DisposableBean {
                   .getTextMapPropagator()
                   .extract(Context.current(), msg.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
 
-          extractedContext.wrap(
-              () -> {
-                try {
-                  Span span =
-                      openTelemetry
-                          .getTracer("jetstream")
-                          .spanBuilder("receive")
-                          .setAttribute("streamName", streamName)
-                          .setSpanKind(SpanKind.CONSUMER)
-                          .startSpan();
-                  try (Scope ignored = span.makeCurrent()) {
-                    handler.onMessage(msg);
-                  } catch (Exception e) {
-                    span.recordException(e);
-                    span.setStatus(StatusCode.ERROR);
-                    throw e;
-                  } finally {
-                    span.end();
-                  }
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
-                  throw new RuntimeException(e);
-                }
-              }).run();
+          extractedContext
+              .wrap(
+                  () -> {
+                    try {
+                      Span span =
+                          openTelemetry
+                              .getTracer("jetstream")
+                              .spanBuilder("receive")
+                              .setAttribute("streamName", streamName)
+                              .setSpanKind(SpanKind.CONSUMER)
+                              .startSpan();
+                      try (Scope ignored = span.makeCurrent()) {
+                        handler.onMessage(msg);
+                      } catch (Exception e) {
+                        span.recordException(e);
+                        span.setStatus(StatusCode.ERROR);
+                        throw e;
+                      } finally {
+                        span.end();
+                      }
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                      throw new RuntimeException(e);
+                    }
+                  })
+              .run();
         };
 
     try {
@@ -429,6 +432,16 @@ public class JetstreamConnector implements DisposableBean {
     }
 
     private void injectContextIntoHeaders(Message message) {
+      if (message.getHeaders() == null) {
+        // copy the message to have headers that we can inject into
+        message =
+            NatsMessage.builder()
+                .headers(new Headers())
+                .data(message.getData())
+                .subject(message.getSubject())
+                .replyTo(message.getReplyTo())
+                .build();
+      }
       Context currentContext = Context.current();
       openTelemetry
           .getPropagators()
