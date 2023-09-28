@@ -5,13 +5,19 @@ import io.nats.client.*;
 import io.nats.client.api.*;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+
+import io.nats.client.impl.Headers;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.DisposableBean;
+
+import javax.annotation.Nullable;
 
 @Log4j2
 public class JetstreamConnector implements DisposableBean {
@@ -24,18 +30,139 @@ public class JetstreamConnector implements DisposableBean {
   private final JetstreamConfig config;
   private final Supplier<Collection<String>> streamNamesToManage;
   private Connection natsConnection;
+  private final OpenTelemetry openTelemetry;
 
   public JetstreamConnector(
       JetstreamConfig config, Supplier<Collection<String>> streamNamesToManage) {
+    this(config, streamNamesToManage, OpenTelemetry.noop());
+  }
+
+  public JetstreamConnector(
+      JetstreamConfig config,
+      Supplier<Collection<String>> streamNamesToManage,
+      OpenTelemetry openTelemetry) {
     this.config = config;
     this.streamNamesToManage = streamNamesToManage;
     this.maxMessageReplicas = config.getMaxMessageReplicas();
+    this.openTelemetry = openTelemetry;
   }
 
   public JetStream getJetStream(String streamName) {
     log.info("Getting JetStream for stream {}", streamName);
     checkNatsConnection();
-    return jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
+    JetStream jetStream = jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
+    return new JetStream() {
+      @Override
+      public PublishAck publish(String subject, byte[] body) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public PublishAck publish(String subject, Headers headers, byte[] body) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public PublishAck publish(String subject, byte[] body, PublishOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public PublishAck publish(String subject, Headers headers, byte[] body, PublishOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public PublishAck publish(Message message) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public PublishAck publish(Message message, PublishOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body) {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(String subject, Headers headers, byte[] body) {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body, PublishOptions options) {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(String subject, Headers headers, byte[] body, PublishOptions options) {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(Message message) {
+        return null;
+      }
+
+      @Override
+      public CompletableFuture<PublishAck> publishAsync(Message message, PublishOptions options) {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, PushSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, String queue, PushSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck, PushSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, String queue, Dispatcher dispatcher, MessageHandler handler, boolean autoAck, PushSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, PullSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, PullSubscribeOptions options) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public StreamContext getStreamContext(String streamName) throws IOException, JetStreamApiException {
+        return null;
+      }
+
+      @Override
+      public ConsumerContext getConsumerContext(String streamName, String consumerName) throws IOException, JetStreamApiException {
+        return null;
+      }
+    }
+    return jetStream;
   }
 
   public void checkNatsConnection() {
@@ -157,6 +284,26 @@ public class JetstreamConnector implements DisposableBean {
     ensureStreamExists(streamName);
     natsConnection = getConnection();
     Dispatcher dispatcher = natsConnection.createDispatcher();
+
+    MessageHandler tracingHandler =
+            msg -> {
+              Context extractedContext =
+                  openTelemetry
+                      .getPropagators()
+                      .getTextMapPropagator()
+                      .extract(
+                          Context.current(), msg.getHeaders(), new JetstreamMessageHeaderHandler());
+              extractedContext.wrap(
+                  () -> {
+                    try {
+                      handler.onMessage(msg);
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                      throw new RuntimeException(e);
+                    }
+                  });
+            };
+
     try {
       log.info("Subscribing to JetStream stream {}", streamName);
       JetStream jetStream = natsConnection.jetStream();
@@ -165,7 +312,7 @@ public class JetstreamConnector implements DisposableBean {
               .durable(durableName)
               .deliverGroup(deliverGroupName)
               .build();
-      return jetStream.subscribe(subject, dispatcher, handler, false, options);
+      return jetStream.subscribe(subject, dispatcher, tracingHandler, false, options);
     } catch (JetStreamApiException e) {
       // todo: is there a better way to detect this?
       // TODO: don't close connection if there is a failure, since we still might need the
@@ -282,6 +429,34 @@ public class JetstreamConnector implements DisposableBean {
     public void slowConsumerDetected(Connection conn, Consumer consumer) {
       log.info("A slow consumer was detected for nats");
       log.info("A slow consumer dropped messages: {} ", consumer.getDroppedCount());
+    }
+  }
+
+  private static class JetstreamMessageHeaderHandler
+      implements TextMapGetter<Headers>, TextMapSetter<Headers> {
+    @Override
+    public Iterable<String> keys(Headers headers) {
+      return headers.keySet();
+    }
+
+    @Nullable
+    @Override
+    public String get(@Nullable Headers headers, String key) {
+      if (headers == null) {
+        return null;
+      }
+      List<String> headerValues = headers.get(key);
+      if (headerValues == null || headerValues.isEmpty()) {
+        return null;
+      }
+      return headerValues.get(0);
+    }
+
+    @Override
+    public void set(@Nullable Headers headers, String key, String value) {
+      if (headers != null) {
+        headers.add(key, value);
+      }
     }
   }
 }
