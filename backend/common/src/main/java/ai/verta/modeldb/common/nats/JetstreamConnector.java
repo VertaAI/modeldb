@@ -413,7 +413,7 @@ public class JetstreamConnector implements DisposableBean {
               .setSpanKind(SpanKind.PRODUCER)
               .startSpan();
       try (Scope ignored = span.makeCurrent()) {
-        injectContextIntoHeaders(message);
+        message = injectContextIntoHeaders(message);
         return delegate.publish(message);
       } catch (Exception e) {
         span.recordException(e);
@@ -427,11 +427,11 @@ public class JetstreamConnector implements DisposableBean {
     @Override
     public PublishAck publish(Message message, PublishOptions options)
         throws IOException, JetStreamApiException {
-      injectContextIntoHeaders(message);
+      message = injectContextIntoHeaders(message);
       return delegate.publish(message, options);
     }
 
-    private void injectContextIntoHeaders(Message message) {
+    private Message injectContextIntoHeaders(Message message) {
       if (message.getHeaders() == null) {
         // copy the message to have headers that we can inject into
         message =
