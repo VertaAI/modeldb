@@ -3,21 +3,19 @@ package ai.verta.modeldb.common.nats;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.nats.client.*;
 import io.nats.client.api.*;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-
 import io.nats.client.impl.Headers;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.DisposableBean;
-
-import javax.annotation.Nullable;
 
 @Log4j2
 public class JetstreamConnector implements DisposableBean {
@@ -25,6 +23,8 @@ public class JetstreamConnector implements DisposableBean {
   private static final int MEGABYTE = 1024 * 1024;
   private static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
   private static final int MAX_STREAM_MESSAGES = 10000;
+  private static final JetstreamMessageHeaderHandler JETSTREAM_MESSAGE_HEADER_HANDLER =
+      new JetstreamMessageHeaderHandler();
   private final int maxMessageReplicas;
   private final Map<String, JetStream> jetStreamMap = new HashMap<>();
   private final JetstreamConfig config;
@@ -51,118 +51,7 @@ public class JetstreamConnector implements DisposableBean {
     log.info("Getting JetStream for stream {}", streamName);
     checkNatsConnection();
     JetStream jetStream = jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
-    return new JetStream() {
-      @Override
-      public PublishAck publish(String subject, byte[] body) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public PublishAck publish(String subject, Headers headers, byte[] body) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public PublishAck publish(String subject, byte[] body, PublishOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public PublishAck publish(String subject, Headers headers, byte[] body, PublishOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public PublishAck publish(Message message) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public PublishAck publish(Message message, PublishOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body) {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(String subject, Headers headers, byte[] body) {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body, PublishOptions options) {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(String subject, Headers headers, byte[] body, PublishOptions options) {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(Message message) {
-        return null;
-      }
-
-      @Override
-      public CompletableFuture<PublishAck> publishAsync(Message message, PublishOptions options) {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, PushSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, String queue, PushSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck, PushSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, String queue, Dispatcher dispatcher, MessageHandler handler, boolean autoAck, PushSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, PullSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public JetStreamSubscription subscribe(String subject, Dispatcher dispatcher, MessageHandler handler, PullSubscribeOptions options) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public StreamContext getStreamContext(String streamName) throws IOException, JetStreamApiException {
-        return null;
-      }
-
-      @Override
-      public ConsumerContext getConsumerContext(String streamName, String consumerName) throws IOException, JetStreamApiException {
-        return null;
-      }
-    }
-    return jetStream;
+    return new TracingJetStream(jetStream, openTelemetry);
   }
 
   public void checkNatsConnection() {
@@ -286,23 +175,22 @@ public class JetstreamConnector implements DisposableBean {
     Dispatcher dispatcher = natsConnection.createDispatcher();
 
     MessageHandler tracingHandler =
-            msg -> {
-              Context extractedContext =
-                  openTelemetry
-                      .getPropagators()
-                      .getTextMapPropagator()
-                      .extract(
-                          Context.current(), msg.getHeaders(), new JetstreamMessageHeaderHandler());
-              extractedContext.wrap(
-                  () -> {
-                    try {
-                      handler.onMessage(msg);
-                    } catch (InterruptedException e) {
-                      Thread.currentThread().interrupt();
-                      throw new RuntimeException(e);
-                    }
-                  });
-            };
+        msg -> {
+          Context extractedContext =
+              openTelemetry
+                  .getPropagators()
+                  .getTextMapPropagator()
+                  .extract(Context.current(), msg.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
+          extractedContext.wrap(
+              () -> {
+                try {
+                  handler.onMessage(msg);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  throw new RuntimeException(e);
+                }
+              });
+        };
 
     try {
       log.info("Subscribing to JetStream stream {}", streamName);
@@ -407,7 +295,7 @@ public class JetstreamConnector implements DisposableBean {
   }
 
   @Override
-  public void destroy() throws Exception {
+  public void destroy() {
     log.warn("Destroying jetstream connector...closing the nats connection.");
     close();
   }
@@ -457,6 +345,168 @@ public class JetstreamConnector implements DisposableBean {
       if (headers != null) {
         headers.add(key, value);
       }
+    }
+  }
+
+  private static class TracingJetStream implements JetStream {
+    private final JetStream delegate;
+    private final OpenTelemetry openTelemetry;
+
+    public TracingJetStream(JetStream jetStream, OpenTelemetry openTelemetry) {
+      this.delegate = jetStream;
+      this.openTelemetry = openTelemetry;
+    }
+
+    @Override
+    public PublishAck publish(String subject, byte[] body)
+        throws IOException, JetStreamApiException {
+      return delegate.publish(subject, body);
+    }
+
+    @Override
+    public PublishAck publish(String subject, Headers headers, byte[] body)
+        throws IOException, JetStreamApiException {
+      return delegate.publish(subject, headers, body);
+    }
+
+    @Override
+    public PublishAck publish(String subject, byte[] body, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.publish(subject, body, options);
+    }
+
+    @Override
+    public PublishAck publish(String subject, Headers headers, byte[] body, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.publish(subject, headers, body, options);
+    }
+
+    @Override
+    public PublishAck publish(Message message) throws IOException, JetStreamApiException {
+      injectContextIntoHeaders(message);
+      return delegate.publish(message);
+    }
+
+    @Override
+    public PublishAck publish(Message message, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      injectContextIntoHeaders(message);
+      return delegate.publish(message, options);
+    }
+
+    private void injectContextIntoHeaders(Message message) {
+      Context currentContext = Context.current();
+      openTelemetry
+          .getPropagators()
+          .getTextMapPropagator()
+          .inject(currentContext, message.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body) {
+      return delegate.publishAsync(subject, body);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, Headers headers, byte[] body) {
+      return delegate.publishAsync(subject, headers, body);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, byte[] body, PublishOptions options) {
+      return delegate.publishAsync(subject, body, options);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, Headers headers, byte[] body, PublishOptions options) {
+      return delegate.publishAsync(subject, headers, body, options);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(Message message) {
+      return delegate.publishAsync(message);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(Message message, PublishOptions options) {
+      return delegate.publishAsync(message, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject, PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, String queue, PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, queue, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, autoAck);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject,
+        Dispatcher dispatcher,
+        MessageHandler handler,
+        boolean autoAck,
+        PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, autoAck, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject,
+        String queue,
+        Dispatcher dispatcher,
+        MessageHandler handler,
+        boolean autoAck,
+        PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, queue, dispatcher, handler, autoAck, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject, PullSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, Dispatcher dispatcher, MessageHandler handler, PullSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, options);
+    }
+
+    @Override
+    public StreamContext getStreamContext(String streamName)
+        throws IOException, JetStreamApiException {
+      return delegate.getStreamContext(streamName);
+    }
+
+    @Override
+    public ConsumerContext getConsumerContext(String streamName, String consumerName)
+        throws IOException, JetStreamApiException {
+      return delegate.getConsumerContext(streamName, consumerName);
     }
   }
 }
