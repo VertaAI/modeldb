@@ -194,7 +194,7 @@ public class JetstreamConnector implements DisposableBean {
                       Span span =
                           openTelemetry
                               .getTracer("jetstream")
-                              .spanBuilder("receive")
+                              .spanBuilder("Jetstream receive")
                               .setAttribute("streamName", streamName)
                               .setSpanKind(SpanKind.CONSUMER)
                               .startSpan();
@@ -409,8 +409,9 @@ public class JetstreamConnector implements DisposableBean {
       Span span =
           openTelemetry
               .getTracer("jetstream")
-              .spanBuilder("send")
+              .spanBuilder("Jetstream publish")
               .setSpanKind(SpanKind.PRODUCER)
+              .setAttribute("subject", message.getSubject())
               .startSpan();
       try (Scope ignored = span.makeCurrent()) {
         message = injectContextIntoHeaders(message);
