@@ -4,8 +4,8 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.nats.client.*;
 import io.nats.client.api.*;
 import io.nats.client.impl.Headers;
-import io.nats.client.impl.NatsMessage;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -24,6 +24,12 @@ import org.springframework.beans.factory.DisposableBean;
 
 @Log4j2
 public class JetstreamConnector implements DisposableBean {
+  static final AttributeKey<String> SUBJECT_ATTRIBUTE_KEY = AttributeKey.stringKey("subject");
+  static final AttributeKey<String> STREAM_NAME_ATTRIBUTE_KEY =
+      AttributeKey.stringKey("streamName");
+  static final AttributeKey<String> DURABLE_NAME_ATTRIBUTE_KEY = AttributeKey.stringKey("durable");
+  static final AttributeKey<String> DELIVER_GROUP_NAME_KEY =
+      AttributeKey.stringKey("deliverGroupName");
   private static final Duration RECONNECT_WAIT_INTERVAL = Duration.ofSeconds(2L);
   private static final int MEGABYTE = 1024 * 1024;
   private static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
@@ -164,7 +170,7 @@ public class JetstreamConnector implements DisposableBean {
       return natsConnection.jetStream();
     } catch (IOException | JetStreamApiException e) {
       log.error(e.getMessage(), e);
-      throw new ModelDBException(e);
+      throw new ModelDBException("failed to ensure Jetstream stream existence", e);
     }
   }
 
@@ -195,7 +201,10 @@ public class JetstreamConnector implements DisposableBean {
                           openTelemetry
                               .getTracer("jetstream")
                               .spanBuilder("Jetstream receive")
-                              .setAttribute("streamName", streamName)
+                              .setAttribute(STREAM_NAME_ATTRIBUTE_KEY, streamName)
+                              .setAttribute(SUBJECT_ATTRIBUTE_KEY, msg.getSubject())
+                              .setAttribute(DURABLE_NAME_ATTRIBUTE_KEY, durableName)
+                              .setAttribute(DELIVER_GROUP_NAME_KEY, deliverGroupName)
                               .setSpanKind(SpanKind.CONSUMER)
                               .startSpan();
                       try (Scope ignored = span.makeCurrent()) {
@@ -293,7 +302,8 @@ public class JetstreamConnector implements DisposableBean {
         log.debug("consumer group does not exist");
       }
     } catch (IOException | JetStreamApiException e) {
-      throw new ModelDBException(e);
+      throw new ModelDBException(
+          "failed to retrieve/rebuild an existing Jetstream consumer for stream: " + streamName, e);
     }
     return Optional.empty();
   }
@@ -383,40 +393,43 @@ public class JetstreamConnector implements DisposableBean {
     @Override
     public PublishAck publish(String subject, byte[] body)
         throws IOException, JetStreamApiException {
-      return delegate.publish(subject, body);
+      return publish(subject, null, body, null);
     }
 
     @Override
     public PublishAck publish(String subject, Headers headers, byte[] body)
         throws IOException, JetStreamApiException {
-      return delegate.publish(subject, headers, body);
+      return publish(subject, headers, body, null);
     }
 
     @Override
     public PublishAck publish(String subject, byte[] body, PublishOptions options)
         throws IOException, JetStreamApiException {
-      return delegate.publish(subject, body, options);
+      return publish(subject, null, body, options);
     }
 
     @Override
     public PublishAck publish(String subject, Headers headers, byte[] body, PublishOptions options)
         throws IOException, JetStreamApiException {
-      return delegate.publish(subject, headers, body, options);
-    }
-
-    @Override
-    public PublishAck publish(Message message) throws IOException, JetStreamApiException {
+      if (headers == null) {
+        // we need headers to inject into
+        headers = new Headers();
+      }
       Span span =
           openTelemetry
               .getTracer("jetstream")
               .spanBuilder("Jetstream publish")
               .setSpanKind(SpanKind.PRODUCER)
-              .setAttribute("subject", message.getSubject())
+              .setAttribute(SUBJECT_ATTRIBUTE_KEY, subject)
               .startSpan();
       try (Scope ignored = span.makeCurrent()) {
-        message = injectContextIntoHeaders(message);
-        return delegate.publish(message);
-      } catch (Exception e) {
+        Context currentContext = Context.current();
+        openTelemetry
+            .getPropagators()
+            .getTextMapPropagator()
+            .inject(currentContext, headers, JETSTREAM_MESSAGE_HEADER_HANDLER);
+        return delegate.publish(subject, headers, body, options);
+      } catch (IOException | JetStreamApiException e) {
         span.recordException(e);
         span.setStatus(StatusCode.ERROR);
         throw e;
@@ -426,30 +439,17 @@ public class JetstreamConnector implements DisposableBean {
     }
 
     @Override
-    public PublishAck publish(Message message, PublishOptions options)
-        throws IOException, JetStreamApiException {
-      message = injectContextIntoHeaders(message);
-      return delegate.publish(message, options);
+    public PublishAck publish(Message message) throws IOException, JetStreamApiException {
+      return publish(message.getSubject(), message.getHeaders(), message.getData(), null);
     }
 
-    private Message injectContextIntoHeaders(Message message) {
-      if (message.getHeaders() == null) {
-        // copy the message to have headers that we can inject into
-        message =
-            NatsMessage.builder()
-                .headers(new Headers())
-                .data(message.getData())
-                .subject(message.getSubject())
-                .replyTo(message.getReplyTo())
-                .build();
-      }
-      Context currentContext = Context.current();
-      openTelemetry
-          .getPropagators()
-          .getTextMapPropagator()
-          .inject(currentContext, message.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
-      return message;
+    @Override
+    public PublishAck publish(Message message, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      return publish(message.getSubject(), message.getHeaders(), message.getData(), options);
     }
+
+    // todo: add tracing to the async publishing when needed.
 
     @Override
     public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body) {

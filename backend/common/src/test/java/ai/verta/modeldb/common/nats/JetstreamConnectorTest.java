@@ -1,11 +1,15 @@
 package ai.verta.modeldb.common.nats;
 
+import static ai.verta.modeldb.common.nats.JetstreamConnector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.ConsumerInfo;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -18,10 +22,15 @@ import np.com.madanpokharel.embed.nats.EmbeddedNatsServer;
 import np.com.madanpokharel.embed.nats.NatsServerConfig;
 import np.com.madanpokharel.embed.nats.NatsVersion;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Log4j2
 class JetstreamConnectorTest {
-  public static EmbeddedNatsServer embeddedNatsServer;
+  private static EmbeddedNatsServer embeddedNatsServer;
+
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
   private JetstreamConnector connector;
 
   @BeforeAll
@@ -55,7 +64,9 @@ class JetstreamConnectorTest {
     JetstreamConfig config =
         new JetstreamConfig(
             true, embeddedNatsServer.getRunningHost(), embeddedNatsServer.getRunningPort(), 1);
-    connector = new JetstreamConnector(config, () -> List.of("cheese", "wine"));
+    connector =
+        new JetstreamConnector(
+            config, () -> List.of("cheese", "wine"), otelTesting.getOpenTelemetry());
   }
 
   @AfterEach
@@ -63,6 +74,7 @@ class JetstreamConnectorTest {
     if (connector != null) {
       connector.close();
     }
+    otelTesting.clearSpans();
   }
 
   @AfterAll
@@ -90,6 +102,27 @@ class JetstreamConnectorTest {
     cheeseStream.publish("cheese.create", "Swiss".getBytes(StandardCharsets.UTF_8));
 
     await().untilAsserted(() -> assertThat(message.get()).isEqualTo("Swiss"));
+
+    otelTesting
+        .assertTraces()
+        .hasTracesSatisfyingExactly(
+            traceAssert ->
+                traceAssert
+                    .hasSize(2)
+                    .hasSpansSatisfyingExactlyInAnyOrder(
+                        spanDataAssert ->
+                            spanDataAssert
+                                .hasAttribute(SUBJECT_ATTRIBUTE_KEY, "cheese.create")
+                                .hasAttribute(STREAM_NAME_ATTRIBUTE_KEY, "cheese")
+                                .hasAttribute(DURABLE_NAME_ATTRIBUTE_KEY, "testDurable")
+                                .hasAttribute(DELIVER_GROUP_NAME_KEY, "testGroup")
+                                .hasKind(SpanKind.CONSUMER)
+                                .hasStatus(StatusData.unset()),
+                        spanDataAssert ->
+                            spanDataAssert
+                                .hasAttribute(SUBJECT_ATTRIBUTE_KEY, "cheese.create")
+                                .hasKind(SpanKind.PRODUCER)
+                                .hasStatus(StatusData.unset())));
   }
 
   @Test
