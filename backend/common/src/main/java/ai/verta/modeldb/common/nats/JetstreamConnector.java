@@ -3,39 +3,66 @@ package ai.verta.modeldb.common.nats;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.nats.client.*;
 import io.nats.client.api.*;
+import io.nats.client.impl.Headers;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.DisposableBean;
 
 @Log4j2
 public class JetstreamConnector implements DisposableBean {
+  static final AttributeKey<String> SUBJECT_ATTRIBUTE_KEY = AttributeKey.stringKey("subject");
+  static final AttributeKey<String> STREAM_NAME_ATTRIBUTE_KEY =
+      AttributeKey.stringKey("streamName");
+  static final AttributeKey<String> DURABLE_NAME_ATTRIBUTE_KEY = AttributeKey.stringKey("durable");
+  static final AttributeKey<String> DELIVER_GROUP_NAME_KEY =
+      AttributeKey.stringKey("deliverGroupName");
   private static final Duration RECONNECT_WAIT_INTERVAL = Duration.ofSeconds(2L);
   private static final int MEGABYTE = 1024 * 1024;
   private static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
   private static final int MAX_STREAM_MESSAGES = 10000;
+  private static final JetstreamMessageHeaderHandler JETSTREAM_MESSAGE_HEADER_HANDLER =
+      new JetstreamMessageHeaderHandler();
   private final int maxMessageReplicas;
   private final Map<String, JetStream> jetStreamMap = new HashMap<>();
   private final JetstreamConfig config;
   private final Supplier<Collection<String>> streamNamesToManage;
   private Connection natsConnection;
+  private final OpenTelemetry openTelemetry;
 
   public JetstreamConnector(
       JetstreamConfig config, Supplier<Collection<String>> streamNamesToManage) {
+    this(config, streamNamesToManage, OpenTelemetry.noop());
+  }
+
+  public JetstreamConnector(
+      JetstreamConfig config,
+      Supplier<Collection<String>> streamNamesToManage,
+      OpenTelemetry openTelemetry) {
     this.config = config;
     this.streamNamesToManage = streamNamesToManage;
     this.maxMessageReplicas = config.getMaxMessageReplicas();
+    this.openTelemetry = openTelemetry;
   }
 
   public JetStream getJetStream(String streamName) {
     log.info("Getting JetStream for stream {}", streamName);
     checkNatsConnection();
-    return jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
+    JetStream jetStream = jetStreamMap.computeIfAbsent(streamName, this::ensureStreamExists);
+    return new TracingJetStream(jetStream, openTelemetry);
   }
 
   public void checkNatsConnection() {
@@ -143,7 +170,7 @@ public class JetstreamConnector implements DisposableBean {
       return natsConnection.jetStream();
     } catch (IOException | JetStreamApiException e) {
       log.error(e.getMessage(), e);
-      throw new ModelDBException(e);
+      throw new ModelDBException("failed to ensure Jetstream stream existence", e);
     }
   }
 
@@ -157,6 +184,46 @@ public class JetstreamConnector implements DisposableBean {
     ensureStreamExists(streamName);
     natsConnection = getConnection();
     Dispatcher dispatcher = natsConnection.createDispatcher();
+
+    MessageHandler tracingHandler =
+        msg -> {
+          Context extractedContext =
+              openTelemetry
+                  .getPropagators()
+                  .getTextMapPropagator()
+                  .extract(Context.current(), msg.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
+
+          extractedContext
+              .wrap(
+                  () -> {
+                    try {
+                      Span span =
+                          openTelemetry
+                              .getTracer("jetstream")
+                              .spanBuilder("Jetstream receive")
+                              .setAttribute(STREAM_NAME_ATTRIBUTE_KEY, streamName)
+                              .setAttribute(SUBJECT_ATTRIBUTE_KEY, msg.getSubject())
+                              .setAttribute(DURABLE_NAME_ATTRIBUTE_KEY, durableName)
+                              .setAttribute(DELIVER_GROUP_NAME_KEY, deliverGroupName)
+                              .setSpanKind(SpanKind.CONSUMER)
+                              .startSpan();
+                      try (Scope ignored = span.makeCurrent()) {
+                        handler.onMessage(msg);
+                      } catch (Exception e) {
+                        span.recordException(e);
+                        span.setStatus(StatusCode.ERROR);
+                        throw e;
+                      } finally {
+                        span.end();
+                      }
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                      throw new RuntimeException(e);
+                    }
+                  })
+              .run();
+        };
+
     try {
       log.info("Subscribing to JetStream stream {}", streamName);
       JetStream jetStream = natsConnection.jetStream();
@@ -165,7 +232,7 @@ public class JetstreamConnector implements DisposableBean {
               .durable(durableName)
               .deliverGroup(deliverGroupName)
               .build();
-      return jetStream.subscribe(subject, dispatcher, handler, false, options);
+      return jetStream.subscribe(subject, dispatcher, tracingHandler, false, options);
     } catch (JetStreamApiException e) {
       // todo: is there a better way to detect this?
       // TODO: don't close connection if there is a failure, since we still might need the
@@ -235,7 +302,8 @@ public class JetstreamConnector implements DisposableBean {
         log.debug("consumer group does not exist");
       }
     } catch (IOException | JetStreamApiException e) {
-      throw new ModelDBException(e);
+      throw new ModelDBException(
+          "failed to retrieve/rebuild an existing Jetstream consumer for stream: " + streamName, e);
     }
     return Optional.empty();
   }
@@ -260,7 +328,7 @@ public class JetstreamConnector implements DisposableBean {
   }
 
   @Override
-  public void destroy() throws Exception {
+  public void destroy() {
     log.warn("Destroying jetstream connector...closing the nats connection.");
     close();
   }
@@ -282,6 +350,212 @@ public class JetstreamConnector implements DisposableBean {
     public void slowConsumerDetected(Connection conn, Consumer consumer) {
       log.info("A slow consumer was detected for nats");
       log.info("A slow consumer dropped messages: {} ", consumer.getDroppedCount());
+    }
+  }
+
+  private static class JetstreamMessageHeaderHandler
+      implements TextMapGetter<Headers>, TextMapSetter<Headers> {
+    @Override
+    public Iterable<String> keys(Headers headers) {
+      return headers.keySet();
+    }
+
+    @Nullable
+    @Override
+    public String get(@Nullable Headers headers, String key) {
+      if (headers == null) {
+        return null;
+      }
+      List<String> headerValues = headers.get(key);
+      if (headerValues == null || headerValues.isEmpty()) {
+        return null;
+      }
+      return headerValues.get(0);
+    }
+
+    @Override
+    public void set(@Nullable Headers headers, String key, String value) {
+      if (headers != null) {
+        headers.add(key, value);
+      }
+    }
+  }
+
+  private static class TracingJetStream implements JetStream {
+    private final JetStream delegate;
+    private final OpenTelemetry openTelemetry;
+
+    public TracingJetStream(JetStream jetStream, OpenTelemetry openTelemetry) {
+      this.delegate = jetStream;
+      this.openTelemetry = openTelemetry;
+    }
+
+    @Override
+    public PublishAck publish(String subject, byte[] body)
+        throws IOException, JetStreamApiException {
+      return publish(subject, null, body, null);
+    }
+
+    @Override
+    public PublishAck publish(String subject, Headers headers, byte[] body)
+        throws IOException, JetStreamApiException {
+      return publish(subject, headers, body, null);
+    }
+
+    @Override
+    public PublishAck publish(String subject, byte[] body, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      return publish(subject, null, body, options);
+    }
+
+    @Override
+    public PublishAck publish(String subject, Headers headers, byte[] body, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      if (headers == null) {
+        // we need headers to inject into
+        headers = new Headers();
+      }
+      Span span =
+          openTelemetry
+              .getTracer("jetstream")
+              .spanBuilder("Jetstream publish")
+              .setSpanKind(SpanKind.PRODUCER)
+              .setAttribute(SUBJECT_ATTRIBUTE_KEY, subject)
+              .startSpan();
+      try (Scope ignored = span.makeCurrent()) {
+        Context currentContext = Context.current();
+        openTelemetry
+            .getPropagators()
+            .getTextMapPropagator()
+            .inject(currentContext, headers, JETSTREAM_MESSAGE_HEADER_HANDLER);
+        return delegate.publish(subject, headers, body, options);
+      } catch (IOException | JetStreamApiException e) {
+        span.recordException(e);
+        span.setStatus(StatusCode.ERROR);
+        throw e;
+      } finally {
+        span.end();
+      }
+    }
+
+    @Override
+    public PublishAck publish(Message message) throws IOException, JetStreamApiException {
+      return publish(message.getSubject(), message.getHeaders(), message.getData(), null);
+    }
+
+    @Override
+    public PublishAck publish(Message message, PublishOptions options)
+        throws IOException, JetStreamApiException {
+      return publish(message.getSubject(), message.getHeaders(), message.getData(), options);
+    }
+
+    // todo: add tracing to the async publishing when needed.
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(String subject, byte[] body) {
+      return delegate.publishAsync(subject, body);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, Headers headers, byte[] body) {
+      return delegate.publishAsync(subject, headers, body);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, byte[] body, PublishOptions options) {
+      return delegate.publishAsync(subject, body, options);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(
+        String subject, Headers headers, byte[] body, PublishOptions options) {
+      return delegate.publishAsync(subject, headers, body, options);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(Message message) {
+      return delegate.publishAsync(message);
+    }
+
+    @Override
+    public CompletableFuture<PublishAck> publishAsync(Message message, PublishOptions options) {
+      return delegate.publishAsync(message, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject, PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, String queue, PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, queue, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, Dispatcher dispatcher, MessageHandler handler, boolean autoAck)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, autoAck);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject,
+        Dispatcher dispatcher,
+        MessageHandler handler,
+        boolean autoAck,
+        PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, autoAck, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject,
+        String queue,
+        Dispatcher dispatcher,
+        MessageHandler handler,
+        boolean autoAck,
+        PushSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, queue, dispatcher, handler, autoAck, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(String subject, PullSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, options);
+    }
+
+    @Override
+    public JetStreamSubscription subscribe(
+        String subject, Dispatcher dispatcher, MessageHandler handler, PullSubscribeOptions options)
+        throws IOException, JetStreamApiException {
+      return delegate.subscribe(subject, dispatcher, handler, options);
+    }
+
+    @Override
+    public StreamContext getStreamContext(String streamName)
+        throws IOException, JetStreamApiException {
+      return delegate.getStreamContext(streamName);
+    }
+
+    @Override
+    public ConsumerContext getConsumerContext(String streamName, String consumerName)
+        throws IOException, JetStreamApiException {
+      return delegate.getConsumerContext(streamName, consumerName);
     }
   }
 }
