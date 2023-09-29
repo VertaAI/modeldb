@@ -447,6 +447,7 @@ public class JetstreamConnector implements DisposableBean {
           .getPropagators()
           .getTextMapPropagator()
           .inject(currentContext, message.getHeaders(), JETSTREAM_MESSAGE_HEADER_HANDLER);
+      return message;
     }
 
     @Override
