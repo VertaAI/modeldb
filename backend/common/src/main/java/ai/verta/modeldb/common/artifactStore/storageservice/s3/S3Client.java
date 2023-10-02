@@ -9,7 +9,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +34,7 @@ public class S3Client {
   private volatile AtomicInteger referenceCounter;
   private volatile AWSCredentials awsCredentials;
 
-  public S3Client(S3Config s3Config) throws IOException, ModelDBException {
+  public S3Client(S3Config s3Config) throws ModelDBException {
     String cloudAccessKey = s3Config.getCloudAccessKey();
     String cloudSecretKey = s3Config.getCloudSecretKey();
     String minioEndpoint = s3Config.getMinioEndpoint();

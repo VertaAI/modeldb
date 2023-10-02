@@ -40,9 +40,9 @@ public class S3Service implements ArtifactStoreService {
   private final String bucketName;
   private final ArtifactStoreConfig artifactStoreConfig;
 
-  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
+  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException {
     this.artifactStoreConfig = artifactStoreConfig;
-    s3Client = new S3Client(artifactStoreConfig.getS3());
+    this.s3Client = new S3Client(artifactStoreConfig.getS3());
     this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
   }
 
@@ -249,19 +249,21 @@ public class S3Service implements ArtifactStoreService {
       if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        S3Object resource = client.getClient().getObject(bucketName, artifactPath);
-
-        var responseHeaders = new HttpHeaders();
-        for (Map.Entry<String, Object> header :
-            resource.getObjectMetadata().getRawMetadata().entrySet()) {
-          responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+        try (S3Object resource = client.getClient().getObject(bucketName, artifactPath)) {
+          var responseHeaders = new HttpHeaders();
+          for (Map.Entry<String, Object> header :
+              resource.getObjectMetadata().getRawMetadata().entrySet()) {
+            responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+          }
+          responseHeaders.add("FileName", fileName);
+          LOGGER.debug("getArtifact returned");
+          return ResponseEntity.ok()
+              .cacheControl(CacheControl.noCache())
+              .headers(responseHeaders)
+              .body(new InputStreamResource(resource.getObjectContent()));
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
         }
-        responseHeaders.add("FileName", fileName);
-        LOGGER.debug("getArtifact returned");
-        return ResponseEntity.ok()
-            .cacheControl(CacheControl.noCache())
-            .headers(responseHeaders)
-            .body(new InputStreamResource(resource.getObjectContent()));
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.info(errorMessage);
