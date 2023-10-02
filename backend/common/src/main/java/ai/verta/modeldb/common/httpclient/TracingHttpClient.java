@@ -9,7 +9,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
@@ -47,7 +47,7 @@ public class TracingHttpClient extends HttpClient {
     try (Scope ignored = span.makeCurrent()) {
       request = addPropagationHeaders(request, Context.current());
       HttpResponse<T> httpResponse = delegate.send(request, responseBodyHandler);
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.statusCode());
+      span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, httpResponse.statusCode());
       return httpResponse;
     } catch (Exception e) {
       span.setStatus(StatusCode.ERROR);
@@ -94,7 +94,7 @@ public class TracingHttpClient extends HttpClient {
         span.setStatus(StatusCode.ERROR);
         span.recordException(throwable);
       } else {
-        span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.statusCode());
+        span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, httpResponse.statusCode());
       }
       span.end();
     };
@@ -104,9 +104,9 @@ public class TracingHttpClient extends HttpClient {
     URI requestUri = request.uri();
     return tracer
         .spanBuilder("HTTP " + request.method())
-        .setAttribute(SemanticAttributes.HTTP_METHOD, request.method())
+        .setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, request.method())
         .setSpanKind(SpanKind.CLIENT)
-        .setAttribute(SemanticAttributes.NET_PEER_NAME, requestUri.getHost())
+        .setAttribute(SemanticAttributes.SERVER_ADDRESS, requestUri.getHost())
         .setAttribute(SemanticAttributes.PEER_SERVICE, requestUri.getHost())
         .setAttribute(REQUEST_PATH_KEY, requestUri.getPath())
         // .setAttribute(SemanticAttributes.HTTP_URL, requestUri.toString()) TODO: figure out how to

@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -73,9 +73,9 @@ class TracingHttpClientTest {
                     .hasSpansSatisfyingExactlyInAnyOrder(
                         spanDataAssert ->
                             spanDataAssert
-                                .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
-                                .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
-                                .hasAttribute(SemanticAttributes.HTTP_STATUS_CODE, 420L)
+                                .hasAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, "GET")
+                                .hasAttribute(SemanticAttributes.SERVER_ADDRESS, "localhost")
+                                .hasAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 420L)
                                 .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
                                 .hasAttribute(
                                     AttributeKey.stringKey("http.request.path"), "/requestPath")
@@ -112,9 +112,9 @@ class TracingHttpClientTest {
                     .hasSpansSatisfyingExactlyInAnyOrder(
                         spanDataAssert ->
                             spanDataAssert
-                                .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
-                                .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
-                                .hasAttribute(SemanticAttributes.HTTP_STATUS_CODE, 420L)
+                                .hasAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, "GET")
+                                .hasAttribute(SemanticAttributes.SERVER_ADDRESS, "localhost")
+                                .hasAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 420L)
                                 .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
                                 .hasAttribute(
                                     AttributeKey.stringKey("http.request.path"), "/requestPath")
@@ -146,8 +146,8 @@ class TracingHttpClientTest {
                     .hasSpansSatisfyingExactlyInAnyOrder(
                         spanDataAssert ->
                             spanDataAssert
-                                .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
-                                .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
+                                .hasAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, "GET")
+                                .hasAttribute(SemanticAttributes.SERVER_ADDRESS, "localhost")
                                 .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
                                 .hasAttribute(AttributeKey.stringKey("http.request.path"), "/error")
                                 .hasStatus(StatusData.error())
