@@ -8,31 +8,46 @@ import pytest
 import responses
 
 
-@hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
-def test_organization_id_and_name_error(make_mock_client, org_id, org_name):
+class TestOrganizationIdAndNameError:
     """Verify setting both org id and name raises an exception."""
-    org_id = str(org_id)
-    error = ValueError("cannot provide both `organization_id` and `organization_name`")
-    raises_expected_error = pytest.raises(type(error), match=str(error))
 
-    with raises_expected_error:
-        make_mock_client(organization_id=org_id, organization_name=org_name)
+    _error = ValueError("cannot provide both `organization_id` and `organization_name`")
+    raises_expected_error = pytest.raises(type(_error), match=str(_error))
 
-    with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setenv("VERTA_ORG_ID", org_id)
-        monkeypatch.setenv("VERTA_ORG_NAME", org_name)
-        with raises_expected_error:
-            make_mock_client()
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_args(self, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
 
-    with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setenv("VERTA_ORG_ID", org_id)
-        with raises_expected_error:
-            make_mock_client(organization_name=org_name)
+        with self.raises_expected_error:
+            make_mock_client(organization_id=org_id, organization_name=org_name)
 
-    with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setenv("VERTA_ORG_NAME", org_name)
-        with raises_expected_error:
-            make_mock_client(organization_id=org_id)
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_env_vars(self, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
+
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setenv("VERTA_ORG_ID", org_id)
+            monkeypatch.setenv("VERTA_ORG_NAME", org_name)
+            with self.raises_expected_error:
+                make_mock_client()
+
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_id_env_var_name_arg(self, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
+
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setenv("VERTA_ORG_ID", org_id)
+            with self.raises_expected_error:
+                make_mock_client(organization_name=org_name)
+
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_name_env_var_id_arg(self, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
+
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setenv("VERTA_ORG_NAME", org_name)
+            with self.raises_expected_error:
+                make_mock_client(organization_id=org_id)
 
 
 class TestOrganizationId:
