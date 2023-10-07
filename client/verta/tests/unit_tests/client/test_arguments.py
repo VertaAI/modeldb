@@ -5,6 +5,7 @@ import string
 import hypothesis
 import hypothesis.strategies as st
 import pytest
+import responses
 
 
 @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
@@ -59,3 +60,65 @@ class TestOrganizationId:
             monkeypatch.setenv("VERTA_ORG_ID", org_id1)
             client = make_mock_client(organization_id=org_id2)
         assert client._conn._credentials.organization_id == org_id2
+
+
+class TestOrganizationName:
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_arg(self, mock_conn, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
+
+        with responses.RequestsMock() as rsps:
+            rsps.get(
+                url=f"{mock_conn.scheme}://{mock_conn.socket}/api/v2/uac-proxy/organization",
+                status=200,
+                json={"organizations": [{"id": org_id, "name": org_name}]},
+            )
+
+            client = make_mock_client(organization_name=org_name)
+        assert client._conn._credentials.organization_id == org_id
+
+    @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
+    def test_env_var(self, mock_conn, make_mock_client, org_id, org_name):
+        org_id = str(org_id)
+
+        with responses.RequestsMock() as rsps:
+            rsps.get(
+                url=f"{mock_conn.scheme}://{mock_conn.socket}/api/v2/uac-proxy/organization",
+                status=200,
+                json={"organizations": [{"id": org_id, "name": org_name}]},
+            )
+
+            with pytest.MonkeyPatch.context() as monkeypatch:
+                monkeypatch.setenv("VERTA_ORG_NAME", org_name)
+                client = make_mock_client()
+        assert client._conn._credentials.organization_id == org_id
+
+    @hypothesis.given(
+        org_id=st.uuids(),
+        org_names=st.lists(
+            st.text(string.printable, min_size=1),
+            min_size=2,
+            max_size=2,
+        ),
+    )
+    def test_arg_overrides_env_var(
+        self,
+        mock_conn,
+        make_mock_client,
+        org_id,
+        org_names,
+    ):
+        org_id = str(org_id)
+        org_name1, org_name2 = org_names
+
+        with responses.RequestsMock() as rsps:
+            rsps.get(
+                url=f"{mock_conn.scheme}://{mock_conn.socket}/api/v2/uac-proxy/organization",
+                status=200,
+                json={"organizations": [{"id": org_id, "name": org_name2}]},
+            )
+
+            with pytest.MonkeyPatch.context() as monkeypatch:
+                monkeypatch.setenv("VERTA_ORG_NAME", org_name1)
+                client = make_mock_client(organization_name=org_name2)
+        assert client._conn._credentials.organization_id == org_id
