@@ -51,6 +51,8 @@ class TestOrganizationIdAndNameError:
 
 
 class TestOrganizationId:
+    """Verify org ID can be set by argument and by environment variable."""
+
     @hypothesis.given(org_id=st.uuids())
     def test_arg(self, make_mock_client, org_id):
         org_id = str(org_id)
@@ -78,6 +80,13 @@ class TestOrganizationId:
 
 
 class TestOrganizationName:
+    """Verify org name can be set by argument and by environment variable.
+
+    When given an org name, :meth:`verta.Client.__init__` calls UAC to get that
+    org's ID; so these tests mock that call to return an expected org ID.
+
+    """
+
     @hypothesis.given(org_id=st.uuids(), org_name=st.text(string.printable, min_size=1))
     def test_arg(self, mock_conn, make_mock_client, org_id, org_name):
         org_id = str(org_id)
