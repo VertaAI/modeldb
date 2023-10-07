@@ -2,6 +2,7 @@
 
 """Pytest fixtures for use in client unit tests."""
 
+import functools
 import json
 import os
 import random
@@ -26,9 +27,39 @@ from verta.tracking.entities import ExperimentRun
 
 
 @pytest.fixture(scope="session")
-def mock_client(mock_conn) -> Client:
+def mock_client(make_mock_client) -> Client:
     """Return a mocked object of the Client class for use in tests"""
-    return Client(
+    return make_mock_client()
+
+
+@pytest.fixture(scope="session")
+def make_mock_client(mock_conn) -> Callable:
+    """Factory fixture for creating mocked :class:`verta.Client`s.
+
+    All arguments are passed directly to :meth:`verta.Client.__init__`.
+
+    By default (i.e. no arguments), this creates a ``Client`` with a mocked `host`,
+    `email`, and `dev_key`; and `_connect` ``= False``.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        def test_thing(make_mock_client):
+            # like calling Client() with mocked credentials
+            client = make_mock_client()
+
+            # set Client(max_retries)
+            client = make_mock_client(max_retries=0)
+            assert client._conn.retry.total == 0
+
+            # override default mocked email
+            client = make_mock_client(email="123")
+            assert client._conn.email == "123"
+
+    """
+    return functools.partial(
+        Client,
         host=f"{mock_conn.scheme}://{mock_conn.socket}",
         email=mock_conn.credentials.email,
         dev_key=mock_conn.credentials.dev_key,
