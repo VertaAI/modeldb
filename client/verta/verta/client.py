@@ -153,10 +153,6 @@ class Client(object):
         organization_name=None,
         _connect=True,
     ):
-        if organization_id is not None and organization_name is not None:
-            raise ValueError(
-                "cannot provide both `organization_id` and `organization_name`"
-            )
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
@@ -177,6 +173,19 @@ class Client(object):
             env_var=JWTCredentials.JWT_TOKEN_SIG_ENV,
             config_var="jwt_token_sig",
         )
+
+        organization_id = self._get_with_fallback(
+            organization_id,
+            env_var="VERTA_ORG_ID",
+        )
+        organization_name = self._get_with_fallback(
+            organization_name,
+            env_var="VERTA_ORG_NAME",
+        )
+        if organization_id is not None and organization_name is not None:
+            raise ValueError(
+                "cannot provide both `organization_id` and `organization_name`"
+            )
 
         self.auth_credentials = credentials._build(
             email=email,
