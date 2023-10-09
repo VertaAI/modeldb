@@ -26,6 +26,7 @@ public class S3Config {
   @JsonProperty private Integer requestTimeoutMs = 30 * 1000;
   @JsonProperty private Integer clientExecutionTimeout = 40 * 1000;
   @JsonProperty private Integer connectionPoolSize = 75;
+  private Integer refreshIntervalSeconds = 300;
 
   public void validate(String base) throws InvalidConfigException {
     if (cloudBucketName == null || cloudBucketName.isEmpty())
