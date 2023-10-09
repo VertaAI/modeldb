@@ -9,9 +9,9 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,12 +30,14 @@ public class S3Client {
   private final ClientConfiguration defaultClientConfig;
 
   private final String bucketName;
+  private final S3Config s3Config;
 
   private volatile AmazonS3 s3Client;
   private volatile AtomicInteger referenceCounter;
   private volatile AWSCredentials awsCredentials;
 
-  public S3Client(S3Config s3Config) throws IOException, ModelDBException {
+  public S3Client(S3Config s3Config) throws ModelDBException {
+    this.s3Config = s3Config;
     String cloudAccessKey = s3Config.getCloudAccessKey();
     String cloudSecretKey = s3Config.getCloudSecretKey();
     String minioEndpoint = s3Config.getMinioEndpoint();
@@ -70,39 +72,64 @@ public class S3Client {
   }
 
   private void initializeWithEnvironment(Regions awsRegion) {
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withClientConfiguration(defaultClientConfig)
-            .withRegion(awsRegion)
-            .build();
+    this.s3Client = buildEnvironmentClient(awsRegion);
+    scheduleRefresh(() -> buildEnvironmentClient(awsRegion));
+  }
+
+  private AmazonS3 buildEnvironmentClient(Regions awsRegion) {
+    return AmazonS3ClientBuilder.standard()
+        .withClientConfiguration(defaultClientConfig)
+        .withRegion(awsRegion)
+        .build();
+  }
+
+  /**
+   * schedule swapping out with a new client periodically, to clear up any possible stuck connection
+   * pool issues.
+   */
+  private void scheduleRefresh(Supplier<AmazonS3> s3) {
+    CommonUtils.scheduleTask(
+        () -> refreshS3Client(awsCredentials, s3.get()),
+        0L,
+        s3Config.getRefreshIntervalSeconds(),
+        TimeUnit.SECONDS);
   }
 
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
-    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     var clientConfiguration = new ClientConfiguration(defaultClientConfig);
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(
-                new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
-            .withPathStyleAccessEnabled(true)
-            .withClientConfiguration(clientConfiguration)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-            .build();
+    this.s3Client = buildMinioClient(awsRegion, minioEndpoint, clientConfiguration);
+    scheduleRefresh(() -> buildMinioClient(awsRegion, minioEndpoint, clientConfiguration));
+  }
+
+  private AmazonS3 buildMinioClient(
+      Regions awsRegion, String minioEndpoint, ClientConfiguration clientConfiguration) {
+    return AmazonS3ClientBuilder.standard()
+        .withEndpointConfiguration(
+            new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
+        .withPathStyleAccessEnabled(true)
+        .withClientConfiguration(clientConfiguration)
+        .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+        .build();
   }
 
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
-    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withRegion(awsRegion)
-            .withClientConfiguration(defaultClientConfig)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-            .build();
+    this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.s3Client = buildAccessKeyClient(awsRegion);
+    scheduleRefresh(() -> buildAccessKeyClient(awsRegion));
+  }
+
+  private AmazonS3 buildAccessKeyClient(Regions awsRegion) {
+    return AmazonS3ClientBuilder.standard()
+        .withRegion(awsRegion)
+        .withClientConfiguration(defaultClientConfig)
+        .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+        .build();
   }
 
   public RefCountedS3Client getRefCountedClient() {
@@ -110,14 +137,14 @@ public class S3Client {
   }
 
   private void initializeWithWebIdentity(Regions awsRegion) {
-    /* While creating RoleCredentials we have a set time (900 seconds (15 minutes))
-    in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
-    so set cron to 1/3 of the duration of the credentials which will be ~(450 Second (7.5 minutes))
-     */
-    var durationSeconds = 900; /*900 seconds (15 minutes)*/
-    var refreshTokenFrequency = durationSeconds / 3;
+    // While creating RoleCredentials we have a configurable time (900 seconds (15 minutes) by
+    // default) in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
+    // so set cron to 1/3 of the duration of the credentials which will be (300 seconds (5 minutes))
+    var durationSeconds =
+        s3Config.getRefreshIntervalSeconds() * 3; // by default 900 seconds (15 minutes)
+    var refreshTokenFrequency =
+        s3Config.getRefreshIntervalSeconds(); // by default 300 seconds (5 minutes)
     LOGGER.trace(String.format("S3 Client refresh frequency %d seconds", refreshTokenFrequency));
-
     CommonUtils.scheduleTask(
         new RefreshS3ClientCron(bucketName, awsRegion, durationSeconds, this),
         0L /*initialDelay*/,
