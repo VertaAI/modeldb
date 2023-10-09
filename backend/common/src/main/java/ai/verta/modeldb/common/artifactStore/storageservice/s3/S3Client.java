@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -71,30 +72,38 @@ public class S3Client {
   }
 
   private void initializeWithEnvironment(Regions awsRegion) {
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withClientConfiguration(defaultClientConfig)
-            .withRegion(awsRegion)
-            .build();
+    this.s3Client = buildEnvironmentClient(awsRegion);
+    scheduleRefresh(() -> buildEnvironmentClient(awsRegion));
+  }
+
+  private AmazonS3 buildEnvironmentClient(Regions awsRegion) {
+    return AmazonS3ClientBuilder.standard()
+        .withClientConfiguration(defaultClientConfig)
+        .withRegion(awsRegion)
+        .build();
+  }
+
+  /**
+   * schedule swapping out with a new client periodically, to clear up any possible stuck connection
+   * pool issues.
+   */
+  private void scheduleRefresh(Supplier<AmazonS3> s3) {
+    CommonUtils.scheduleTask(
+        () -> refreshS3Client(awsCredentials, s3.get()),
+        0L,
+        s3Config.getRefreshIntervalSeconds(),
+        TimeUnit.SECONDS);
   }
 
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
-    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     var clientConfiguration = new ClientConfiguration(defaultClientConfig);
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
     this.s3Client = buildMinioClient(awsRegion, minioEndpoint, clientConfiguration);
-    // schedule swapping out with a new client periodically, to clear up any possible stuck
-    // connection pool issues.
-    CommonUtils.scheduleTask(
-        () ->
-            refreshS3Client(
-                awsCredentials, buildMinioClient(awsRegion, minioEndpoint, clientConfiguration)),
-        0L,
-        s3Config.getRefreshIntervalSeconds(),
-        TimeUnit.SECONDS);
+    scheduleRefresh(() -> buildMinioClient(awsRegion, minioEndpoint, clientConfiguration));
   }
 
   private AmazonS3 buildMinioClient(
@@ -110,15 +119,9 @@ public class S3Client {
 
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
-    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     this.s3Client = buildAccessKeyClient(awsRegion);
-    // schedule swapping out with a new client periodically, to clear up any possible stuck
-    // connection pool issues.
-    CommonUtils.scheduleTask(
-        () -> refreshS3Client(awsCredentials, buildAccessKeyClient(awsRegion)),
-        0L,
-        s3Config.getRefreshIntervalSeconds(),
-        TimeUnit.SECONDS);
+    scheduleRefresh(() -> buildAccessKeyClient(awsRegion));
   }
 
   private AmazonS3 buildAccessKeyClient(Regions awsRegion) {
@@ -142,7 +145,6 @@ public class S3Client {
     var refreshTokenFrequency =
         s3Config.getRefreshIntervalSeconds(); // by default 300 seconds (5 minutes)
     LOGGER.trace(String.format("S3 Client refresh frequency %d seconds", refreshTokenFrequency));
-
     CommonUtils.scheduleTask(
         new RefreshS3ClientCron(bucketName, awsRegion, durationSeconds, this),
         0L /*initialDelay*/,
