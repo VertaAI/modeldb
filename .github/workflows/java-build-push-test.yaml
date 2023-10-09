@@ -48,7 +48,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Get branch names
         id: branch_names
@@ -123,7 +123,7 @@ jobs:
       - name: Login to Amazon ECR for us-west-2
         id: login-ecr-release
         if: startsWith( github.ref, 'refs/heads/release/' )
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Mirror Docker image to us-west-2
         id: mirror-release
