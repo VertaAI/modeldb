@@ -42,7 +42,7 @@ public class S3Service implements ArtifactStoreService {
 
   public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
     this.artifactStoreConfig = artifactStoreConfig;
-    s3Client = new S3Client(artifactStoreConfig.getS3());
+    this.s3Client = new S3Client(artifactStoreConfig.getS3());
     this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
   }
 
@@ -50,15 +50,17 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(
+          LOGGER, "bucket existence check for bucket: '" + bucketName + "'", e);
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existence for artifact store : "
+          "S3 bucket existence check failed for bucket '"
+              + bucketName
+              + "' : "
               + e.getErrorMessage());
     } catch (SdkClientException e) {
-      LOGGER.warn(e.getMessage());
+      LOGGER.warn("Exception in doesBucketExist call. bucket: '" + bucketName + "'", e);
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existence for artifact store : "
-              + e.getMessage());
+          "S3 bucket existence check failed for bucket '" + bucketName + "' : " + e.getMessage());
     }
   }
 
@@ -66,27 +68,44 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(
+          LOGGER,
+          "object existence check. bucket: '" + bucketName + "'" + ", path: '" + path + "'",
+          e);
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existance for artifact store : "
+          "S3 object existence check failed. bucket name: '"
+              + bucketName
+              + "' ; object path: '"
+              + path
+              + "'"
               + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       throw new UnavailableException(
-          "AWS S3 could not be checked for bucket existance for artifact store : "
+          "S3 object existence check failed. bucket name: '"
+              + bucketName
+              + "' ; object path: '"
+              + path
+              + "'"
               + e.getMessage());
-    } catch (Exception ex) {
-      LOGGER.warn(ex.getMessage());
-      throw ex;
+    } catch (Exception e) {
+      LOGGER.warn(
+          "S3 object existence check failed. bucket name: '"
+              + bucketName
+              + "' ; object path: '"
+              + path
+              + "'",
+          e);
+      throw e;
     }
   }
 
   @Override
   public Optional<String> initiateMultipart(String s3Key) throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
+    if (!doesBucketExist(bucketName)) {
+      throw new ModelDBException(
+          CommonMessages.BUCKET_DOES_NOT_EXIST + ": " + bucketName, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
@@ -109,9 +128,9 @@ public class S3Service implements ArtifactStoreService {
   private String getS3PresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
+    if (!doesBucketExist(bucketName)) {
+      throw new ModelDBException(
+          CommonMessages.BUCKET_DOES_NOT_EXIST + ": " + bucketName, Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
@@ -120,7 +139,7 @@ public class S3Service implements ArtifactStoreService {
     } else if (method.equalsIgnoreCase("get")) {
       reqMethod = HttpMethod.GET;
     } else {
-      var errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
+      var errorMessage = "Unsupported HTTP Method for S3 Presigned URL: " + method;
       throw new InvalidArgumentException(errorMessage);
     }
 
@@ -148,9 +167,9 @@ public class S3Service implements ArtifactStoreService {
   public void commitMultipart(String s3Key, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
+    if (!doesBucketExist(bucketName)) {
+      throw new ModelDBException(
+          CommonMessages.BUCKET_DOES_NOT_EXIST + ": " + bucketName, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -172,9 +191,9 @@ public class S3Service implements ArtifactStoreService {
       throws ModelDBException, IOException {
     File tempFile = copyRequestInputToTempFile(artifactPath, request);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      Boolean exist = doesBucketExist(bucketName);
-      if (!exist) {
-        throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
+      if (!doesBucketExist(bucketName)) {
+        throw new ModelDBException(
+            CommonMessages.BUCKET_DOES_NOT_EXIST + ": " + bucketName, Code.UNAVAILABLE);
       }
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
@@ -209,12 +228,17 @@ public class S3Service implements ArtifactStoreService {
         return uploadResult.getETag();
       }
     } catch (AmazonServiceException e) {
-      // Amazon S3 couldn't be contacted for a response, or the client
-      // couldn't parse the response from Amazon S3.
-      String errorMessage = e.getMessage();
-      LOGGER.warn(errorMessage);
+      LOGGER.warn(
+          "S3 file upload failed. artifactPath: '" + artifactPath + "', part number: " + partNumber,
+          e);
       throw new ModelDBException(
-          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+          "S3 file upload failed. artifactPath: '"
+              + artifactPath
+              + "', part number: "
+              + partNumber
+              + " S3 message: "
+              + e.getMessage(),
+          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (InterruptedException e) {
       LOGGER.warn(e.getMessage(), e);
       // Restore interrupted state...
@@ -263,23 +287,29 @@ public class S3Service implements ArtifactStoreService {
             .headers(responseHeaders)
             .body(new InputStreamResource(resource.getObjectContent()));
       } else {
-        String errorMessage = "File not found " + artifactPath;
+        String errorMessage = "File not found: '" + artifactPath + "'";
         LOGGER.info(errorMessage);
         throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
     } catch (AmazonServiceException e) {
-      // Amazon S3 couldn't be contacted for a response, or the client
-      // couldn't parse the response from Amazon S3.
-      String errorMessage = e.getMessage();
-      LOGGER.warn(errorMessage);
+      LOGGER.warn("S3 load file failed", e);
       throw new ModelDBException(
-          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+          "S3 load file failed for file: '"
+              + fileName
+              + "' at artifact path: '"
+              + artifactPath
+              + "' error message:"
+              + e.getMessage(),
+          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (SdkClientException e) {
-      // Amazon S3 couldn't be contacted for a response, or the client
-      // couldn't parse the response from Amazon S3.
-      String errorMessage = e.getMessage();
-      LOGGER.warn(errorMessage);
-      throw new ModelDBException(errorMessage);
+      LOGGER.warn("S3 load file failed", e);
+      throw new ModelDBException(
+          "S3 load file failed for file: '"
+              + fileName
+              + "' at artifact path: '"
+              + artifactPath
+              + "' error message:"
+              + e.getMessage());
     }
   }
 
@@ -317,7 +347,7 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else {
-      var errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
+      var errorMessage = "Unsupported HTTP Method for S3 Presigned URL: " + method;
       throw new InvalidArgumentException(errorMessage);
     }
   }
@@ -325,7 +355,8 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public InputStream downloadFileFromStorage(String key) throws ModelDBException {
     if (!doesBucketExist(bucketName)) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
+      throw new ModelDBException(
+          CommonMessages.BUCKET_DOES_NOT_EXIST + ": " + bucketName, Code.UNAVAILABLE);
     }
 
     return downloadFileFromStorage(bucketName, key);
@@ -335,14 +366,15 @@ public class S3Service implements ArtifactStoreService {
       throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       if (client.getClient().doesObjectExist(bucketName, key)) {
-        LOGGER.debug("file exist in storage");
+        LOGGER.debug("file exists in storage");
         var s3object = client.getClient().getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3object.getObjectContent();
         LOGGER.info("file fetched successfully from s3 storage");
         return inputStream;
       }
 
-      String errorMessage = "s3 object not found in s3 storage for given key : " + key;
+      String errorMessage =
+          "s3 object not found in s3 storage for given key : " + key + " in bucket: " + bucketName;
       LOGGER.info(errorMessage);
       throw new ModelDBException(errorMessage, Code.NOT_FOUND);
     }
