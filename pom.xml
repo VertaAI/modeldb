@@ -25,7 +25,7 @@
     <properties>
         <revision>1.0-SNAPSHOT</revision>
         <hibernate.version>5.6.15.Final</hibernate.version>
-        <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.21.0</log4j.version>
         <grpc.version>1.58.0</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.24.3</protobuf.version>
