@@ -38,7 +38,7 @@
         <otel.contrib.version>1.30.0-alpha</otel.contrib.version>
         <springframework.version>5.3.30</springframework.version>
         <!-- Note: downgraded from the latest version of mockito because of a conflict with spring's bytebuddy version -->
-        <mockito.version>5.5.0</mockito.version>
+        <mockito.version>5.6.0</mockito.version>
         <lombok.version>1.18.30</lombok.version>
 
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
