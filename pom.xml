@@ -26,7 +26,7 @@
         <revision>1.0-SNAPSHOT</revision>
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
-        <grpc.version>1.58.0</grpc.version>
+        <grpc.version>1.59.0</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.24.4</protobuf.version>
         <aws.version>1.12.524</aws.version>
@@ -157,6 +157,11 @@
                 <artifactId>grpc-netty-shaded</artifactId>
                 <version>${grpc.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
             <!-- API for gRPC over Protocol Buffers, including tools for serializing
                 and de-serializing protobuf messages (https://grpc.io/grpc-java/javadoc/io/grpc/protobuf/package-summary.html) -->
             <dependency>
@@ -254,7 +259,13 @@
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>google-cloud-storage</artifactId>
-                <version>2.27.1</version>
+                <version>2.28.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.grpc</groupId>
+                        <artifactId>grpc-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- pin this dependency of ^^^ to upgrade for a CVE (https://snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808) -->
             <dependency>
