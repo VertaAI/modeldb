@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -e pipefail
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 if [ -z "$BRANCH_NAME" ]; then
