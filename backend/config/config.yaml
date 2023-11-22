@@ -25,7 +25,7 @@ database:
     RdbDatabaseName: modeldb
     RdbDriver: "org.mariadb.jdbc.Driver"
     RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
-    RdbUrl: "jdbc:mysql://modeldb-backend:3306"
+    RdbUrl: "jdbc:mysql://modeldb-mysql:3306"
     RdbUsername: root
     RdbPassword: root
 
@@ -39,7 +39,7 @@ test:
       RdbDatabaseName: modeldb-test
       RdbDriver: "org.mariadb.jdbc.Driver"
       RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
-      RdbUrl: "jdbc:mysql://modeldb-backend:3306"
+      RdbUrl: "jdbc:mysql://modeldb-mysql:3306"
       RdbUsername: root
       RdbPassword: root
 
