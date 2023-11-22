@@ -7,6 +7,10 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.*;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -14,11 +18,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 import org.yaml.snakeyaml.representer.Representer;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Data
