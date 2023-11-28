@@ -6,7 +6,7 @@ on:
     paths:
       - .github/workflows/java-build-push-test.yaml
       - 'backend/**'
-      - protos
+      - 'protos/**'
       - pom.xml
       - build_and_publish_backend.sh
   push:
