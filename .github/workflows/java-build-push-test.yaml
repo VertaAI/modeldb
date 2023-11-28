@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - .github/workflows/java-build-push-test.yaml
-      - backend
+      - 'backend/**'
       - protos
       - pom.xml
       - build_and_publish_backend.sh
