@@ -1,0 +1,94 @@
+version: "3.5"
+services:
+  modeldb-mysql:
+    image: mysql
+    cap_add:
+      - SYS_NICE
+    container_name: "modeldb-mysql"
+    restart: always
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: modeldb
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+    networks:
+      - modeldb_network
+    volumes:
+      - ./data/mysqlData:/var/lib/mysql
+
+  modeldb-backend:
+    image: vertaaiofficial/modeldb-backend:2.0.8.1
+    container_name: "modeldb-backend"
+    expose:
+      - "8085"
+      - "8086"
+    ports:
+      - "8085:8085"
+      - "8086:8086"
+    networks:
+      - modeldb_network
+    environment:
+      - VERTA_MODELDB_CONFIG:/config/config.yaml
+      - LIQUIBASE_MIGRATION:true
+    volumes:
+      - ./backend/config:/config/
+      - ./data/artifact-store:/artifact-store/
+
+  modeldb-proxy:
+    image: vertaaiofficial/modeldb-proxy:2.0.8.1
+    container_name: "modeldb-proxy"
+    environment:
+      MDB_ADDRESS: "modeldb-backend:8085"
+      SERVER_HTTP_PORT: "8080"
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - modeldb-backend
+    networks:
+      - modeldb_network
+
+  modeldb-graphql:
+    image: vertaaiofficial/modeldb-graphql:2.0.8.1
+    container_name: "modeldb-graphql"
+    environment:
+      MDB_ADDRESS: "modeldb-backend:8085"
+      SERVER_HTTP_PORT: "4000"
+      QUERY_PATH: "/api/v1/graphql/query"
+    expose:
+      - "4000"
+    ports:
+      - "4000:4000"
+    depends_on:
+      - modeldb-backend
+    networks:
+      - modeldb_network
+
+  modeldb-frontend:
+    image: vertaaiofficial/modeldb-frontend:2.0.8.2
+    container_name: "modeldb-frontend"
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - modeldb-proxy
+      - modeldb-graphql
+    environment:
+      DEPLOYED: "yes"
+      BACKEND_API_PROTOCOL: "http"
+      BACKEND_API_DOMAIN: "modeldb-webapp:3000"
+      MDB_ADDRESS: http://modeldb-proxy:8080
+      ARTIFACTORY_ADDRESS: http://modeldb-backend:8086
+      GQL_ADDRESS: http://modeldb-graphql:4000
+    networks:
+      - modeldb_network
+
+
+networks:
+  modeldb_network:
