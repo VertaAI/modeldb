@@ -1,5 +1,6 @@
 package ai.verta.modeldb.config;
 
+
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
@@ -17,10 +18,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
+import org.yaml.snakeyaml.representer.Representer;
+
 
 @Data
 @AllArgsConstructor
@@ -50,7 +54,9 @@ public class TestConfig extends MDBConfig {
   private static <T> T readConfig(Class<T> configType, String configFile)
       throws InternalErrorException {
     try {
-      var yaml = new Yaml(new Constructor(configType, new LoaderOptions()));
+      Representer representer = new Representer(new DumperOptions());
+      representer.getPropertyUtils().setSkipMissingProperties(true);
+      var yaml = new Yaml(new Constructor(configType, new LoaderOptions()),representer);
       configFile = CommonUtils.appendOptionalTelepresencePath(configFile);
       InputStream inputStream = new FileInputStream(configFile);
       yaml.setBeanAccess(BeanAccess.FIELD);
