@@ -1,6 +1,5 @@
 package ai.verta.modeldb.config;
 
-
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
@@ -24,7 +23,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 import org.yaml.snakeyaml.representer.Representer;
-
 
 @Data
 @AllArgsConstructor
@@ -56,7 +54,7 @@ public class TestConfig extends MDBConfig {
     try {
       Representer representer = new Representer(new DumperOptions());
       representer.getPropertyUtils().setSkipMissingProperties(true);
-      var yaml = new Yaml(new Constructor(configType, new LoaderOptions()),representer);
+      var yaml = new Yaml(new Constructor(configType, new LoaderOptions()), representer);
       configFile = CommonUtils.appendOptionalTelepresencePath(configFile);
       InputStream inputStream = new FileInputStream(configFile);
       yaml.setBeanAccess(BeanAccess.FIELD);

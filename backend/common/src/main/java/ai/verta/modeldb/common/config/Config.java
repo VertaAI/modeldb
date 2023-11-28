@@ -19,7 +19,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 import org.yaml.snakeyaml.representer.Representer;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
