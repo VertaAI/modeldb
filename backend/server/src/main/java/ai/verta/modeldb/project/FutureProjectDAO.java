@@ -1571,13 +1571,18 @@ public class FutureProjectDAO {
   public InternalFuture<Project> createProject(CreateProject request) {
     // Validate if current user has access to the entity or not
     return checkProjectPermission(null, ModelDBActionEnum.ModelDBServiceActions.CREATE)
-        .thenCompose(unused -> createProjectHandler.convertCreateRequest(request), executor)
+        .thenCompose(
+            unused -> createProjectHandler.convertCreateRequest(request).toInternalFuture(),
+            executor)
         .thenCompose(
             project ->
                 deleteEntityResourcesWithServiceUser(project.getName())
                     .thenApply(status -> project, executor),
             executor)
-        .thenCompose(createProjectHandler::insertProject, executor)
+        .thenCompose(
+            (Project newProject) ->
+                createProjectHandler.insertProject(newProject).toInternalFuture(),
+            executor)
         .thenCompose(
             createdProject ->
                 FutureUtil.clientRequest(
