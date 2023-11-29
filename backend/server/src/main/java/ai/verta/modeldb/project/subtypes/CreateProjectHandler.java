@@ -5,9 +5,9 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.CommonDBUtil;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -30,7 +30,6 @@ public class CreateProjectHandler extends HandlerUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(CreateProjectHandler.class);
 
-  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
 
   private final AttributeHandler attributeHandler;
@@ -44,7 +43,6 @@ public class CreateProjectHandler extends HandlerUtil {
       AttributeHandler attributeHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler) {
-    this.executor = executor;
     this.jdbi = jdbi;
 
     this.attributeHandler = attributeHandler;
@@ -53,12 +51,12 @@ public class CreateProjectHandler extends HandlerUtil {
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
   }
 
-  public InternalFuture<Project> convertCreateRequest(final CreateProject request) {
-    return InternalFuture.completedInternalFuture(getProjectFromRequest(request));
+  public Future<Project> convertCreateRequest(final CreateProject request) {
+    return Future.of(getProjectFromRequest(request));
   }
 
   /**
-   * Method to convert createProject request to Project object. This method generates the project Id
+   * Method to convert createProject request to Project object. This method generates the project ID
    * using UUID and puts it in Project object.
    *
    * @param request : CreateProject
@@ -113,25 +111,12 @@ public class CreateProjectHandler extends HandlerUtil {
     return projectBuilder.build();
   }
 
-  public InternalFuture<Project> insertProject(Project newProject) {
-    Map<String, Object> valueMap = new LinkedHashMap<>();
-    valueMap.put("id", newProject.getId());
-    valueMap.put("name", newProject.getName());
-    valueMap.put("short_name", newProject.getShortName());
-    valueMap.put("description", newProject.getDescription());
-    valueMap.put("date_created", newProject.getDateCreated());
-    valueMap.put("date_updated", newProject.getDateUpdated());
-    valueMap.put("owner", newProject.getOwner());
-    valueMap.put("version_number", newProject.getVersionNumber());
-    valueMap.put("readme_text", newProject.getReadmeText());
+  public Future<Project> insertProject(Project newProject) {
+    var valueMap = buildProjectValues(newProject);
 
-    valueMap.put("deleted", false);
-    valueMap.put("created", false);
-    valueMap.put("visibility_migration", true);
-
-    Supplier<InternalFuture<Project>> insertFutureSupplier =
+    Supplier<Future<Project>> insertFutureSupplier =
         () ->
-            jdbi.withTransaction(
+            jdbi.inTransaction(
                 handle -> {
                   final var builder = newProject.toBuilder();
                   String queryString = buildInsertQuery(valueMap, "project");
@@ -168,7 +153,25 @@ public class CreateProjectHandler extends HandlerUtil {
                   }
                   return builder.build();
                 });
-    return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
-        .thenApply(createdProject -> createdProject, executor);
+    return Future.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry)
+        .thenCompose(Future::of);
+  }
+
+  private static Map<String, Object> buildProjectValues(Project newProject) {
+    Map<String, Object> valueMap = new LinkedHashMap<>();
+    valueMap.put("id", newProject.getId());
+    valueMap.put("name", newProject.getName());
+    valueMap.put("short_name", newProject.getShortName());
+    valueMap.put("description", newProject.getDescription());
+    valueMap.put("date_created", newProject.getDateCreated());
+    valueMap.put("date_updated", newProject.getDateUpdated());
+    valueMap.put("owner", newProject.getOwner());
+    valueMap.put("version_number", newProject.getVersionNumber());
+    valueMap.put("readme_text", newProject.getReadmeText());
+
+    valueMap.put("deleted", false);
+    valueMap.put("created", false);
+    valueMap.put("visibility_migration", true);
+    return valueMap;
   }
 }

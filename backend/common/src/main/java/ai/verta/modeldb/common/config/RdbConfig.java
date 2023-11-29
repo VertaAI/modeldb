@@ -85,7 +85,7 @@ public class RdbConfig {
         rdb.RdbUrl
             + "/"
             + rdb.getRdbDatabaseName()
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true"
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true"
             + "&sslEnabled="
             + rdb.sslEnabled
             + "&sslMode="
@@ -108,7 +108,7 @@ public class RdbConfig {
     }
     final var url =
         rdb.RdbUrl
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true"
             + "&sslEnabled="
             + rdb.sslEnabled
             + "&sslMode="

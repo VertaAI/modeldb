@@ -25,9 +25,9 @@ database:
     RdbDatabaseName: modeldb
     RdbDriver: "org.mariadb.jdbc.Driver"
     RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
-    RdbUrl: "jdbc:mysql://localhost:3306"
+    RdbUrl: "jdbc:mysql://modeldb-mysql:3306"
     RdbUsername: root
-    RdbPassword: root_password_here
+    RdbPassword: root
 
 # Test Database settings (type mongodb, couchbasedb etc..)
 test:
@@ -39,9 +39,9 @@ test:
       RdbDatabaseName: modeldb-test
       RdbDriver: "org.mariadb.jdbc.Driver"
       RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
-      RdbUrl: "jdbc:mysql://localhost:3306"
+      RdbUrl: "jdbc:mysql://modeldb-mysql:3306"
       RdbUsername: root
-      RdbPassword: root_password_here
+      RdbPassword: root
 
 #ArtifactStore Properties
 artifactStore_grpcServer:
@@ -56,7 +56,7 @@ cron_job:
     frequency: 60 #frequency to update parent timestamp in second, default 60
     record_update_limit: 100
 
-telemetry:
-  opt_in: true
-  frequency: 1 #frequency to share data in hours, default 1
-  consumer: https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry
+#telemetry:
+#  opt_in: true
+#  frequency: 1 #frequency to share data in hours, default 1
+#  consumer: https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry
