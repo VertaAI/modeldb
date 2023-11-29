@@ -38,3 +38,4 @@ mvn -B deploy $MAVEN_PARAMS || {
 if [ -z "$GITHUB_TOKEN" ]; then
     mvn -B versions:set -DnewVersion=$PROJECT_REVISION > /dev/null
 fi
+
