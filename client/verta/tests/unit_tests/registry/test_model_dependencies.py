@@ -159,7 +159,7 @@ def test_package_names(dependency_testing_model) -> None:
     skipped.
     """
     expected_packages = {
-        "google": ["protobuf", "googleapis-common-protos"],
+        "google": ["googleapis-common-protos", "protobuf"],
         "yaml": ["PyYAML"],
     }
     extracted_packages: Dict[str, List[str]] = md.package_names({"google", "yaml"})

@@ -86,5 +86,5 @@ def package_names(module_names: Set[str]) -> Dict[str, List[str]]:
     locally installed package_distributions.
     """
     pkg_dist = packages_distributions()
-    return {m: pkg_dist.get(m) for m in module_names if pkg_dist.get(m)}
+    return {m: sorted(pkg_dist.get(m)) for m in module_names if pkg_dist.get(m)}
     # TODO: handle cases where 3rd-party module is not found in pkg_dist
