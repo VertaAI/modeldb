@@ -72,7 +72,7 @@ services:
       - modeldb_network
 
   modeldb-frontend:
-    image: vertaaiofficial/modeldb-frontend:2.0.8.1
+    image: vertaaiofficial/modeldb-frontend:2.0.8.2
     container_name: "modeldb-frontend"
     expose:
       - "3000"
