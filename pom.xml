@@ -36,7 +36,7 @@
         <otel.semconv.version>1.21.0-alpha</otel.semconv.version>
         <otel.instrumentation.version>1.30.0-alpha</otel.instrumentation.version>
         <otel.contrib.version>1.30.0-alpha</otel.contrib.version>
-        <springframework.version>5.3.30</springframework.version>
+        <springframework.version>5.3.31</springframework.version>
         <!-- Note: downgraded from the latest version of mockito because of a conflict with spring's bytebuddy version -->
         <mockito.version>5.7.0</mockito.version>
         <lombok.version>1.18.30</lombok.version>
