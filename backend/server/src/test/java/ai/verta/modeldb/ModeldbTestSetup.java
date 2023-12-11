@@ -177,79 +177,7 @@ public abstract class ModeldbTestSetup {
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
-    if (!runningIsolated) {
-      var authServiceChannel =
-          ManagedChannelBuilder.forTarget(
-                  testConfig.getAuthService().getHost()
-                      + ":"
-                      + testConfig.getAuthService().getPort())
-              .usePlaintext()
-              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      var authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(
-                  testConfig.getAuthService().getHost()
-                      + ":"
-                      + testConfig.getAuthService().getPort())
-              .usePlaintext()
-              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-              .intercept(authClientInterceptor.getClient2AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStubClient2 =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
-      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
-
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-      // Get the user info by vertaId from the AuthService
-      testUser1 = uacServiceStub.getUser(getUserRequest);
-      getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-      testUser2 = uacServiceStub.getUser(getUserRequest);
-      getUserRequest =
-          GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
-      serviceAccountUser = uacServiceStub.getUser(getUserRequest);
-
-      authServiceChannelServiceUser =
-          ManagedChannelBuilder.forTarget(
-                  testConfig.getAuthService().getHost()
-                      + ":"
-                      + testConfig.getAuthService().getPort())
-              .usePlaintext()
-              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-              .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
-              .usePlaintext()
-              .executor(executor)
-              .build();
-      organizationServiceV2BlockingStub =
-          OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-      organizationV2 = createAndGetOrganization();
-      organizationId = organizationV2.getId();
-
-      addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
-
-      groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
-
-      roleIdUser1 =
-          createAndGetRole(
-                  authServiceChannelServiceUser,
-                  organizationId,
-                  Optional.empty(),
-                  Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
-              .getRole()
-              .getId();
-
-      testUser1Workspace =
-          createWorkspaceAndRoleForUser(
-              authServiceChannelServiceUser,
-              organizationId,
-              groupIdUser1,
-              roleIdUser1,
-              testUser1.getVertaInfo().getUsername());
-    } else {
+    if (runningIsolated) {
       serviceAccountUser =
           UserInfo.newBuilder()
               .setEmail(testConfig.getService_user().getEmail())
@@ -293,6 +221,80 @@ public abstract class ModeldbTestSetup {
               .setNamespace("namespace")
               .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
               .build();
+    } else {
+      var authServiceChannel =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      var authServiceChannelClient2 =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getClient2AuthInterceptor())
+              .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient2 =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
+      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
+
+      authServiceChannelServiceUser =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
+              .usePlaintext()
+              .executor(executor)
+              .build();
+      var superUserUacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+
+      GetUser getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+      // Get the user info by vertaId from the AuthService
+      testUser1 = superUserUacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+      testUser2 = superUserUacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
+      serviceAccountUser = superUserUacServiceStub.getUser(getUserRequest);
+
+      organizationServiceV2BlockingStub =
+          OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+      organizationV2 = createAndGetOrganization();
+      organizationId = organizationV2.getId();
+
+      addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
+
+      groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+      roleIdUser1 =
+          createAndGetRole(
+                  authServiceChannelServiceUser,
+                  organizationId,
+                  Optional.empty(),
+                  Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
+              .getRole()
+              .getId();
+
+      testUser1Workspace =
+          createWorkspaceAndRoleForUser(
+              authServiceChannelServiceUser,
+              organizationId,
+              groupIdUser1,
+              roleIdUser1,
+              testUser1.getVertaInfo().getUsername());
     }
 
     LOGGER.trace("Test service infrastructure config complete.");
