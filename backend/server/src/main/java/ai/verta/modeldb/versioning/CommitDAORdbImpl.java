@@ -470,6 +470,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     return VersioningUtils.generateCommitSHA(
         commit.getParentShasList(), commit.getMessage(), timeCreated, commit.getAuthor(), blobSHA);
   }
+
   /**
    * @param session session
    * @param parentShaList : a list of sha for which the function returns commits
@@ -548,6 +549,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
     }
   }
+
   /**
    * Deleting dataversiosn stored as commits
    *

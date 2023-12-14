@@ -77,6 +77,7 @@ public class VersioningUtils {
     query.setParameterList("childCommitSHAs", commitSHAs);
     return query.list();
   }
+
   /**
    * Given commit components returns commitSHA
    *
