@@ -46,15 +46,15 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptor;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource;
-import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
+import io.opentelemetry.instrumentation.jdbc.datasource.JdbcTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.v6_0.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
+import jakarta.servlet.Filter;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
-import javax.servlet.Filter;
 import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -165,9 +165,9 @@ public class AppConfigBeans {
   @Bean
   public DataSource dataSource(
       DatabaseConfig databaseConfig, @SuppressWarnings("unused") OpenTelemetry openTelemetry) {
-    // note: the OTel DataSource currently relies on the GlobalOpenTelemetry instance being set, so
-    // we inject it here to make sure it's been initialized.
-    return new OpenTelemetryDataSource(JdbiUtils.initializeDataSource(databaseConfig, "modeldb"));
+    return JdbcTelemetry.builder(openTelemetry)
+        .build()
+        .wrap(JdbiUtils.initializeDataSource(databaseConfig, "modeldb"));
   }
 
   @Bean

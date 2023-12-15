@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-spring-webmvc-5.3</artifactId>
+            <artifactId>opentelemetry-spring-webmvc-6.0</artifactId>
             <version>${otel.instrumentation.version}</version>
         </dependency>
         <dependency>
@@ -137,7 +137,7 @@
         <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
         <dependency>
             <groupId>io.prometheus</groupId>
-            <artifactId>simpleclient_servlet</artifactId>
+            <artifactId>simpleclient_servlet_jakarta</artifactId>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_hotspot -->
         <dependency>

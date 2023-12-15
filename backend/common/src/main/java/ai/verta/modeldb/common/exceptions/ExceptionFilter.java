@@ -2,9 +2,9 @@ package ai.verta.modeldb.common.exceptions;
 
 import ai.verta.modeldb.common.CommonUtils;
 import io.grpc.StatusRuntimeException;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
 @Component
