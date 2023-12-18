@@ -63,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-spring-webmvc-5.3</artifactId>
+            <artifactId>opentelemetry-spring-webmvc-6.0</artifactId>
             <version>${otel.instrumentation.version}</version>
         </dependency>
         <dependency>

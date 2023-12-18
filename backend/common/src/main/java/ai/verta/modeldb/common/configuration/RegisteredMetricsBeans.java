@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.configuration;
 
-import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.client.servlet.jakarta.exporter.MetricsServlet;
 import io.prometheus.jmx.BuildInfoCollector;
 import io.prometheus.jmx.JmxCollector;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -5,12 +5,12 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,11 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ConditionalOnBean(S3Service.class)
 public class S3Controller {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Controller.class);
 
-  @Autowired private S3Service s3Service;
+  private final S3Service s3Service;
+
+  public S3Controller(S3Service s3Service) {
+    this.s3Service = s3Service;
+  }
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public ResponseEntity<UploadFileResponse> storeArtifact(

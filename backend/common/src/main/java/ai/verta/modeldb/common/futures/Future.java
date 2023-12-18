@@ -22,6 +22,7 @@ public class Future<T> {
    * Set this system property to "true" to enable capturing call-site stacks for debugging purposes.
    */
   public static final String FUTURE_TESTING_STACKS_ENABLED = "FUTURE_TESTING_STACKS_ENABLED";
+
   /**
    * This instance is the global executor for all Futures. Everything will fail if it is not set
    * properly.
@@ -117,7 +118,9 @@ public class Future<T> {
     return new Future<>(other);
   }
 
-  /** @deprecated Use {@link #of(Object)} instead. */
+  /**
+   * @deprecated Use {@link #of(Object)} instead.
+   */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
     Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
@@ -482,7 +485,9 @@ public class Future<T> {
     futureTracer = openTelemetry.getTracer("futureTracer");
   }
 
-  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
+  /**
+   * @deprecated Only use this as a part of the conversion process between versions of Futures.
+   */
   @Deprecated
   public InternalFuture<T> toInternalFuture() {
     return InternalFuture.from(stage);

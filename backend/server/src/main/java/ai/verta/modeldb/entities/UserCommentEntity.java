@@ -33,7 +33,9 @@ public class UserCommentEntity {
   @Column(name = "id", unique = true)
   private String id;
 
-  /** @deprecated use `owner` instead of `user_id` */
+  /**
+   * @deprecated use `owner` instead of `user_id`
+   */
   @Deprecated
   @Column(name = "user_id")
   private String user_id;

@@ -20,7 +20,9 @@ public class ReconcilerConfig {
     this.isTestReconciler = isTestReconciler;
   }
 
-  /** @deprecated Use the {@link #builder()} method instead. */
+  /**
+   * @deprecated Use the {@link #builder()} method instead.
+   */
   @Deprecated
   public ReconcilerConfig(boolean isTestReconciler) {
     this.isTestReconciler = isTestReconciler;
