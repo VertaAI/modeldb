@@ -158,7 +158,7 @@ jobs:
         run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
 
       - name: Upload Report
-        uses: 'actions/upload-artifact@v3'
+        uses: 'actions/upload-artifact@v4'
         with:
           name: jacoco-reports
           path: |
