@@ -234,6 +234,28 @@
 
         <plugins>
             <plugin>
+                <groupId>org.mvnsearch</groupId>
+                <artifactId>toolchains-maven-plugin</artifactId>
+                <version>4.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <toolchains>
+                        <jdk>
+                            <version>17.0.9+8</version>
+                            <vendor>corretto</vendor>
+                        </jdk>
+                    </toolchains>
+                    <!-- disable by default, and only use it when absolutely necessary (int tests on jenkins) with -Dtoolchain.skip=false -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
             </plugin>
@@ -259,6 +281,21 @@
                 <!-- Build a single executable JAR using spring-boot-maven-plugin -->
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>${jacocoAgent}</jvmArguments>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>
+                                ai.verta.registry.App
+                            </mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

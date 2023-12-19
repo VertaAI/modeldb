@@ -51,6 +51,28 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.mvnsearch</groupId>
+                <artifactId>toolchains-maven-plugin</artifactId>
+                <version>4.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <toolchains>
+                        <jdk>
+                            <version>17.0.9+8</version>
+                            <vendor>corretto</vendor>
+                        </jdk>
+                    </toolchains>
+                    <!-- disable by default, and only use it when absolutely necessary (int tests on jenkins) with -Dtoolchain.skip=false -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <configuration>
