@@ -79,7 +79,10 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
-      return rdb.RdbUrl + ";databaseName=" + rdb.getRdbDatabaseName();
+      return rdb.RdbUrl
+          + ";databaseName="
+          + rdb.getRdbDatabaseName()
+          + ";encrypt=true;trustServerCertificate=true";
     }
     final var url =
         rdb.RdbUrl
@@ -104,7 +107,7 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
-      return rdb.RdbUrl;
+      return rdb.RdbUrl + ";encrypt=true;trustServerCertificate=true";
     }
     final var url =
         rdb.RdbUrl
