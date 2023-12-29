@@ -106,7 +106,7 @@ public class RdbConfig {
       return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     }
 
-    if (rdb.isMssql()) {
+    if (rdb.isMssql() && !rdb.RdbUrl.contains("encrypt=true;trustServerCertificate=true")) {
       return rdb.RdbUrl + ";encrypt=true;trustServerCertificate=true";
     }
     final var url =
