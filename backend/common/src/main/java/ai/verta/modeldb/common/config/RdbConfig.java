@@ -106,8 +106,15 @@ public class RdbConfig {
       return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     }
 
-    if (rdb.isMssql() && !rdb.RdbUrl.contains("encrypt=true;trustServerCertificate=true")) {
-      return rdb.RdbUrl + ";encrypt=true;trustServerCertificate=true";
+    if (rdb.isMssql()) {
+      String tlsOptions = "";
+      if (!rdb.RdbUrl.contains("encrypt=")) {
+        tlsOptions += ";encrypt=true";
+      }
+      if (!rdb.RdbUrl.contains("trustServerCertificate=")) {
+        tlsOptions += ";trustServerCertificate=true";
+      }
+      return rdb.RdbUrl + tlsOptions;
     }
     final var url =
         rdb.RdbUrl
