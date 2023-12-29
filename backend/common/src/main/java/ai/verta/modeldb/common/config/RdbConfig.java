@@ -107,6 +107,7 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
+      // turn on TLS, and turn off server cert validation, if not already configured
       String tlsOptions = "";
       if (!rdb.RdbUrl.contains("encrypt=")) {
         tlsOptions += ";encrypt=true";
