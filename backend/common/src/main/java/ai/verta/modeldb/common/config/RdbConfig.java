@@ -79,7 +79,7 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
-      return rdb.RdbUrl + ";databaseName=" + rdb.getRdbDatabaseName();
+      return adjustMsSqlRdbUrl(rdb.RdbUrl);
     }
     final var url =
         rdb.RdbUrl
@@ -104,7 +104,7 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
-      return rdb.RdbUrl;
+      return adjustMsSqlRdbUrl(rdb.RdbUrl);
     }
     final var url =
         rdb.RdbUrl
@@ -115,6 +115,18 @@ public class RdbConfig {
             + rdb.sslMode;
     LOGGER.info("Using db URL: {}", url);
     return url;
+  }
+
+  private static String adjustMsSqlRdbUrl(String rdbUrl) {
+    // turn on TLS, and turn off server cert validation, if not already configured
+    String tlsOptions = "";
+    if (!rdbUrl.contains("encrypt=")) {
+      tlsOptions += ";encrypt=true";
+    }
+    if (!rdbUrl.contains("trustServerCertificate=")) {
+      tlsOptions += ";trustServerCertificate=true";
+    }
+    return rdbUrl + tlsOptions;
   }
 
   public static String buildDatabaseName(RdbConfig rdb) {
