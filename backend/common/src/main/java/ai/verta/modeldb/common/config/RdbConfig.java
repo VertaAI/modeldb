@@ -79,7 +79,7 @@ public class RdbConfig {
     }
 
     if (rdb.isMssql()) {
-      return adjustMsSqlRdbUrl(rdb.RdbUrl);
+      return adjustMsSqlRdbUrl(rdb.RdbUrl) + ";databaseName=" + rdb.getRdbDatabaseName();
     }
     final var url =
         rdb.RdbUrl
