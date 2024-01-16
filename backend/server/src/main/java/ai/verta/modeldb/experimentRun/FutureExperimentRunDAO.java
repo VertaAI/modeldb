@@ -424,7 +424,7 @@ public class FutureExperimentRunDAO {
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -1707,7 +1707,7 @@ public class FutureExperimentRunDAO {
     return validateRequestParamFuture
         .thenCompose(
             unused ->
-                FutureUtil.clientRequest(
+                InternalFuture.clientRequest(
                     uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
             executor)
         .thenCompose(

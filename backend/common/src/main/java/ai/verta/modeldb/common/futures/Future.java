@@ -118,15 +118,6 @@ public class Future<T> {
     return new Future<>(other);
   }
 
-  /**
-   * @deprecated Use {@link #of(Object)} instead.
-   */
-  @Deprecated
-  public static <R> Future<R> completedInternalFuture(R value) {
-    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
-    return of(value);
-  }
-
   public static <R> Future<R> of(R value) {
     Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return new Future<>(CompletableFuture.completedFuture(value));

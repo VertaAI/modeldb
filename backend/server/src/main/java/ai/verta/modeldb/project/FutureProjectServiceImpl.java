@@ -4,7 +4,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.utils.InternalFutureGrpc;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
 
@@ -28,7 +28,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   createdProject ->
                       CreateProject.Response.newBuilder().setProject(createdProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -48,7 +48,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setProject(updatedProject)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -71,7 +71,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -92,7 +92,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setProject(updatedProject)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -109,7 +109,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   attributes ->
                       GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -130,7 +130,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setProject(updatedProject)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -148,7 +148,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       AddProjectTags.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -161,7 +161,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .getTags(request)
               .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -179,7 +179,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -201,7 +201,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       AddProjectTag.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -224,7 +224,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -239,7 +239,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
               .deleteProjects(Collections.singletonList(request.getId()))
               .thenApply(
                   project -> DeleteProject.Response.newBuilder().setStatus(true).build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -266,7 +266,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setTotalRecords(findProjectResponse.getTotalRecords())
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -282,7 +282,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -293,7 +293,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       GetProjectByName request, StreamObserver<GetProjectByName.Response> responseObserver) {
     try {
       final var futureResponse = futureProjectDAO.getProjectByName(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -304,7 +304,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
     try {
       final var response = futureProjectDAO.verifyConnection();
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -320,7 +320,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   public void getSummary(GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
     try {
       final var response = futureProjectDAO.getSummary(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -338,7 +338,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       SetProjectReadme.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -349,7 +349,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       GetProjectReadme request, StreamObserver<GetProjectReadme.Response> responseObserver) {
     try {
       final var response = futureProjectDAO.getProjectReadme(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -367,7 +367,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       SetProjectShortName.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -378,7 +378,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       GetProjectShortName request, StreamObserver<GetProjectShortName.Response> responseObserver) {
     try {
       final var response = futureProjectDAO.getProjectShortName(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -399,7 +399,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setProject(updatedProject)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -411,7 +411,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
     try {
       final var response = futureProjectDAO.getProjectCodeVersion(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -422,7 +422,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       FindProjects request, StreamObserver<FindProjects.Response> responseObserver) {
     try {
       final var futureResponse = futureProjectDAO.findProjects(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -433,7 +433,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       final var futureResponse = futureProjectDAO.getUrlForArtifact(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -451,7 +451,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   updatedProject ->
                       LogProjectArtifacts.Response.newBuilder().setProject(updatedProject).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -468,7 +468,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                   artifacts ->
                       GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -489,7 +489,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setProject(updatedProject)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -505,7 +505,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
               .thenApply(
                   project -> DeleteProjects.Response.newBuilder().setStatus(true).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -525,7 +525,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                           .setDatasetCount(datasetCount)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }

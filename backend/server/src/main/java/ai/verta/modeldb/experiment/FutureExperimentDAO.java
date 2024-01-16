@@ -119,7 +119,7 @@ public class FutureExperimentDAO {
   }
 
   public InternalFuture<Experiment> createExperiment(CreateExperiment request) {
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo ->
