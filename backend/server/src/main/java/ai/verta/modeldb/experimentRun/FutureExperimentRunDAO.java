@@ -242,10 +242,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused ->
-                metricsHandler
-                    .getKeyValues(runId, Collections.emptyList(), true)
-                    .toInternalFuture(),
+            unused -> {
+              Future<List<KeyValue>> listFuture =
+                  metricsHandler.getKeyValues(runId, Collections.emptyList(), true);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -255,10 +256,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused ->
-                hyperparametersHandler
-                    .getKeyValues(runId, Collections.emptyList(), true)
-                    .toInternalFuture(),
+            unused -> {
+              Future<List<KeyValue>> listFuture =
+                  hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -270,7 +272,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> attributeHandler.getKeyValues(runId, keys, getAll).toInternalFuture(),
+            unused -> {
+              Future<List<KeyValue>> listFuture =
+                  attributeHandler.getKeyValues(runId, keys, getAll);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -363,7 +369,12 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenSupply(() -> tagsHandler.getTags(runId).toInternalFuture(), executor);
+        .thenSupply(
+            () -> {
+              Future<List<String>> listFuture = tagsHandler.getTags(runId);
+              return InternalFuture.fromFuture(listFuture);
+            },
+            executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
@@ -534,7 +545,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> artifactHandler.getArtifacts(runId, maybeKey).toInternalFuture(), executor);
+            unused -> {
+              Future<List<Artifact>> listFuture = artifactHandler.getArtifacts(runId, maybeKey);
+              return InternalFuture.fromFuture(listFuture);
+            },
+            executor);
   }
 
   public InternalFuture<ExperimentRun> deleteArtifacts(DeleteArtifact request) {
@@ -549,7 +564,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> artifactHandler.deleteArtifacts(runId, optionalKeys).toInternalFuture(),
+            unused -> {
+              Future<Void> voidFuture = artifactHandler.deleteArtifacts(runId, optionalKeys);
+              return InternalFuture.fromFuture(voidFuture);
+            },
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor)
@@ -585,7 +603,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> datasetHandler.getArtifacts(runId, Optional.empty()).toInternalFuture(),
+            unused -> {
+              Future<List<Artifact>> listFuture =
+                  datasetHandler.getArtifacts(runId, Optional.empty());
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -628,7 +650,12 @@ public class FutureExperimentRunDAO {
     }
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
+        unused -> {
+          Future<GetUrlForArtifact.Response> responseFuture =
+              artifactHandler.getUrlForArtifact(request);
+          return InternalFuture.fromFuture(responseFuture);
+        },
+        executor);
   }
 
   public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
@@ -638,7 +665,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> artifactHandler.getCommittedArtifactParts(request).toInternalFuture(),
+            unused -> {
+              Future<GetCommittedArtifactParts.Response> responseFuture =
+                  artifactHandler.getCommittedArtifactParts(request);
+              return InternalFuture.fromFuture(responseFuture);
+            },
             executor);
   }
 
@@ -648,7 +679,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> artifactHandler.commitArtifactPart(request).toInternalFuture(), executor);
+            unused -> {
+              Future<Void> voidFuture = artifactHandler.commitArtifactPart(request);
+              return InternalFuture.fromFuture(voidFuture);
+            },
+            executor);
   }
 
   public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
@@ -657,7 +692,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> artifactHandler.commitMultipartArtifact(request).toInternalFuture(),
+            unused -> {
+              Future<Void> voidFuture = artifactHandler.commitMultipartArtifact(request);
+              return InternalFuture.fromFuture(voidFuture);
+            },
             executor);
   }
 
@@ -817,8 +855,10 @@ public class FutureExperimentRunDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
+                                    Future<MapSubtypes<String, String>> mapSubtypesFuture5 =
+                                        tagsHandler.getTagsMap(ids);
                                     final var futureTags =
-                                        tagsHandler.getTagsMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture5);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -830,10 +870,10 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get hyperparams
+                                    Future<MapSubtypes<String, KeyValue>> mapSubtypesFuture4 =
+                                        hyperparametersHandler.getKeyValuesMap(ids);
                                     final var futureHyperparams =
-                                        hyperparametersHandler
-                                            .getKeyValuesMap(ids)
-                                            .toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture4);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureHyperparams,
@@ -883,8 +923,10 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get metrics
+                                    Future<MapSubtypes<String, KeyValue>> mapSubtypesFuture3 =
+                                        metricsHandler.getKeyValuesMap(ids);
                                     final var futureMetrics =
-                                        metricsHandler.getKeyValuesMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture3);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureMetrics,
@@ -896,8 +938,10 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get attributes
+                                    Future<MapSubtypes<String, KeyValue>> mapSubtypesFuture2 =
+                                        attributeHandler.getKeyValuesMap(ids);
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture2);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -909,8 +953,10 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get artifacts
+                                    Future<MapSubtypes<String, Artifact>> mapSubtypesFuture1 =
+                                        artifactHandler.getArtifactsMap(ids);
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture1);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -922,8 +968,10 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get datasets
+                                    Future<MapSubtypes<String, Artifact>> mapSubtypesFuture =
+                                        datasetHandler.getArtifactsMap(ids);
                                     final var futureDatasetsMap =
-                                        datasetHandler.getArtifactsMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture);
                                     final var filterDatasetsMap =
                                         futureDatasetsMap.thenCompose(
                                             artifactMapSubtypes -> {
@@ -1169,10 +1217,10 @@ public class FutureExperimentRunDAO {
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
       String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
-      return uacApisUtil
-          .getAllowedEntitiesByResourceType(
-              ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
-          .toInternalFuture()
+      Future<List<Resources>> listFuture =
+          uacApisUtil.getAllowedEntitiesByResourceType(
+              ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT);
+      return InternalFuture.fromFuture(listFuture)
           .thenApply(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
@@ -1192,9 +1240,10 @@ public class FutureExperimentRunDAO {
               executor);
     } else {
       // futureProjectIds based on workspace
-      return uacApisUtil
-          .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
-          .toInternalFuture()
+      Future<List<String>> listFuture =
+          uacApisUtil.getAccessibleProjectIdsBasedOnWorkspace(
+              workspaceName, Optional.of(requestedProjectId));
+      return InternalFuture.fromFuture(listFuture)
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -1263,11 +1312,11 @@ public class FutureExperimentRunDAO {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
               // repositories from UAC
               if (populateConnectionsBasedOnPrivileges) {
-                return uacApisUtil
-                    .getAllowedEntitiesByResourceType(
+                Future<List<Resources>> listFuture =
+                    uacApisUtil.getAllowedEntitiesByResourceType(
                         ModelDBActionEnum.ModelDBServiceActions.READ,
-                        ModelDBServiceResourceTypes.REPOSITORY)
-                    .toInternalFuture();
+                        ModelDBServiceResourceTypes.REPOSITORY);
+                return InternalFuture.fromFuture(listFuture);
               } else {
                 // return empty list if populateConnectionsBasedOnPrivileges = false
                 return InternalFuture.completedInternalFuture(new ArrayList<>());

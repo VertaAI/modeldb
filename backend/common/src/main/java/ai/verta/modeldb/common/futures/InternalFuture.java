@@ -395,4 +395,8 @@ public class InternalFuture<T> {
     }
     futureTracer = openTelemetry.getTracer("futureTracer");
   }
+
+  public static <T> InternalFuture<T> fromFuture(Future<T> f) {
+    return from(f.toCompletionStage());
+  }
 }

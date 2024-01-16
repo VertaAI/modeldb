@@ -204,7 +204,11 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
         .thenCompose(
-            unused -> attributeHandler.getKeyValues(projectId, keys, getAll).toInternalFuture(),
+            unused -> {
+              Future<List<KeyValue>> listFuture =
+                  attributeHandler.getKeyValues(projectId, keys, getAll);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -341,7 +345,12 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenSupply(() -> tagsHandler.getTags(projectId).toInternalFuture(), executor);
+        .thenSupply(
+            () -> {
+              Future<List<String>> listFuture = tagsHandler.getTags(projectId);
+              return InternalFuture.fromFuture(listFuture);
+            },
+            executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
@@ -437,7 +446,12 @@ public class FutureProjectDAO {
     }
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
+        unused -> {
+          Future<GetUrlForArtifact.Response> responseFuture =
+              artifactHandler.getUrlForArtifact(request);
+          return InternalFuture.fromFuture(responseFuture);
+        },
+        executor);
   }
 
   public InternalFuture<VerifyConnectionResponse> verifyConnection() {
@@ -458,8 +472,7 @@ public class FutureProjectDAO {
                       Optional.empty(),
                       ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
-              return resourcesFuture
-                  .toInternalFuture()
+              return InternalFuture.fromFuture(resourcesFuture)
                   .thenCompose(
                       getResourceItems -> {
                         Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
@@ -553,10 +566,14 @@ public class FutureProjectDAO {
                                                           .collect(Collectors.toSet());
 
                                                   // Get tags
+                                                  Future<
+                                                          ai.verta.modeldb.common.subtypes
+                                                                  .MapSubtypes<
+                                                              String, String>>
+                                                      mapSubtypesFuture2 =
+                                                          tagsHandler.getTagsMap(ids);
                                                   final var futureTags =
-                                                      tagsHandler
-                                                          .getTagsMap(ids)
-                                                          .toInternalFuture();
+                                                      InternalFuture.fromFuture(mapSubtypesFuture2);
                                                   futureBuildersStream =
                                                       futureBuildersStream.thenCombine(
                                                           futureTags,
@@ -569,10 +586,14 @@ public class FutureProjectDAO {
                                                           executor);
 
                                                   // Get attributes
+                                                  Future<
+                                                          ai.verta.modeldb.common.subtypes
+                                                                  .MapSubtypes<
+                                                              String, KeyValue>>
+                                                      mapSubtypesFuture1 =
+                                                          attributeHandler.getKeyValuesMap(ids);
                                                   final var futureAttributes =
-                                                      attributeHandler
-                                                          .getKeyValuesMap(ids)
-                                                          .toInternalFuture();
+                                                      InternalFuture.fromFuture(mapSubtypesFuture1);
                                                   futureBuildersStream =
                                                       futureBuildersStream.thenCombine(
                                                           futureAttributes,
@@ -585,10 +606,14 @@ public class FutureProjectDAO {
                                                           executor);
 
                                                   // Get artifacts
+                                                  Future<
+                                                          ai.verta.modeldb.common.subtypes
+                                                                  .MapSubtypes<
+                                                              String, Artifact>>
+                                                      mapSubtypesFuture =
+                                                          artifactHandler.getArtifactsMap(ids);
                                                   final var futureArtifacts =
-                                                      artifactHandler
-                                                          .getArtifactsMap(ids)
-                                                          .toInternalFuture();
+                                                      InternalFuture.fromFuture(mapSubtypesFuture);
                                                   futureBuildersStream =
                                                       futureBuildersStream.thenCombine(
                                                           futureArtifacts,
@@ -848,14 +873,15 @@ public class FutureProjectDAO {
             },
             executor)
         .thenCompose(
-            allowedProjectIds ->
-                uacApisUtil
-                    .getResourceItemsForWorkspace(
-                        Optional.empty(),
-                        Optional.of(allowedProjectIds),
-                        Optional.empty(),
-                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                    .toInternalFuture(),
+            allowedProjectIds -> {
+              Future<List<GetResourcesResponseItem>> listFuture =
+                  uacApisUtil.getResourceItemsForWorkspace(
+                      Optional.empty(),
+                      Optional.of(allowedProjectIds),
+                      Optional.empty(),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor)
         .thenCompose(
             allowedProjectResources ->
@@ -891,10 +917,10 @@ public class FutureProjectDAO {
 
   private InternalFuture<Collection<String>> getSelfAllowedResources(
       ModelDBServiceActions modelDBServiceActions, List<String> requestedResourcesIds) {
-    return uacApisUtil
-        .getAllowedEntitiesByResourceType(
-            modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-        .toInternalFuture()
+    Future<List<Resources>> listFuture =
+        uacApisUtil.getAllowedEntitiesByResourceType(
+            modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+    return InternalFuture.fromFuture(listFuture)
         .thenApply(
             getAllowedResourcesResponse -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
@@ -1023,13 +1049,13 @@ public class FutureProjectDAO {
         .thenCompose(
             userInfo -> {
               // Get the user info from the Context
-              return uacApisUtil
-                  .getResourceItemsForWorkspace(
+              Future<List<GetResourcesResponseItem>> listFuture =
+                  uacApisUtil.getResourceItemsForWorkspace(
                       Optional.empty(),
                       Optional.empty(),
                       Optional.of(request.getName()),
-                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                  .toInternalFuture()
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              return InternalFuture.fromFuture(listFuture)
                   .thenCompose(
                       responseItem -> {
                         if (responseItem.size() == 0) {
@@ -1134,7 +1160,10 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
         .thenCompose(
-            unused -> artifactHandler.getArtifacts(projectId, maybeKey).toInternalFuture(),
+            unused -> {
+              Future<List<Artifact>> listFuture = artifactHandler.getArtifacts(projectId, maybeKey);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor);
   }
 
@@ -1149,7 +1178,10 @@ public class FutureProjectDAO {
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys).toInternalFuture(),
+            unused -> {
+              Future<Void> voidFuture = artifactHandler.deleteArtifacts(projectId, optionalKeys);
+              return InternalFuture.fromFuture(voidFuture);
+            },
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -1572,7 +1604,10 @@ public class FutureProjectDAO {
     // Validate if current user has access to the entity or not
     return checkProjectPermission(null, ModelDBActionEnum.ModelDBServiceActions.CREATE)
         .thenCompose(
-            unused -> createProjectHandler.convertCreateRequest(request).toInternalFuture(),
+            unused -> {
+              Future<Project> projectFuture = createProjectHandler.convertCreateRequest(request);
+              return InternalFuture.fromFuture(projectFuture);
+            },
             executor)
         .thenCompose(
             project ->
@@ -1580,8 +1615,10 @@ public class FutureProjectDAO {
                     .thenApply(status -> project, executor),
             executor)
         .thenCompose(
-            (Project newProject) ->
-                createProjectHandler.insertProject(newProject).toInternalFuture(),
+            (Project newProject) -> {
+              Future<Project> projectFuture = createProjectHandler.insertProject(newProject);
+              return InternalFuture.fromFuture(projectFuture);
+            },
             executor)
         .thenCompose(
             createdProject ->
@@ -1658,8 +1695,7 @@ public class FutureProjectDAO {
               Optional.of(Collections.singletonList(createdProject.getId())),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
     }
-    return getResourcesFuture
-        .toInternalFuture()
+    return InternalFuture.fromFuture(getResourcesFuture)
         .thenApply(
             getResourcesResponseItems -> {
               Optional<GetResourcesResponseItem> responseItem =

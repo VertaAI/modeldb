@@ -2,7 +2,6 @@ package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
@@ -32,11 +31,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
@@ -255,8 +250,12 @@ public class FutureExperimentDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
+                                    Future<
+                                            ai.verta.modeldb.common.subtypes.MapSubtypes<
+                                                String, String>>
+                                        mapSubtypesFuture2 = tagsHandler.getTagsMap(ids);
                                     final var futureTags =
-                                        tagsHandler.getTagsMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture2);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -268,8 +267,12 @@ public class FutureExperimentDAO {
                                             executor);
 
                                     // Get attributes
+                                    Future<
+                                            ai.verta.modeldb.common.subtypes.MapSubtypes<
+                                                String, KeyValue>>
+                                        mapSubtypesFuture1 = attributeHandler.getKeyValuesMap(ids);
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture1);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -281,8 +284,12 @@ public class FutureExperimentDAO {
                                             executor);
 
                                     // Get artifacts
+                                    Future<
+                                            ai.verta.modeldb.common.subtypes.MapSubtypes<
+                                                String, Artifact>>
+                                        mapSubtypesFuture = artifactHandler.getArtifactsMap(ids);
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids).toInternalFuture();
+                                        InternalFuture.fromFuture(mapSubtypesFuture);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -375,11 +382,10 @@ public class FutureExperimentDAO {
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
       String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
-      return uacApisUtil
-          .getAllowedEntitiesByResourceType(
-              ModelDBActionEnum.ModelDBServiceActions.READ,
-              ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-          .toInternalFuture()
+      Future<List<ai.verta.uac.Resources>> listFuture =
+          uacApisUtil.getAllowedEntitiesByResourceType(
+              ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT);
+      return InternalFuture.fromFuture(listFuture)
           .thenApply(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
@@ -399,9 +405,10 @@ public class FutureExperimentDAO {
               executor);
     } else {
       // futureProjectIds based on workspace
-      return uacApisUtil
-          .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
-          .toInternalFuture()
+      Future<List<String>> listFuture =
+          uacApisUtil.getAccessibleProjectIdsBasedOnWorkspace(
+              workspaceName, Optional.of(requestedProjectId));
+      return InternalFuture.fromFuture(listFuture)
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -619,7 +626,12 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenSupply(() -> tagsHandler.getTags(expId).toInternalFuture(), executor)
+        .thenSupply(
+            () -> {
+              Future<List<String>> listFuture = tagsHandler.getTags(expId);
+              return InternalFuture.fromFuture(listFuture);
+            },
+            executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 
@@ -679,7 +691,11 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
         .thenCompose(
-            unused -> attributeHandler.getKeyValues(expId, keys, getAll).toInternalFuture(),
+            unused -> {
+              Future<List<KeyValue>> listFuture =
+                  attributeHandler.getKeyValues(expId, keys, getAll);
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor)
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
@@ -716,16 +732,17 @@ public class FutureExperimentDAO {
 
     return getProjectIdByExperimentId(experimentIds)
         .thenCompose(
-            projectIdFromExperimentMap ->
-                uacApisUtil
-                    .getResourceItemsForWorkspace(
-                        Optional.empty(),
-                        Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
-                        Optional.empty(),
-                        ModelDBServiceResourceTypes.PROJECT)
-                    .toInternalFuture()
-                    .thenCompose(unused -> deleteExperiments(experimentIds), executor)
-                    .thenApply(unused -> projectIdFromExperimentMap, executor),
+            projectIdFromExperimentMap -> {
+              Future<List<ai.verta.uac.GetResourcesResponseItem>> listFuture =
+                  uacApisUtil.getResourceItemsForWorkspace(
+                      Optional.empty(),
+                      Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
+              return InternalFuture.fromFuture(listFuture)
+                  .thenCompose(unused -> deleteExperiments(experimentIds), executor)
+                  .thenApply(unused -> projectIdFromExperimentMap, executor);
+            },
             executor);
   }
 
@@ -793,8 +810,11 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(
-            unused ->
-                artifactHandler.getArtifacts(experimentId, Optional.empty()).toInternalFuture(),
+            unused -> {
+              Future<List<Artifact>> listFuture =
+                  artifactHandler.getArtifacts(experimentId, Optional.empty());
+              return InternalFuture.fromFuture(listFuture);
+            },
             executor)
         .thenAccept(
             existingArtifacts -> {
@@ -835,7 +855,11 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
         .thenCompose(
-            unused -> artifactHandler.getArtifacts(expId, maybeKey).toInternalFuture(), executor);
+            unused -> {
+              Future<List<Artifact>> listFuture = artifactHandler.getArtifacts(expId, maybeKey);
+              return InternalFuture.fromFuture(listFuture);
+            },
+            executor);
   }
 
   public InternalFuture<Experiment> deleteArtifacts(DeleteExperimentArtifact request) {
@@ -897,6 +921,11 @@ public class FutureExperimentDAO {
                 executor);
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
+        unused -> {
+          Future<GetUrlForArtifact.Response> responseFuture =
+              artifactHandler.getUrlForArtifact(request);
+          return InternalFuture.fromFuture(responseFuture);
+        },
+        executor);
   }
 }
