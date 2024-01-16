@@ -1,10 +1,12 @@
-package ai.verta.modeldb.common.futures;
+package ai.verta.modeldb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.utils.InternalFuture;
 import io.grpc.Context;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

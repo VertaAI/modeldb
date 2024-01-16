@@ -2,11 +2,11 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.utils.InternalFuture;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;

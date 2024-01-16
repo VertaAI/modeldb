@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.utils.InternalFuture;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import java.util.*;

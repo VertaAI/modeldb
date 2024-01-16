@@ -1,6 +1,9 @@
-package ai.verta.modeldb.common.futures;
+package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.Future;
+import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.OpenTelemetry;
