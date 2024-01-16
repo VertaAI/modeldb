@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
+import ai.verta.modeldb.utils.InternalFuture;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;

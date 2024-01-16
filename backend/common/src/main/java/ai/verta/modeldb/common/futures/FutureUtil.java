@@ -8,10 +8,10 @@ public final class FutureUtil {
   private FutureUtil() {}
 
   // Callback for a ListenableFuture to satisfy a promise
-  static class Callback<T> implements FutureCallback<T> {
+  public static class Callback<T> implements FutureCallback<T> {
     final CompletableFuture<T> promise;
 
-    Callback(CompletableFuture<T> promise) {
+    public Callback(CompletableFuture<T> promise) {
       this.promise = promise;
     }
 

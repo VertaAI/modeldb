@@ -4,8 +4,8 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.utils.InternalFuture;
 import java.util.Date;
 
 public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {

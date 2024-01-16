@@ -2,7 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.utils.InternalFuture;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import java.util.ArrayList;

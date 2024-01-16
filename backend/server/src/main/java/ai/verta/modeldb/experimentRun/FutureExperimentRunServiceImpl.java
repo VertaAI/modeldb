@@ -15,7 +15,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.utils.InternalFuture;
 import ai.verta.modeldb.utils.InternalFutureGrpc;
 import com.google.protobuf.Value;
 import io.grpc.Status;
