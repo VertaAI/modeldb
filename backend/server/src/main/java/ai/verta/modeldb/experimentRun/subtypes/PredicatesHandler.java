@@ -601,32 +601,36 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
   private InternalFuture<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
       throws ModelDBException {
-    return uacApisUtil
-        .findResourceIdsOwnedBy(predicate, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-        .thenCompose(
-            resourceIds -> {
-              final var valueBindingName = String.format("fuzzy_id_%d", index);
-              var sql = "<" + valueBindingName + ">";
+    Future<QueryFilterContext> queryFilterContextFuture =
+        uacApisUtil
+            .findResourceIdsOwnedBy(
+                predicate, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+            .thenCompose(
+                resourceIds -> {
+                  final var valueBindingName = String.format("fuzzy_id_%d", index);
+                  var sql = "<" + valueBindingName + ">";
 
-              var queryContext =
-                  new QueryFilterContext().addBind(q -> q.bindList(valueBindingName, resourceIds));
-              if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-                  || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-                if (resourceIds.isEmpty()) {
-                  return Future.of(new QueryFilterContext());
-                }
-                return Future.of(
-                    queryContext.addCondition(
-                        String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql)));
-              }
-              if (resourceIds.isEmpty()) {
-                return Future.of(
-                    new QueryFilterContext().addCondition(String.format("%s.id = '-1'", alias)));
-              }
-              return Future.of(
-                  queryContext.addCondition(
-                      String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql)));
-            })
-        .toInternalFuture();
+                  var queryContext =
+                      new QueryFilterContext()
+                          .addBind(q -> q.bindList(valueBindingName, resourceIds));
+                  if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                      || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                    if (resourceIds.isEmpty()) {
+                      return Future.of(new QueryFilterContext());
+                    }
+                    return Future.of(
+                        queryContext.addCondition(
+                            String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql)));
+                  }
+                  if (resourceIds.isEmpty()) {
+                    return Future.of(
+                        new QueryFilterContext()
+                            .addCondition(String.format("%s.id = '-1'", alias)));
+                  }
+                  return Future.of(
+                      queryContext.addCondition(
+                          String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql)));
+                });
+    return InternalFuture.fromFuture(queryFilterContextFuture);
   }
 }
