@@ -16,6 +16,7 @@ import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.utils.InternalFutureGrpc;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -44,7 +45,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -61,7 +62,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .thenApply(
                   unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -101,7 +102,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setTotalRecords(findResponse.getTotalRecords())
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -113,7 +114,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
     try {
       final var response = futureExperimentRunDAO.getExperimentRunsInExperiment(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -157,7 +158,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                     }
                   },
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -211,7 +212,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                     }
                   },
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -253,7 +254,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -273,7 +274,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -287,7 +288,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .getTags(request)
               .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -307,7 +308,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -330,7 +331,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -354,7 +355,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .setExperimentRun(experimentRun)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -372,7 +373,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .addObservations(request.getObservation())
                       .build())
               .thenApply(unused -> LogObservation.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -386,7 +387,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logObservations(request)
               .thenApply(unused -> LogObservations.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -405,7 +406,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .addAllObservations(observations)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -419,7 +420,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .deleteObservations(request)
               .thenApply(unused -> DeleteObservations.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -436,7 +437,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .addMetrics(request.getMetric())
                       .build())
               .thenApply(unused -> LogMetric.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -449,7 +450,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logMetrics(request)
               .thenApply(unused -> LogMetrics.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -464,7 +465,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .thenApply(
                   metrics -> GetMetrics.Response.newBuilder().addAllMetrics(metrics).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -478,7 +479,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .deleteMetrics(request)
               .thenApply(unused -> DeleteMetrics.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -496,7 +497,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .setOverwrite(request.getOverwrite())
                       .build())
               .thenApply(unused -> LogDataset.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -510,7 +511,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logDatasets(request)
               .thenApply(unused -> LogDatasets.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -526,7 +527,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .thenApply(
                   datasets -> GetDatasets.Response.newBuilder().addAllDatasets(datasets).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -544,7 +545,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .addHyperparameters(request.getHyperparameter())
                       .build())
               .thenApply(unused -> LogHyperparameter.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -558,7 +559,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logHyperparameters(request)
               .thenApply(unused -> LogHyperparameters.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -577,7 +578,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                           .addAllHyperparameters(hyperparameters)
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -592,7 +593,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .deleteHyperparameters(request)
               .thenApply(unused -> DeleteHyperparameters.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -610,7 +611,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .addAttributes(request.getAttribute())
                       .build())
               .thenApply(unused -> LogAttribute.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -624,7 +625,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logAttributes(request)
               .thenApply(unused -> LogAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -641,7 +642,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                   attributes ->
                       GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -661,7 +662,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .build())
               .thenApply(
                   unused -> AddExperimentRunAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -677,7 +678,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .deleteAttributes(request)
               .thenApply(
                   unused -> DeleteExperimentRunAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -691,7 +692,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logEnvironment(request)
               .thenApply(unused -> LogEnvironment.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -707,7 +708,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .logCodeVersion(request)
               .thenApply(
                   unused -> LogExperimentRunCodeVersion.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -728,7 +729,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                               codeVersion.orElseGet(() -> CodeVersion.newBuilder().build()))
                           .build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -746,7 +747,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .addArtifacts(request.getArtifact())
                       .build())
               .thenApply(unused -> LogArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -760,7 +761,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logArtifacts(request)
               .thenApply(unused -> LogArtifacts.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -777,7 +778,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                   artifacts ->
                       GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -791,7 +792,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .deleteArtifacts(request)
               .thenApply(deleted -> DeleteArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -802,7 +803,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.getUrlForArtifact(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -816,7 +817,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .commitArtifactPart(request)
               .thenApply(unused -> CommitArtifactPart.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -828,7 +829,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.getCommittedArtifactParts(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -843,7 +844,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .commitMultipartArtifact(request)
               .thenApply(unused -> CommitMultipartArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -854,7 +855,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.findExperimentRuns(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -909,7 +910,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
     try {
       final var response = futureExperimentRunDAO.getExperimentRunsByDatasetVersionId(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -926,7 +927,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
               .thenApply(
                   unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -940,7 +941,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .logVersionedInputs(request)
               .thenApply(unused -> LogVersionedInput.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -962,7 +963,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                     return builder.build();
                   },
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -989,7 +990,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
     try {
       final var response = futureExperimentRunDAO.cloneExperimentRun(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      InternalFutureGrpc.serverResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }

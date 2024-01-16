@@ -1,6 +1,8 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -96,6 +98,16 @@ public class InternalFuture<T> {
     var ret = new InternalFuture<R>();
     ret.stage = CompletableFuture.completedFuture(value);
     return ret;
+  }
+
+  /**
+   * Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
+   * InternalFuture.
+   */
+  public static <T> InternalFuture<T> clientRequest(ListenableFuture<T> f, FutureExecutor ex) {
+    CompletableFuture<T> promise = new CompletableFuture<>();
+    Futures.addCallback(f, new FutureUtil.Callback<T>(promise), ex);
+    return from(promise);
   }
 
   public InternalFuture<T> onSuccess(Consumer<T> fn, FutureExecutor ex) {

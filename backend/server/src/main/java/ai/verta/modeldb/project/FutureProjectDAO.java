@@ -405,7 +405,7 @@ public class FutureProjectDAO {
     if (projId != null) {
       resourceBuilder.addResourceIds(projId);
     }
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -469,7 +469,7 @@ public class FutureProjectDAO {
   }
 
   public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
             uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
@@ -820,14 +820,14 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Workspace> getWorkspaceByWorkspaceName(String workspaceName) {
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
         uac.getWorkspaceService()
             .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
         executor);
   }
 
   private InternalFuture<Workspace> getWorkspaceByWorkspaceId(Long workspaceId) {
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
         uac.getWorkspaceService()
             .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
         executor);
@@ -1056,7 +1056,7 @@ public class FutureProjectDAO {
     return validateParamFuture
         .thenCompose(
             unused ->
-                FutureUtil.clientRequest(
+                InternalFuture.clientRequest(
                     uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
                     executor),
             executor)
@@ -1653,7 +1653,7 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             createdProject ->
-                FutureUtil.clientRequest(
+                InternalFuture.clientRequest(
                         uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
                         executor)
                     .thenCompose(
@@ -1832,7 +1832,7 @@ public class FutureProjectDAO {
 
               LOGGER.trace("Calling CollaboratorService to delete resources");
               var deleteResources = DeleteResources.newBuilder().setResources(resources).build();
-              return FutureUtil.clientRequest(
+              return InternalFuture.clientRequest(
                       uac.getServiceAccountCollaboratorServiceForServiceUser()
                           .deleteResources(deleteResources),
                       executor)
@@ -1872,7 +1872,7 @@ public class FutureProjectDAO {
 
     workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
-    return FutureUtil.clientRequest(
+    return InternalFuture.clientRequest(
             uac.getCollaboratorService().setResource(setResourcesBuilder.build()), executor)
         .thenCompose(
             response -> {
