@@ -3,10 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -36,16 +33,20 @@ public class CodeVersionHandler {
   }
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      String.format(
-                          "select code_version_snapshot_id from %s where id=:entity_id",
-                          entityTableName))) {
-                return findQuery.bind(ENTITY_ID_QUERY_PARAM, entityId).mapTo(Long.class).findOne();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          String.format(
+                              "select code_version_snapshot_id from %s where id=:entity_id",
+                              entityTableName))) {
+                    return findQuery
+                        .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                        .mapTo(Long.class)
+                        .findOne();
+                  }
+                }))
         .thenApply(
             maybeSnapshotId ->
                 maybeSnapshotId.map(
@@ -117,22 +118,23 @@ public class CodeVersionHandler {
   }
 
   public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      String.format(
-                          "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
-                          entityTableName))) {
-                return findQuery
-                    .bindList("entity_ids", entityIds)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString("id"), rs.getLong("code_version_snapshot_id")))
-                    .list();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          String.format(
+                              "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
+                              entityTableName))) {
+                    return findQuery
+                        .bindList("entity_ids", entityIds)
+                        .map(
+                            (rs, ctx) ->
+                                new AbstractMap.SimpleEntry<>(
+                                    rs.getString("id"), rs.getLong("code_version_snapshot_id")))
+                        .list();
+                  }
+                }))
         .thenCompose(
             maybeSnapshotIds -> {
               Map<String, CodeVersion> codeVersionMap = new HashMap<>();

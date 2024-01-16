@@ -175,8 +175,9 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> attributeHandler.deleteKeyValues(handle, projectId, maybeKeys)),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle -> attributeHandler.deleteKeyValues(handle, projectId, maybeKeys))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -235,8 +236,9 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> attributeHandler.logKeyValues(handle, projectId, attributes)),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle -> attributeHandler.logKeyValues(handle, projectId, attributes))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -265,8 +267,9 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> attributeHandler.updateKeyValue(handle, projectId, attribute)),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle -> attributeHandler.updateKeyValue(handle, projectId, attribute))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -294,7 +297,9 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(
-            unused -> jdbi.useHandle(handle -> tagsHandler.addTags(handle, projectId, tags)),
+            unused ->
+                InternalFuture.fromFuture(
+                    jdbi.run(handle -> tagsHandler.addTags(handle, projectId, tags))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -323,7 +328,8 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, projectId, maybeTags)),
+                InternalFuture.fromFuture(
+                    jdbi.run(handle -> tagsHandler.deleteTags(handle, projectId, maybeTags))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -362,27 +368,29 @@ public class FutureProjectDAO {
       greatestValueStr = "greatest(date_updated, :now)";
     }
 
-    return jdbi.useHandle(
-        handle -> {
-          try (var updateQuery =
-              handle.createUpdate(
-                  String.format(
-                      "update project set date_updated=%s where id=:project_id",
-                      greatestValueStr))) {
-            updateQuery.bind("project_id", projectId).bind("now", now).execute();
-          }
-        });
+    return InternalFuture.fromFuture(
+        jdbi.run(
+            handle -> {
+              try (var updateQuery =
+                  handle.createUpdate(
+                      String.format(
+                          "update project set date_updated=%s where id=:project_id",
+                          greatestValueStr))) {
+                updateQuery.bind("project_id", projectId).bind("now", now).execute();
+              }
+            }));
   }
 
   private InternalFuture<Void> updateVersionNumber(String projectId) {
-    return jdbi.useHandle(
-        handle -> {
-          try (var updateQuery =
-              handle.createUpdate(
-                  "update project set version_number=(version_number + 1) where id=:project_id")) {
-            updateQuery.bind("project_id", projectId).execute();
-          }
-        });
+    return InternalFuture.fromFuture(
+        jdbi.run(
+            handle -> {
+              try (var updateQuery =
+                  handle.createUpdate(
+                      "update project set version_number=(version_number + 1) where id=:project_id")) {
+                updateQuery.bind("project_id", projectId).execute();
+              }
+            }));
   }
 
   public InternalFuture<Void> checkProjectPermission(
@@ -421,15 +429,16 @@ public class FutureProjectDAO {
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
             unused ->
-                jdbi.withHandle(
-                    handle -> {
-                      var queryStr =
-                          "SELECT COUNT(distinct ar.linked_artifact_id) from artifact ar inner join experiment_run er ON er.id = ar.experiment_run_id "
-                              + " WHERE er.project_id = :projectId AND ar.experiment_run_id is not null AND ar.linked_artifact_id <> '' ";
-                      try (var findQuery = handle.createQuery(queryStr)) {
-                        return findQuery.bind("projectId", projectId).mapTo(Long.class).one();
-                      }
-                    }),
+                InternalFuture.fromFuture(
+                    jdbi.call(
+                        handle -> {
+                          var queryStr =
+                              "SELECT COUNT(distinct ar.linked_artifact_id) from artifact ar inner join experiment_run er ON er.id = ar.experiment_run_id "
+                                  + " WHERE er.project_id = :projectId AND ar.experiment_run_id is not null AND ar.linked_artifact_id <> '' ";
+                          try (var findQuery = handle.createQuery(queryStr)) {
+                            return findQuery.bind("projectId", projectId).mapTo(Long.class).one();
+                          }
+                        })),
             executor);
   }
 
@@ -519,37 +528,39 @@ public class FutureProjectDAO {
                                 .thenApply(QueryFilterContext::combine, executor)
                                 .thenCompose(
                                     queryContext ->
-                                        jdbi.withHandle(
-                                                handle -> {
-                                                  var sql =
-                                                      "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
-                                                          + "p.short_name, p.project_visibility, p.readme_text, "
-                                                          + "p.deleted, p.version_number from project p ";
+                                        InternalFuture.fromFuture(
+                                                jdbi.call(
+                                                    handle -> {
+                                                      var sql =
+                                                          "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
+                                                              + "p.short_name, p.project_visibility, p.readme_text, "
+                                                              + "p.deleted, p.version_number from project p ";
 
-                                                  try (Query query =
-                                                      CommonUtils.buildQueryFromQueryContext(
-                                                          "p",
-                                                          Pagination.newBuilder()
-                                                              .setPageLimit(request.getPageLimit())
-                                                              .setPageNumber(
-                                                                  request.getPageNumber())
-                                                              .build(),
-                                                          queryContext,
-                                                          handle,
-                                                          sql,
-                                                          isMssql)) {
-                                                    Map<Long, Workspace> cacheWorkspaceMap =
-                                                        new HashMap<>();
-                                                    return query
-                                                        .map(
-                                                            (rs, ctx) ->
-                                                                buildProjectBuilderFromResultSet(
-                                                                    getResourcesMap,
-                                                                    cacheWorkspaceMap,
-                                                                    rs))
-                                                        .list();
-                                                  }
-                                                })
+                                                      try (Query query =
+                                                          CommonUtils.buildQueryFromQueryContext(
+                                                              "p",
+                                                              Pagination.newBuilder()
+                                                                  .setPageLimit(
+                                                                      request.getPageLimit())
+                                                                  .setPageNumber(
+                                                                      request.getPageNumber())
+                                                                  .build(),
+                                                              queryContext,
+                                                              handle,
+                                                              sql,
+                                                              isMssql)) {
+                                                        Map<Long, Workspace> cacheWorkspaceMap =
+                                                            new HashMap<>();
+                                                        return query
+                                                            .map(
+                                                                (rs, ctx) ->
+                                                                    buildProjectBuilderFromResultSet(
+                                                                        getResourcesMap,
+                                                                        cacheWorkspaceMap,
+                                                                        rs))
+                                                            .list();
+                                                      }
+                                                    }))
                                             .thenCompose(
                                                 builders -> {
                                                   if (builders == null || builders.isEmpty()) {
@@ -690,19 +701,20 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Long> getProjectCountBasedOnQueryFilter(QueryFilterContext queryContext) {
-    return jdbi.withHandle(
-        handle -> {
-          var sql = "select count(p.id) from project p ";
+    return InternalFuture.fromFuture(
+        jdbi.call(
+            handle -> {
+              var sql = "select count(p.id) from project p ";
 
-          if (!queryContext.getConditions().isEmpty()) {
-            sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
-          }
+              if (!queryContext.getConditions().isEmpty()) {
+                sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
+              }
 
-          try (var query = handle.createQuery(sql)) {
-            queryContext.getBinds().forEach(b -> b.accept(query));
-            return query.mapTo(Long.class).one();
-          }
-        });
+              try (var query = handle.createQuery(sql)) {
+                queryContext.getBinds().forEach(b -> b.accept(query));
+                return query.mapTo(Long.class).one();
+              }
+            }));
   }
 
   private Project.Builder buildProjectBuilderFromResultSet(
@@ -885,32 +897,33 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             allowedProjectResources ->
-                jdbi.useHandle(
-                        handle -> {
-                          try (var deleteQuery =
-                              handle.createUpdate(
-                                  "update project set deleted = :deleted where id IN (<projectIds>)")) {
-                            var updatedCount =
-                                deleteQuery
-                                    .bind("deleted", true)
-                                    .bindList(
-                                        "projectIds",
-                                        allowedProjectResources.stream()
-                                            .map(GetResourcesResponseItem::getResourceId)
-                                            .collect(Collectors.toList()))
-                                    .execute();
-                            LOGGER.debug(
-                                "Mark Projects as deleted : {}, count : {}",
-                                allowedProjectResources,
-                                updatedCount);
-                            allowedProjectResources.forEach(
-                                allowedResource ->
-                                    reconcilerInitializer
-                                        .getSoftDeleteProjects()
-                                        .insert(allowedResource.getResourceId()));
-                            LOGGER.debug("Project deleted successfully");
-                          }
-                        })
+                InternalFuture.fromFuture(
+                        jdbi.run(
+                            handle -> {
+                              try (var deleteQuery =
+                                  handle.createUpdate(
+                                      "update project set deleted = :deleted where id IN (<projectIds>)")) {
+                                var updatedCount =
+                                    deleteQuery
+                                        .bind("deleted", true)
+                                        .bindList(
+                                            "projectIds",
+                                            allowedProjectResources.stream()
+                                                .map(GetResourcesResponseItem::getResourceId)
+                                                .collect(Collectors.toList()))
+                                        .execute();
+                                LOGGER.debug(
+                                    "Mark Projects as deleted : {}, count : {}",
+                                    allowedProjectResources,
+                                    updatedCount);
+                                allowedProjectResources.forEach(
+                                    allowedResource ->
+                                        reconcilerInitializer
+                                            .getSoftDeleteProjects()
+                                            .insert(allowedResource.getResourceId()));
+                                LOGGER.debug("Project deleted successfully");
+                              }
+                            }))
                     .thenApply(unused -> allowedProjectResources, executor),
             executor);
   }
@@ -1006,24 +1019,25 @@ public class FutureProjectDAO {
         .thenCompose(unused -> getProjectById(request.getId()), executor)
         .thenCompose(
             project ->
-                jdbi.withHandle(
-                    handle -> {
-                      var now = new Date().getTime();
-                      try (var updateQuery =
-                          handle.createUpdate(
-                              "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")) {
-                        updateQuery
-                            .bind("id", project.getId())
-                            .bind("description", request.getDescription())
-                            .bind("dateUpdated", now)
-                            .execute();
-                      }
-                      return project.toBuilder()
-                          .setDateUpdated(now)
-                          .setDescription(request.getDescription())
-                          .setVersionNumber(project.getVersionNumber() + 1L)
-                          .build();
-                    }),
+                InternalFuture.fromFuture(
+                    jdbi.call(
+                        handle -> {
+                          var now = new Date().getTime();
+                          try (var updateQuery =
+                              handle.createUpdate(
+                                  "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")) {
+                            updateQuery
+                                .bind("id", project.getId())
+                                .bind("description", request.getDescription())
+                                .bind("dateUpdated", now)
+                                .execute();
+                          }
+                          return project.toBuilder()
+                              .setDateUpdated(now)
+                              .setDescription(request.getDescription())
+                              .setVersionNumber(project.getVersionNumber() + 1L)
+                              .build();
+                        })),
             executor);
   }
 
@@ -1133,8 +1147,10 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> artifactHandler.logArtifacts(handle, projectId, artifacts, false)),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle ->
+                            artifactHandler.logArtifacts(handle, projectId, artifacts, false))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
@@ -1314,32 +1330,34 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Long> getExperimentCount(List<String> projectIds) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")) {
-                return findQuery
-                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
-                    .mapTo(Long.class)
-                    .findOne();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")) {
+                    return findQuery
+                        .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                        .mapTo(Long.class)
+                        .findOne();
+                  }
+                }))
         .thenApply(count -> count.orElse(0L), executor);
   }
 
   private InternalFuture<Long> getExperimentRunCount(List<String> projectIds) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")) {
-                return findQuery
-                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
-                    .mapTo(Long.class)
-                    .findOne();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")) {
+                    return findQuery
+                        .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                        .mapTo(Long.class)
+                        .findOne();
+                  }
+                }))
         .thenApply(count -> count.orElse(0L), executor);
   }
 
@@ -1363,17 +1381,18 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> {
-                      try (var updateQuery =
-                          handle.createUpdate(
-                              "update project set readme_text = :readmeText where id = :id")) {
-                        updateQuery
-                            .bind("id", request.getId())
-                            .bind("readmeText", request.getReadmeText())
-                            .execute();
-                      }
-                    }),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle -> {
+                          try (var updateQuery =
+                              handle.createUpdate(
+                                  "update project set readme_text = :readmeText where id = :id")) {
+                            updateQuery
+                                .bind("id", request.getId())
+                                .bind("readmeText", request.getReadmeText())
+                                .execute();
+                          }
+                        })),
             executor)
         .thenCompose(
             unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
@@ -1400,13 +1419,18 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.withHandle(
-                    handle -> {
-                      try (var findQuery =
-                          handle.createQuery("select readme_text from project where id = :id")) {
-                        return findQuery.bind("id", request.getId()).mapTo(String.class).findOne();
-                      }
-                    }),
+                InternalFuture.fromFuture(
+                    jdbi.call(
+                        handle -> {
+                          try (var findQuery =
+                              handle.createQuery(
+                                  "select readme_text from project where id = :id")) {
+                            return findQuery
+                                .bind("id", request.getId())
+                                .mapTo(String.class)
+                                .findOne();
+                          }
+                        })),
             executor)
         .thenApply(
             readmeTextOptional -> {
@@ -1449,19 +1473,20 @@ public class FutureProjectDAO {
                   InternalFuture.completedInternalFuture(Optional.of(0L));
               if (!selfAllowedResources.isEmpty()) {
                 countFuture =
-                    jdbi.withHandle(
-                        handle -> {
-                          try (var findQuery =
-                              handle.createQuery(
-                                  "select count(p.id) from project p where p.deleted = :deleted AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")) {
-                            return findQuery
-                                .bind("projectShortName", request.getShortName())
-                                .bindList("projectIds", selfAllowedResources)
-                                .bind("deleted", false)
-                                .mapTo(Long.class)
-                                .findOne();
-                          }
-                        });
+                    InternalFuture.fromFuture(
+                        jdbi.call(
+                            handle -> {
+                              try (var findQuery =
+                                  handle.createQuery(
+                                      "select count(p.id) from project p where p.deleted = :deleted AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")) {
+                                return findQuery
+                                    .bind("projectShortName", request.getShortName())
+                                    .bindList("projectIds", selfAllowedResources)
+                                    .bind("deleted", false)
+                                    .mapTo(Long.class)
+                                    .findOne();
+                              }
+                            }));
               }
               return countFuture.thenCompose(
                   count -> {
@@ -1483,17 +1508,18 @@ public class FutureProjectDAO {
                 throw new InternalErrorException("Project short name is not valid");
               }
 
-              return jdbi.useHandle(
-                  handle -> {
-                    try (var updateQuery =
-                        handle.createUpdate(
-                            "update project set short_name = :shortName where id = :id")) {
-                      updateQuery
-                          .bind("id", request.getId())
-                          .bind("shortName", projectShortName)
-                          .execute();
-                    }
-                  });
+              return InternalFuture.fromFuture(
+                  jdbi.run(
+                      handle -> {
+                        try (var updateQuery =
+                            handle.createUpdate(
+                                "update project set short_name = :shortName where id = :id")) {
+                          updateQuery
+                              .bind("id", request.getId())
+                              .bind("shortName", projectShortName)
+                              .execute();
+                        }
+                      }));
             },
             executor)
         .thenCompose(
@@ -1522,13 +1548,17 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.withHandle(
-                    handle -> {
-                      try (var findQuery =
-                          handle.createQuery("select short_name from project where id = :id")) {
-                        return findQuery.bind("id", request.getId()).mapTo(String.class).findOne();
-                      }
-                    }),
+                InternalFuture.fromFuture(
+                    jdbi.call(
+                        handle -> {
+                          try (var findQuery =
+                              handle.createQuery("select short_name from project where id = :id")) {
+                            return findQuery
+                                .bind("id", request.getId())
+                                .mapTo(String.class)
+                                .findOne();
+                          }
+                        })),
             executor)
         .thenApply(
             readmeTextOptional -> {
@@ -1590,10 +1620,11 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle ->
-                        codeVersionHandler.logCodeVersion(
-                            handle, request.getId(), false, request.getCodeVersion())),
+                InternalFuture.fromFuture(
+                    jdbi.run(
+                        handle ->
+                            codeVersionHandler.logCodeVersion(
+                                handle, request.getId(), false, request.getCodeVersion()))),
             executor)
         .thenCompose(
             unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
@@ -1747,13 +1778,14 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Void> updateProjectAsCreated(Project createdProject) {
-    return jdbi.useHandle(
-        handle -> {
-          try (var updateQuery =
-              handle.createUpdate("UPDATE project SET created=:created WHERE id=:id")) {
-            updateQuery.bind("created", true).bind("id", createdProject.getId()).execute();
-          }
-        });
+    return InternalFuture.fromFuture(
+        jdbi.run(
+            handle -> {
+              try (var updateQuery =
+                  handle.createUpdate("UPDATE project SET created=:created WHERE id=:id")) {
+                updateQuery.bind("created", true).bind("id", createdProject.getId()).execute();
+              }
+            }));
   }
 
   private ResourceVisibility getResourceVisibility(Project createdProject, Workspace workspace) {
@@ -1768,18 +1800,19 @@ public class FutureProjectDAO {
 
   private InternalFuture<Boolean> deleteEntityResourcesWithServiceUser(String projectName) {
 
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      "SELECT p.id From project p where p.name = :projectName AND p.deleted = :deleted")) {
-                return findQuery
-                    .bind("projectName", projectName)
-                    .bind("deleted", true)
-                    .mapTo(String.class)
-                    .list();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          "SELECT p.id From project p where p.name = :projectName AND p.deleted = :deleted")) {
+                    return findQuery
+                        .bind("projectName", projectName)
+                        .bind("deleted", true)
+                        .mapTo(String.class)
+                        .list();
+                  }
+                }))
         .thenCompose(
             deletedProjectIds -> {
               if (deletedProjectIds == null || deletedProjectIds.isEmpty()) {

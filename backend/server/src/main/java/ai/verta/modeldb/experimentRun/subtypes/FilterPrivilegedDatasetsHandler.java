@@ -57,20 +57,23 @@ public class FilterPrivilegedDatasetsHandler {
     if (linkedDatasetVersionIds.isEmpty()) {
       return InternalFuture.completedInternalFuture(datasets);
     }
-    return jdbi.withHandle(
-            handle -> {
-              // We have dataset version as a commit and dataset as a repository in MDB so added
-              // commit_hash filter here
-              return handle
-                  .createQuery(
-                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
-                  .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
-                  .map(
-                      (rs, ctx) ->
-                          new AbstractMap.SimpleEntry<>(
-                              rs.getString("commit_hash"), rs.getLong("repository_id")))
-                  .list();
-            })
+    // We have dataset version as a commit and dataset as a repository in MDB so added
+    // commit_hash filter here
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  // We have dataset version as a commit and dataset as a repository in MDB so added
+                  // commit_hash filter here
+                  return handle
+                      .createQuery(
+                          " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
+                      .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
+                      .map(
+                          (rs, ctx) ->
+                              new AbstractMap.SimpleEntry<>(
+                                  rs.getString("commit_hash"), rs.getLong("repository_id")))
+                      .list();
+                }))
         .thenCompose(
             datasetVersionDatasetList -> {
               // Convert list of dataset and dataset version mapping into Map

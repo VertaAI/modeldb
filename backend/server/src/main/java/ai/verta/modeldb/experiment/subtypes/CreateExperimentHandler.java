@@ -129,64 +129,67 @@ public class CreateExperimentHandler extends HandlerUtil {
     valueMap.put("created", false);
 
     Supplier<InternalFuture<Experiment>> insertFutureSupplier =
-        () ->
-            jdbi.withTransaction(
-                handle -> {
-                  final var builder = newExperiment.toBuilder();
-                  Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperiment);
-                  if (exists) {
-                    throw new AlreadyExistsException(
-                        "Experiment '" + builder.getName() + "' already exists in database");
-                  }
-
-                  String queryString = buildInsertQuery(valueMap, "experiment");
-
-                  LOGGER.trace("insert experiment query string: " + queryString);
-                  try (var query = handle.createUpdate(queryString)) {
-
-                    // Inserting fields arguments based on the keys and value of map
-                    for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                      query.bind(objectEntry.getKey(), objectEntry.getValue());
+        () -> { // Inserting fields arguments based on the keys and value of map
+          return InternalFuture.fromFuture(
+              jdbi.inTransaction(
+                  handle -> {
+                    final var builder = newExperiment.toBuilder();
+                    Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperiment);
+                    if (exists) {
+                      throw new AlreadyExistsException(
+                          "Experiment '" + builder.getName() + "' already exists in database");
                     }
 
-                    int count = query.execute();
-                    LOGGER.trace("Experiment Inserted : " + (count > 0));
-                  }
+                    String queryString = buildInsertQuery(valueMap, "experiment");
 
-                  if (!builder.getTagsList().isEmpty()) {
-                    tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
-                  }
-                  if (!builder.getAttributesList().isEmpty()) {
-                    attributeHandler.logKeyValues(
-                        handle, builder.getId(), builder.getAttributesList());
-                  }
-                  if (!builder.getArtifactsList().isEmpty()) {
-                    var updatedArtifacts =
-                        artifactHandler.logArtifacts(
-                            handle, builder.getId(), builder.getArtifactsList(), false);
-                    builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
-                  }
-                  if (builder.getCodeVersionSnapshot().hasCodeArchive()
-                      || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
-                    codeVersionHandler.logCodeVersion(
-                        handle, builder.getId(), false, builder.getCodeVersionSnapshot());
-                  }
-                  return builder.build();
-                });
+                    LOGGER.trace("insert experiment query string: " + queryString);
+                    try (var query = handle.createUpdate(queryString)) {
+
+                      // Inserting fields arguments based on the keys and value of map
+                      for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                        query.bind(objectEntry.getKey(), objectEntry.getValue());
+                      }
+
+                      int count = query.execute();
+                      LOGGER.trace("Experiment Inserted : " + (count > 0));
+                    }
+
+                    if (!builder.getTagsList().isEmpty()) {
+                      tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
+                    }
+                    if (!builder.getAttributesList().isEmpty()) {
+                      attributeHandler.logKeyValues(
+                          handle, builder.getId(), builder.getAttributesList());
+                    }
+                    if (!builder.getArtifactsList().isEmpty()) {
+                      var updatedArtifacts =
+                          artifactHandler.logArtifacts(
+                              handle, builder.getId(), builder.getArtifactsList(), false);
+                      builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
+                    }
+                    if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                        || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
+                      codeVersionHandler.logCodeVersion(
+                          handle, builder.getId(), false, builder.getCodeVersionSnapshot());
+                    }
+                    return builder.build();
+                  }));
+        };
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenCompose(
             createdExperiment ->
-                jdbi.useHandle(
-                        handle -> {
-                          try (var updateQuery =
-                              handle.createUpdate(
-                                  "UPDATE experiment SET created=:created WHERE id=:id")) {
-                            updateQuery
-                                .bind("created", true)
-                                .bind("id", createdExperiment.getId())
-                                .execute();
-                          }
-                        })
+                InternalFuture.fromFuture(
+                        jdbi.run(
+                            handle -> {
+                              try (var updateQuery =
+                                  handle.createUpdate(
+                                      "UPDATE experiment SET created=:created WHERE id=:id")) {
+                                updateQuery
+                                    .bind("created", true)
+                                    .bind("id", createdExperiment.getId())
+                                    .execute();
+                              }
+                            }))
                     .thenApply(unused -> createdExperiment, executor),
             executor);
   }

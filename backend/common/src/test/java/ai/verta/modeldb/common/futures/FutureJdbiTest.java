@@ -1,15 +1,20 @@
 package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.grpc.Context;
 import java.util.concurrent.atomic.AtomicReference;
 import org.jdbi.v3.core.statement.StatementExceptions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class FutureJdbiTest {
+
+  @BeforeEach
+  void setUp() {
+    Future.setFutureExecutor(FutureExecutor.newSingleThreadExecutor());
+  }
 
   @Test
   void contextWithHandle() throws Exception {
@@ -25,7 +30,7 @@ class FutureJdbiTest {
         contextWithData
             .wrap(
                 () ->
-                    subject.withHandle(
+                    subject.call(
                         h -> {
                           captured.set(testKey.get());
                           return "foo";
@@ -49,7 +54,7 @@ class FutureJdbiTest {
     contextWithData
         .wrap(
             () ->
-                subject.useHandle(
+                subject.run(
                     h -> {
                       captured.set(testKey.get());
                     }))

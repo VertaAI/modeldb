@@ -39,8 +39,8 @@ public class Future<T> {
       "A FutureExecutor is required to create a new Future.";
 
   static {
-    String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
-    DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
+    String futureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
+    DEEP_TRACING_ENABLED = Boolean.parseBoolean(futureTracingEnabled);
     captureStacksAtCreation =
         Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED));
   }
@@ -176,17 +176,17 @@ public class Future<T> {
             traceFunction(
                 traceFunction(
                     fn.andThen(
-                        internalFuture -> {
-                          if (internalFuture == null) {
+                        future -> {
+                          if (future == null) {
                             if (formattedStack != null) {
                               log.warn(
-                                  "Null thenCompose internalFuture found. Call site stack:\n "
+                                  "Null thenCompose future found. Call site stack:\n "
                                       + formattedStack);
                             }
                             throw new NullPointerException(
-                                "Null internalFuture found during thenCompose call");
+                                "Null future found during thenCompose call");
                           }
-                          return internalFuture.stage;
+                          return future.stage;
                         }),
                     "futureThenCompose"),
                 "futureThenApply"),

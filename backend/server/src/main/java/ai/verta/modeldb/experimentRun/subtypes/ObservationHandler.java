@@ -4,10 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.protobuf.Value;
@@ -52,74 +49,78 @@ public class ObservationHandler {
     // Query
     return currentFuture.thenCompose(
         unused ->
-            jdbi.withHandle(
-                handle -> {
-                  try (var findQuery =
-                      handle.createQuery(
-                          "select k.kv_value _value, k.value_type _type, o.epoch_number epoch from "
-                              + "(select keyvaluemapping_id, epoch_number from observation "
-                              + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
-                              + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
-                              + "where o.keyvaluemapping_id = k.id")) {
-                    return findQuery
-                        .bind(RUN_ID_QUERY_PARAM, runId)
-                        .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
-                        .bind(NAME_QUERY_PARAM, key)
-                        .map(
-                            (rs, ctx) ->
-                                Observation.newBuilder()
-                                    .setEpochNumber(
-                                        Value.newBuilder()
-                                            .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
-                                    .setAttribute(
-                                        KeyValue.newBuilder()
-                                            .setKey(key)
-                                            .setValue(
-                                                (Value.Builder)
-                                                    CommonUtils.getProtoObjectFromString(
-                                                        rs.getString("_value"), Value.newBuilder()))
-                                            .setValueTypeValue(rs.getInt("_type")))
-                                    .build())
-                        .list();
-                  }
-                }),
+            InternalFuture.fromFuture(
+                jdbi.call(
+                    handle -> {
+                      try (var findQuery =
+                          handle.createQuery(
+                              "select k.kv_value _value, k.value_type _type, o.epoch_number epoch from "
+                                  + "(select keyvaluemapping_id, epoch_number from observation "
+                                  + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
+                                  + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
+                                  + "where o.keyvaluemapping_id = k.id")) {
+                        return findQuery
+                            .bind(RUN_ID_QUERY_PARAM, runId)
+                            .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                            .bind(NAME_QUERY_PARAM, key)
+                            .map(
+                                (rs, ctx) ->
+                                    Observation.newBuilder()
+                                        .setEpochNumber(
+                                            Value.newBuilder()
+                                                .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
+                                        .setAttribute(
+                                            KeyValue.newBuilder()
+                                                .setKey(key)
+                                                .setValue(
+                                                    (Value.Builder)
+                                                        CommonUtils.getProtoObjectFromString(
+                                                            rs.getString("_value"),
+                                                            Value.newBuilder()))
+                                                .setValueTypeValue(rs.getInt("_type")))
+                                        .build())
+                            .list();
+                      }
+                    })),
         executor);
   }
 
   public InternalFuture<MapSubtypes<String, Observation>> getObservationsMap(Set<String> runIds) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
-                          + " from observation as o"
-                          + " join keyvalue as k"
-                          + " on o.keyvaluemapping_id = k.id"
-                          + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")) {
-                return findQuery
-                    .bindList("run_ids", runIds)
-                    .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(RUN_ID_QUERY_PARAM),
-                                Observation.newBuilder()
-                                    .setTimestamp(rs.getLong("timestamp"))
-                                    .setEpochNumber(
-                                        Value.newBuilder()
-                                            .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
-                                    .setAttribute(
-                                        KeyValue.newBuilder()
-                                            .setKey(rs.getString("_key"))
-                                            .setValue(
-                                                (Value.Builder)
-                                                    CommonUtils.getProtoObjectFromString(
-                                                        rs.getString("_value"), Value.newBuilder()))
-                                            .setValueTypeValue(rs.getInt("_type")))
-                                    .build()))
-                    .list();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
+                              + " from observation as o"
+                              + " join keyvalue as k"
+                              + " on o.keyvaluemapping_id = k.id"
+                              + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")) {
+                    return findQuery
+                        .bindList("run_ids", runIds)
+                        .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                        .map(
+                            (rs, ctx) ->
+                                new AbstractMap.SimpleEntry<>(
+                                    rs.getString(RUN_ID_QUERY_PARAM),
+                                    Observation.newBuilder()
+                                        .setTimestamp(rs.getLong("timestamp"))
+                                        .setEpochNumber(
+                                            Value.newBuilder()
+                                                .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
+                                        .setAttribute(
+                                            KeyValue.newBuilder()
+                                                .setKey(rs.getString("_key"))
+                                                .setValue(
+                                                    (Value.Builder)
+                                                        CommonUtils.getProtoObjectFromString(
+                                                            rs.getString("_value"),
+                                                            Value.newBuilder()))
+                                                .setValueTypeValue(rs.getInt("_type")))
+                                        .build()))
+                        .list();
+                  }
+                }))
         .thenApply(MapSubtypes::from, executor);
   }
 
@@ -208,71 +209,76 @@ public class ObservationHandler {
   }
 
   public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
-    return jdbi.useTransaction(
-        handle -> {
-          // Delete from keyvalue
-          var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
-          }
-          fetchQueryString +=
-              " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
+    // Delete from keyvalue
+    // Remove foreignKey constraint first
+    // Delete KeyValue mapped with Observation by Ids
+    // Delete from observations by Ids
+    return InternalFuture.fromFuture(
+        jdbi.transaction(
+            handle -> {
+              // Delete from keyvalue
+              var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
+              if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+                fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
+              }
+              fetchQueryString +=
+                  " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
 
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            fetchQueryString += " AND kv.kv_key IN (<keys>)";
-          }
-          try (var query = handle.createQuery(fetchQueryString)) {
-            query
-                .bind(RUN_ID_QUERY_PARAM, runId)
-                .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE);
-            maybeKeys.ifPresent(maybeKeyList -> query.bindList("keys", maybeKeyList));
-            var observationKVMappingList =
+              if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+                fetchQueryString += " AND kv.kv_key IN (<keys>)";
+              }
+              try (var query = handle.createQuery(fetchQueryString)) {
                 query
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getLong("id"), rs.getLong("keyvaluemapping_id")))
-                    .list();
+                    .bind(RUN_ID_QUERY_PARAM, runId)
+                    .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE);
+                maybeKeys.ifPresent(maybeKeyList -> query.bindList("keys", maybeKeyList));
+                var observationKVMappingList =
+                    query
+                        .map(
+                            (rs, ctx) ->
+                                new AbstractMap.SimpleEntry<>(
+                                    rs.getLong("id"), rs.getLong("keyvaluemapping_id")))
+                        .list();
 
-            // Remove foreignKey constraint first
-            try (var updateQuery =
-                handle.createUpdate(
-                    "update observation set keyvaluemapping_id = null where id in (<ob_ids>)")) {
-              updateQuery
-                  .bindList(
-                      "ob_ids",
-                      observationKVMappingList.stream()
-                          .map(AbstractMap.SimpleEntry::getKey)
-                          .collect(Collectors.toList()))
-                  .execute();
-            }
+                // Remove foreignKey constraint first
+                try (var updateQuery =
+                    handle.createUpdate(
+                        "update observation set keyvaluemapping_id = null where id in (<ob_ids>)")) {
+                  updateQuery
+                      .bindList(
+                          "ob_ids",
+                          observationKVMappingList.stream()
+                              .map(AbstractMap.SimpleEntry::getKey)
+                              .collect(Collectors.toList()))
+                      .execute();
+                }
 
-            // Delete KeyValue mapped with Observation by Ids
-            try (var updateQuery =
-                handle.createUpdate("delete from keyvalue where id in (<kv_ids>)")) {
-              updateQuery
-                  .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
-                  .bind(FIELD_TYPE_QUERY_PARAM, "observations")
-                  .bindList(
-                      "kv_ids",
-                      observationKVMappingList.stream()
-                          .map(AbstractMap.SimpleEntry::getValue)
-                          .collect(Collectors.toList()))
-                  .execute();
-            }
+                // Delete KeyValue mapped with Observation by Ids
+                try (var updateQuery =
+                    handle.createUpdate("delete from keyvalue where id in (<kv_ids>)")) {
+                  updateQuery
+                      .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                      .bind(FIELD_TYPE_QUERY_PARAM, "observations")
+                      .bindList(
+                          "kv_ids",
+                          observationKVMappingList.stream()
+                              .map(AbstractMap.SimpleEntry::getValue)
+                              .collect(Collectors.toList()))
+                      .execute();
+                }
 
-            // Delete from observations by Ids
-            try (var updateQuery =
-                handle.createUpdate("delete from observation where id in (<ob_ids>)")) {
-              updateQuery
-                  .bindList(
-                      "ob_ids",
-                      observationKVMappingList.stream()
-                          .map(AbstractMap.SimpleEntry::getKey)
-                          .collect(Collectors.toList()))
-                  .execute();
-            }
-          }
-        });
+                // Delete from observations by Ids
+                try (var updateQuery =
+                    handle.createUpdate("delete from observation where id in (<ob_ids>)")) {
+                  updateQuery
+                      .bindList(
+                          "ob_ids",
+                          observationKVMappingList.stream()
+                              .map(AbstractMap.SimpleEntry::getKey)
+                              .collect(Collectors.toList()))
+                      .execute();
+                }
+              }
+            }));
   }
 }

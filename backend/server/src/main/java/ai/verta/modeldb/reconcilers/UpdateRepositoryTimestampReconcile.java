@@ -2,6 +2,7 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
@@ -51,21 +52,21 @@ public class UpdateRepositoryTimestampReconcile
             .append(" GROUP BY rc.repository_id")
             .toString();
 
-    return futureJdbi
-        .withHandle(
-            handle -> {
-              try (var findQuery = handle.createQuery(fetchUpdatedDatasetIds)) {
-                return findQuery
-                    .setFetchSize(config.getMaxSync())
-                    .map(
-                        (rs, ctx) -> {
-                          Long datasetId = rs.getLong("repository_id");
-                          Long maxUpdatedDate = rs.getLong("max_date");
-                          return new SimpleEntry<>(datasetId, maxUpdatedDate);
-                        })
-                    .list();
-              }
-            })
+    return InternalFuture.fromFuture(
+            futureJdbi.call(
+                handle -> {
+                  try (var findQuery = handle.createQuery(fetchUpdatedDatasetIds)) {
+                    return findQuery
+                        .setFetchSize(config.getMaxSync())
+                        .map(
+                            (rs, ctx) -> {
+                              Long datasetId = rs.getLong("repository_id");
+                              Long maxUpdatedDate = rs.getLong("max_date");
+                              return new SimpleEntry<>(datasetId, maxUpdatedDate);
+                            })
+                        .list();
+                  }
+                }))
         .blockAndGet();
   }
 
@@ -77,20 +78,20 @@ public class UpdateRepositoryTimestampReconcile
             + updatedMaxDateMap.stream()
                 .map(AbstractMap.SimpleEntry::getKey)
                 .collect(Collectors.toList()));
-    return futureJdbi
-        .useHandle(
-            handle -> {
-              var updateDatasetTimestampQuery =
-                  "UPDATE repository SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
+    return InternalFuture.fromFuture(
+            futureJdbi.run(
+                handle -> {
+                  var updateDatasetTimestampQuery =
+                      "UPDATE repository SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
-              for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
-                long id = updatedRecord.getKey();
-                long updatedDate = updatedRecord.getValue();
-                try (var updateQuery = handle.createUpdate(updateDatasetTimestampQuery)) {
-                  updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
-                }
-              }
-            })
+                  for (SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
+                    long id = updatedRecord.getKey();
+                    long updatedDate = updatedRecord.getValue();
+                    try (var updateQuery = handle.createUpdate(updateDatasetTimestampQuery)) {
+                      updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
+                    }
+                  }
+                }))
         .thenApply(unused -> new ReconcileResult(), executor)
         .blockAndGet();
   }
