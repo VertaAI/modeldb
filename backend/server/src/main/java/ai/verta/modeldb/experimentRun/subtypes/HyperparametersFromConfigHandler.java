@@ -40,62 +40,64 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
         return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
       }
     }
-    return jdbi.withHandle(
-            handle -> {
-              String queryStr =
-                  "SELECT distinct vme.experiment_run_id, hecb.name, hecb.value_type, hecb.int_value, hecb.float_value, hecb.string_value  FROM hyperparameter_element_config_blob hecb "
-                      + "INNER JOIN config_blob cb ON cb.hyperparameter_element_config_blob_hash = hecb.blob_hash "
-                      + "INNER JOIN versioning_modeldb_entity_mapping vme ON vme.blob_hash = cb.blob_hash "
-                      + "WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experiment_run_id IN (<expRunIds>) ";
+    // Do nothing
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  String queryStr =
+                      "SELECT distinct vme.experiment_run_id, hecb.name, hecb.value_type, hecb.int_value, hecb.float_value, hecb.string_value  FROM hyperparameter_element_config_blob hecb "
+                          + "INNER JOIN config_blob cb ON cb.hyperparameter_element_config_blob_hash = hecb.blob_hash "
+                          + "INNER JOIN versioning_modeldb_entity_mapping vme ON vme.blob_hash = cb.blob_hash "
+                          + "WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experiment_run_id IN (<expRunIds>) ";
 
-              if (!allowedAllRepositories) {
-                queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
-              }
+                  if (!allowedAllRepositories) {
+                    queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
+                  }
 
-              var query = handle.createQuery(queryStr);
-              query.bind("hyperparameterType", HYPERPARAMETER);
-              query.bindList("expRunIds", expRunIds);
-              if (!allowedAllRepositories) {
-                query.bindList(
-                    "repoIds",
-                    selfAllowedRepositoryIds.stream()
-                        .map(Long::parseLong)
-                        .collect(Collectors.toList()));
-              }
-              LOGGER.trace(
-                  "Final experimentRuns hyperparameter config blob final query : {}", queryStr);
-              return query
-                  .map(
-                      (rs, ctx) -> {
-                        var valueBuilder = Value.newBuilder();
-                        var valueCase =
-                            HyperparameterValuesConfigBlob.ValueCase.forNumber(
-                                rs.getInt("value_type"));
-                        switch (valueCase) {
-                          case INT_VALUE:
-                            valueBuilder.setNumberValue(rs.getInt("int_value"));
-                            break;
-                          case FLOAT_VALUE:
-                            valueBuilder.setNumberValue(rs.getDouble("float_value"));
-                            break;
-                          case STRING_VALUE:
-                            valueBuilder.setStringValue(rs.getString("string_value"));
-                            break;
-                          default:
-                            // Do nothing
-                            break;
-                        }
+                  var query = handle.createQuery(queryStr);
+                  query.bind("hyperparameterType", HYPERPARAMETER);
+                  query.bindList("expRunIds", expRunIds);
+                  if (!allowedAllRepositories) {
+                    query.bindList(
+                        "repoIds",
+                        selfAllowedRepositoryIds.stream()
+                            .map(Long::parseLong)
+                            .collect(Collectors.toList()));
+                  }
+                  LOGGER.trace(
+                      "Final experimentRuns hyperparameter config blob final query : {}", queryStr);
+                  return query
+                      .map(
+                          (rs, ctx) -> {
+                            var valueBuilder = Value.newBuilder();
+                            var valueCase =
+                                HyperparameterValuesConfigBlob.ValueCase.forNumber(
+                                    rs.getInt("value_type"));
+                            switch (valueCase) {
+                              case INT_VALUE:
+                                valueBuilder.setNumberValue(rs.getInt("int_value"));
+                                break;
+                              case FLOAT_VALUE:
+                                valueBuilder.setNumberValue(rs.getDouble("float_value"));
+                                break;
+                              case STRING_VALUE:
+                                valueBuilder.setStringValue(rs.getString("string_value"));
+                                break;
+                              default:
+                                // Do nothing
+                                break;
+                            }
 
-                        KeyValue hyperparameter =
-                            KeyValue.newBuilder()
-                                .setKey(rs.getString("name"))
-                                .setValue(valueBuilder.build())
-                                .build();
-                        return new AbstractMap.SimpleEntry<>(
-                            rs.getString("experiment_run_id"), hyperparameter);
-                      })
-                  .list();
-            })
+                            KeyValue hyperparameter =
+                                KeyValue.newBuilder()
+                                    .setKey(rs.getString("name"))
+                                    .setValue(valueBuilder.build())
+                                    .build();
+                            return new AbstractMap.SimpleEntry<>(
+                                rs.getString("experiment_run_id"), hyperparameter);
+                          })
+                      .list();
+                }))
         .thenApply(MapSubtypes::from, executor);
   }
 }

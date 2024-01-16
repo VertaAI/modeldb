@@ -3,10 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -91,27 +88,28 @@ public class FeatureHandler {
   }
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {
-    return jdbi.withHandle(
-            handle -> {
-              try (var findQuery =
-                  handle.createQuery(
-                      "select feature, "
-                          + entityIdReferenceColumn
-                          + " as entity_id from feature "
-                          + "where entity_name=:entity_name and "
-                          + entityIdReferenceColumn
-                          + " in (<entity_ids>)")) {
-                return findQuery
-                    .bindList("entity_ids", entityIds)
-                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(ENTITY_ID_QUERY_PARAM),
-                                Feature.newBuilder().setName(rs.getString("feature")).build()))
-                    .list();
-              }
-            })
+    return InternalFuture.fromFuture(
+            jdbi.call(
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery(
+                          "select feature, "
+                              + entityIdReferenceColumn
+                              + " as entity_id from feature "
+                              + "where entity_name=:entity_name and "
+                              + entityIdReferenceColumn
+                              + " in (<entity_ids>)")) {
+                    return findQuery
+                        .bindList("entity_ids", entityIds)
+                        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                        .map(
+                            (rs, ctx) ->
+                                new AbstractMap.SimpleEntry<>(
+                                    rs.getString(ENTITY_ID_QUERY_PARAM),
+                                    Feature.newBuilder().setName(rs.getString("feature")).build()))
+                        .list();
+                  }
+                }))
         .thenApply(MapSubtypes::from, executor);
   }
 }

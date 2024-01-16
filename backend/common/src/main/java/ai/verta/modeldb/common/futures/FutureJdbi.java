@@ -26,67 +26,6 @@ public class FutureJdbi {
     void run() throws T;
   }
 
-  public <R, T extends Exception> InternalFuture<R> withHandle(HandleCallback<R, T> callback) {
-    SupplierWithException<R, T> supplierWithException = () -> jdbi.withHandle(callback);
-    return withHandleOrTransaction(supplierWithException);
-  }
-
-  public <R, T extends Exception> InternalFuture<R> withTransaction(HandleCallback<R, T> callback) {
-    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
-    return withHandleOrTransaction(supplierWithException);
-  }
-
-  private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
-      SupplierWithException<R, T> supplier) {
-    CompletableFuture<R> promise = new CompletableFuture<>();
-    executor
-        .captureContext()
-        .execute(
-            () -> {
-              try {
-                promise.complete(supplier.get());
-              } catch (Throwable e) {
-                promise.completeExceptionally(e);
-              }
-            });
-
-    return InternalFuture.from(promise);
-  }
-
-  public <R, T extends Exception> InternalFuture<R> withHandleCompose(
-      HandleCallback<InternalFuture<R>, T> callback) {
-    return withHandle(callback).thenCompose(x -> x, this.executor);
-  }
-
-  public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
-    RunnableWithException<T> runnableWithException = () -> jdbi.useHandle(consumer);
-    return useHandleOrTransaction(runnableWithException);
-  }
-
-  public <T extends Exception> InternalFuture<Void> useTransaction(
-      final HandleConsumer<T> consumer) {
-    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
-    return useHandleOrTransaction(runnableWithException);
-  }
-
-  private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
-      final RunnableWithException<T> runnableWithException) {
-    CompletableFuture<Void> promise = new CompletableFuture<>();
-    executor
-        .captureContext()
-        .execute(
-            () -> {
-              try {
-                runnableWithException.run();
-                promise.complete(null);
-              } catch (Throwable e) {
-                promise.completeExceptionally(e);
-              }
-            });
-
-    return InternalFuture.from(promise);
-  }
-
   public <R, T extends Exception> Future<R> callAndCompose(HandleCallback<Future<R>, T> callback) {
     return call(callback).thenCompose(x -> x);
   }

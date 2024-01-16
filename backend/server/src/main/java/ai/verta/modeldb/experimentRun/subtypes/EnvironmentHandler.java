@@ -59,13 +59,14 @@ public class EnvironmentHandler {
   }
 
   public InternalFuture<Void> logEnvironment(String runId, EnvironmentBlob environmentBlob) {
-    return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
-                .bind("runId", runId)
-                .bind("environment", getEnvironmentStringFromBlob(environmentBlob))
-                .execute());
+    return InternalFuture.fromFuture(
+        jdbi.run(
+            handle ->
+                handle
+                    .createUpdate(
+                        "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
+                    .bind("runId", runId)
+                    .bind("environment", getEnvironmentStringFromBlob(environmentBlob))
+                    .execute()));
   }
 }
