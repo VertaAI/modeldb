@@ -2,7 +2,6 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
-import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.config.MDBConfig;
@@ -11,9 +10,9 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.reconcilers.SoftDeleteRepositories;
-import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
+import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconciler;
+import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconciler;
+import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconciler;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.opentelemetry.api.OpenTelemetry;
 import lombok.Getter;
@@ -34,18 +33,14 @@ public class ReconcilerInitializer {
   @JsonProperty private SoftDeleteExperimentRuns softDeleteExperimentRuns;
   @JsonProperty private SoftDeleteRepositories softDeleteRepositories;
   @JsonProperty private SoftDeleteRepositories softDeleteDatasets;
-  @JsonProperty private UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
-  @JsonProperty private UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
-  @JsonProperty private UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
+  @JsonProperty private UpdateRepositoryTimestampReconciler updateRepositoryTimestampReconciler;
+  @JsonProperty private UpdateExperimentTimestampReconciler updateExperimentTimestampReconciler;
+  @JsonProperty private UpdateProjectTimestampReconciler updateProjectTimestampReconciler;
 
   @Bean
   @Conditional({RunLiquibaseWithMainService.class})
   public ReconcilerInitializer initialize(
-      MDBConfig config,
-      ServiceSet services,
-      FutureExecutor executor,
-      FutureJdbi futureJdbi,
-      OpenTelemetry openTelemetry) {
+      MDBConfig config, ServiceSet services, FutureJdbi futureJdbi, OpenTelemetry openTelemetry) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
     ReconcilerConfig reconcilerConfig =
@@ -53,37 +48,23 @@ public class ReconcilerInitializer {
 
     softDeleteProjects =
         new SoftDeleteProjects(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
-    softDeleteExperiments =
-        new SoftDeleteExperiments(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, openTelemetry);
+    softDeleteExperiments = new SoftDeleteExperiments(reconcilerConfig, futureJdbi, openTelemetry);
     softDeleteExperimentRuns =
-        new SoftDeleteExperimentRuns(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
+        new SoftDeleteExperimentRuns(reconcilerConfig, futureJdbi, openTelemetry);
     softDeleteRepositories =
         new SoftDeleteRepositories(
-            reconcilerConfig,
-            services.getMdbRoleService(),
-            false,
-            futureJdbi,
-            executor,
-            openTelemetry);
+            reconcilerConfig, services.getMdbRoleService(), false, futureJdbi, openTelemetry);
     softDeleteDatasets =
         new SoftDeleteRepositories(
-            reconcilerConfig,
-            services.getMdbRoleService(),
-            true,
-            futureJdbi,
-            executor,
-            openTelemetry);
-    updateRepositoryTimestampReconcile =
-        new UpdateRepositoryTimestampReconcile(
-            reconcilerConfig, futureJdbi, executor, config, openTelemetry);
-    updateExperimentTimestampReconcile =
-        new UpdateExperimentTimestampReconcile(
-            reconcilerConfig, futureJdbi, executor, openTelemetry);
-    updateProjectTimestampReconcile =
-        new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor, openTelemetry);
+            reconcilerConfig, services.getMdbRoleService(), true, futureJdbi, openTelemetry);
+    updateRepositoryTimestampReconciler =
+        new UpdateRepositoryTimestampReconciler(
+            reconcilerConfig, futureJdbi, config, openTelemetry);
+    updateExperimentTimestampReconciler =
+        new UpdateExperimentTimestampReconciler(reconcilerConfig, futureJdbi, openTelemetry);
+    updateProjectTimestampReconciler =
+        new UpdateProjectTimestampReconciler(reconcilerConfig, futureJdbi, openTelemetry);
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
     return this;

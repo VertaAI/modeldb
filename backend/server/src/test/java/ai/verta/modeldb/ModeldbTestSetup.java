@@ -573,13 +573,13 @@ public abstract class ModeldbTestSetup {
   }
 
   protected void updateTimestampOfResources() throws Exception {
-    var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
+    var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconciler();
     updateTimestampRepo.resync();
     await().until(updateTimestampRepo::isEmpty);
-    var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconcile();
+    var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconciler();
     updateTimestampExp.resync();
     await().until(updateTimestampExp::isEmpty);
-    var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconcile();
+    var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconciler();
     updateTimestampProject.resync();
     await().until(updateTimestampProject::isEmpty);
   }

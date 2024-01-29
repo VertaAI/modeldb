@@ -143,7 +143,7 @@ public class TestsInit {
     new CronJobUtils().initializeCronJobs(testConfig, services);
     reconcilerInitializer =
         new ReconcilerInitializer()
-            .initialize(testConfig, services, handleExecutor, futureJdbi, OpenTelemetry.noop());
+            .initialize(testConfig, services, futureJdbi, OpenTelemetry.noop());
 
     if (testConfig.getTestUsers() != null && !testConfig.getTestUsers().isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);
@@ -250,19 +250,19 @@ public class TestsInit {
   }
 
   protected static void updateTimestampOfResources() throws Exception {
-    var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
+    var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconciler();
     updateTimestampRepo.resync();
     while (!updateTimestampRepo.isEmpty()) {
       LOGGER.trace("Update repository timestamp is still in progress");
       Thread.sleep(10);
     }
-    var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconcile();
+    var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconciler();
     updateTimestampExp.resync();
     while (!updateTimestampExp.isEmpty()) {
       LOGGER.trace("Update experiment timestamp is still in progress");
       Thread.sleep(10);
     }
-    var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconcile();
+    var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconciler();
     updateTimestampProject.resync();
     while (!updateTimestampProject.isEmpty()) {
       LOGGER.trace("Update project timestamp is still in progress");

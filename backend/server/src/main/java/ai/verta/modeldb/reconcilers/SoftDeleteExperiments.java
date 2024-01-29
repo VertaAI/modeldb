@@ -1,7 +1,5 @@
 package ai.verta.modeldb.reconcilers;
 
-import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -17,16 +15,10 @@ import org.hibernate.query.Query;
 public class SoftDeleteExperiments extends Reconciler<String> {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final MDBRoleService mdbRoleService;
 
   public SoftDeleteExperiments(
-      ReconcilerConfig config,
-      MDBRoleService mdbRoleService,
-      FutureJdbi futureJdbi,
-      FutureExecutor executor,
-      OpenTelemetry openTelemetry) {
-    super(config, futureJdbi, executor, openTelemetry, true);
-    this.mdbRoleService = mdbRoleService;
+      ReconcilerConfig config, FutureJdbi futureJdbi, OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, openTelemetry, true);
   }
 
   @Override

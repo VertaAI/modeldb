@@ -41,18 +41,25 @@ public abstract class Reconciler<T> {
 
   protected final ReconcilerConfig config;
   protected final FutureJdbi futureJdbi;
-  protected final FutureExecutor executor;
   private final Tracer tracer;
 
+  @Deprecated
   protected Reconciler(
       ReconcilerConfig config,
       FutureJdbi futureJdbi,
       FutureExecutor executor,
       OpenTelemetry openTelemetry,
       boolean deduplicate) {
+    this(config, futureJdbi, openTelemetry, deduplicate);
+  }
+
+  protected Reconciler(
+      ReconcilerConfig config,
+      FutureJdbi futureJdbi,
+      OpenTelemetry openTelemetry,
+      boolean deduplicate) {
     this.config = config;
     this.futureJdbi = futureJdbi;
-    this.executor = executor;
     this.deduplicate = deduplicate;
     this.logger = LogManager.getLogger(this.getClass());
     this.tracer = openTelemetry.getTracer("ai.verta.reconciler");

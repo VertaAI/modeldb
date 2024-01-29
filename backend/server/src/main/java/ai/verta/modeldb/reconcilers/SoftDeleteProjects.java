@@ -2,7 +2,6 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -25,9 +24,8 @@ public class SoftDeleteProjects extends Reconciler<String> {
       ReconcilerConfig config,
       MDBRoleService mdbRoleService,
       FutureJdbi futureJdbi,
-      FutureExecutor executor,
       OpenTelemetry openTelemetry) {
-    super(config, futureJdbi, executor, openTelemetry, true);
+    super(config, futureJdbi, openTelemetry, true);
     this.mdbRoleService = mdbRoleService;
   }
 
