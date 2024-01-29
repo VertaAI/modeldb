@@ -1,6 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
-import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -11,17 +11,13 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class UpdateProjectTimestampReconcile
+public class UpdateProjectTimestampReconciler
     extends Reconciler<AbstractMap.SimpleEntry<String, Long>> {
 
-  public UpdateProjectTimestampReconcile(
-      ReconcilerConfig config,
-      FutureJdbi futureJdbi,
-      FutureExecutor executor,
-      OpenTelemetry openTelemetry) {
-    super(config, futureJdbi, executor, openTelemetry, false);
+  public UpdateProjectTimestampReconciler(
+      ReconcilerConfig config, FutureJdbi futureJdbi, OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, openTelemetry, false);
   }
 
   @Override
@@ -60,24 +56,22 @@ public class UpdateProjectTimestampReconcile
       throws Exception {
     logger.debug(
         "Reconciling update timestamp for projects: "
-            + updatedMaxDateMap.stream()
-                .map(AbstractMap.SimpleEntry::getKey)
-                .collect(Collectors.toList()));
-    return InternalFuture.fromFuture(
-            futureJdbi.run(
-                handle -> {
-                  var updateProjectTimestampQuery =
-                      "UPDATE project SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
+            + updatedMaxDateMap.stream().map(AbstractMap.SimpleEntry::getKey).toList());
+    return futureJdbi
+        .run(
+            handle -> {
+              var updateProjectTimestampQuery =
+                  "UPDATE project SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
-                  for (SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
-                    var id = updatedRecord.getKey();
-                    long updatedDate = updatedRecord.getValue();
-                    try (var updateQuery = handle.createUpdate(updateProjectTimestampQuery)) {
-                      updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
-                    }
-                  }
-                }))
-        .thenApply(unused -> new ReconcileResult(), executor)
+              for (SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
+                var id = updatedRecord.getKey();
+                long updatedDate = updatedRecord.getValue();
+                try (var updateQuery = handle.createUpdate(updateProjectTimestampQuery)) {
+                  updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
+                }
+              }
+            })
+        .thenSupply(() -> Future.of(new ReconcileResult()))
         .blockAndGet();
   }
 }
