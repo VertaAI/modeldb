@@ -267,9 +267,11 @@ public class CommonUtils {
       logger.debug(logMessage, message);
     } else if (e instanceof ModelDBException modelDBException) {
       code = modelDBException.getHttpCode();
-      // don't duplicate the error message
-      if (!message.endsWith(e.getMessage())) {
-        message += " Details: " + e.getMessage();
+      // remove duplicate information from the way we are extracting causes/messages
+      if (message.startsWith(e.getClass().getName()) && message.endsWith(e.getMessage())) {
+        message = modelDBException.getMessage();
+      } else {
+        message += " Details: " + modelDBException.getMessage();
       }
       String logMessage = "Common Service Exception occurred: {}";
       if (modelDBException.getCodeValue() == Code.INTERNAL_VALUE) {
