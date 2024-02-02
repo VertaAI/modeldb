@@ -265,19 +265,22 @@ public class CommonUtils {
       String logMessage = "Common Service Exception occurred: {}";
       message = e.getMessage();
       logger.debug(logMessage, message);
-    } else if (e instanceof ModelDBException) {
-      ModelDBException uacServiceException = (ModelDBException) e;
-
-      code = uacServiceException.getHttpCode();
-      message += " Details: " + e.getMessage();
+    } else if (e instanceof ModelDBException modelDBException) {
+      code = modelDBException.getHttpCode();
+      // remove duplicate information from the way we are extracting causes/messages
+      if (message.startsWith(e.getClass().getName()) && message.endsWith(e.getMessage())) {
+        message = modelDBException.getMessage();
+      } else {
+        message += " Details: " + modelDBException.getMessage();
+      }
       String logMessage = "Common Service Exception occurred: {}";
-      if (uacServiceException.getCodeValue() == Code.INTERNAL_VALUE) {
+      if (modelDBException.getCodeValue() == Code.INTERNAL_VALUE) {
         // If getting 500 then we will not expose about error to the user.
         message = "Internal Server Error";
         logger.error(logMessage, e.getMessage());
         printStackTrace(logger, e);
       } else {
-        if (uacServiceException.getCodeValue() == Code.RESOURCE_EXHAUSTED_VALUE) {
+        if (modelDBException.getCodeValue() == Code.RESOURCE_EXHAUSTED_VALUE) {
           message = e.getMessage();
         }
         logger.debug(logMessage, e.getMessage());
