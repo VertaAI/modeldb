@@ -13,7 +13,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.metrics.prometheus.clientbridge.PrometheusCollector;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
 import io.opentelemetry.instrumentation.resources.ContainerResource;
@@ -63,8 +63,8 @@ public class OpenTelemetryConfig {
       tracerProvider = SdkTracerProvider.builder().build();
     } else {
       SpanExporter spanExporter =
-          JaegerGrpcSpanExporter.builder()
-              .setEndpoint(System.getenv("OTEL_EXPORTER_JAEGER_ENDPOINT"))
+          OtlpHttpSpanExporter.builder()
+              .setEndpoint(System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
               .build();
       tracerProvider =
           SdkTracerProvider.builder()
@@ -156,9 +156,9 @@ public class OpenTelemetryConfig {
     public void onStart(Context parentContext, ReadWriteSpan span) {
       String dbName = span.getAttribute(SemanticAttributes.DB_NAME);
       if (dbName != null) {
-        String netPeerName = span.getAttribute(SemanticAttributes.NET_PEER_NAME);
-        if (netPeerName != null) {
-          span.setAttribute(SemanticAttributes.PEER_SERVICE, dbName + "[" + netPeerName + "]");
+        String serverAddress = span.getAttribute(SemanticAttributes.SERVER_ADDRESS);
+        if (serverAddress != null) {
+          span.setAttribute(SemanticAttributes.PEER_SERVICE, dbName + "[" + serverAddress + "]");
         }
       }
     }
