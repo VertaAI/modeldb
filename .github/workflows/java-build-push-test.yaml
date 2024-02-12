@@ -52,7 +52,7 @@ jobs:
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@v8.0.0
+        uses: tj-actions/branch-names@v8.0.1
 
       - name: Get docker image tag
         id: image_info
