@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import ai.verta.common.Empty;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -487,5 +488,9 @@ public class Future<T> {
 
   public static void disableCallSiteStackCapture() {
     captureStacksAtCreation = false;
+  }
+
+  public static Future<Empty> empty() {
+    return Future.of(Empty.getDefaultInstance());
   }
 }
