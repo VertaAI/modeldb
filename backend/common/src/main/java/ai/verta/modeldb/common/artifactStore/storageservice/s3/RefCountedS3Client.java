@@ -14,7 +14,11 @@ public class RefCountedS3Client implements AutoCloseable {
   private final S3AsyncClient asyncClient;
   private final AtomicInteger referenceCounter;
 
-  RefCountedS3Client(AWSCredentials credentials, AmazonS3 client, S3AsyncClient asyncClient, AtomicInteger counter) {
+  RefCountedS3Client(
+      AWSCredentials credentials,
+      AmazonS3 client,
+      S3AsyncClient asyncClient,
+      AtomicInteger counter) {
     this.credentials = credentials;
     this.s3Client = client;
     this.asyncClient = asyncClient;
@@ -26,7 +30,10 @@ public class RefCountedS3Client implements AutoCloseable {
     return s3Client;
   }
 
-  public S3AsyncClient getAsyncClient() { return  asyncClient; }
+  public S3AsyncClient getAsyncClient() {
+    return asyncClient;
+  }
+
   public AWSCredentials getCredentials() {
     return credentials;
   }
