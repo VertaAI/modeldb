@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 
 public class RefreshS3ClientCron implements Runnable {
   private static final Logger LOGGER = LogManager.getLogger(RefreshS3ClientCron.class);
@@ -57,7 +58,13 @@ public class RefreshS3ClientCron implements Runnable {
     newS3Client.doesBucketExistV2(bucketName);
     LOGGER.trace("New S3 Client created");
 
-    s3Client.refreshS3Client(awsCredentials, newS3Client);
+    s3Client.refreshS3Client(
+        awsCredentials,
+        newS3Client,
+        AwsSessionCredentials.create(
+            awsCredentials.getAWSAccessKeyId(),
+            awsCredentials.getAWSSecretKey(),
+            awsCredentials.getSessionToken()));
   }
 
   private BasicSessionCredentials getBasicSessionCredentials() throws IOException {

@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 // S3Client provides a wrapper to the regular AmazonS3 object. The goal is to ensure that the
 // AmazonS3 object is
@@ -33,8 +37,10 @@ public class S3Client {
   private final S3Config s3Config;
 
   private volatile AmazonS3 s3Client;
+  private volatile S3AsyncClient asyncClient;
   private volatile AtomicInteger referenceCounter;
   private volatile AWSCredentials awsCredentials;
+  private volatile AwsCredentials v2Credentials;
 
   public S3Client(S3Config s3Config) throws ModelDBException {
     this.s3Config = s3Config;
@@ -89,7 +95,7 @@ public class S3Client {
    */
   private void scheduleRefresh(Supplier<AmazonS3> s3) {
     CommonUtils.scheduleTask(
-        () -> refreshS3Client(awsCredentials, s3.get()),
+        () -> refreshS3Client(awsCredentials, s3.get(), v2Credentials),
         0L,
         s3Config.getRefreshIntervalSeconds(),
         TimeUnit.SECONDS);
@@ -98,6 +104,7 @@ public class S3Client {
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
     this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.v2Credentials = AwsBasicCredentials.create(cloudAccessKey, cloudSecretKey);
     var clientConfiguration = new ClientConfiguration(defaultClientConfig);
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
@@ -120,6 +127,7 @@ public class S3Client {
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
     this.awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.v2Credentials = AwsBasicCredentials.create(cloudAccessKey, cloudSecretKey);
     this.s3Client = buildAccessKeyClient(awsRegion);
     scheduleRefresh(() -> buildAccessKeyClient(awsRegion));
   }
@@ -133,7 +141,7 @@ public class S3Client {
   }
 
   public RefCountedS3Client getRefCountedClient() {
-    return new RefCountedS3Client(awsCredentials, s3Client, referenceCounter);
+    return new RefCountedS3Client(awsCredentials, s3Client, asyncClient, referenceCounter);
   }
 
   private void initializeWithWebIdentity(Regions awsRegion) {
@@ -152,7 +160,13 @@ public class S3Client {
         TimeUnit.SECONDS);
   }
 
-  void refreshS3Client(AWSCredentials awsCredentials, AmazonS3 s3Client) {
+  void refreshS3Client(
+      AWSCredentials awsCredentials, AmazonS3 s3Client, AwsCredentials v2Credentials) {
+    var s3AsyncClient =
+        S3AsyncClient.builder()
+            .credentialsProvider(() -> v2Credentials)
+            .region(Region.of(s3Config.getAwsRegion()))
+            .build();
     // Once we get to this point, we know that we have a good new s3 client, so it's time to swap
     // it. No fail can happen now
     LOGGER.debug("Replacing S3 Client");
@@ -163,7 +177,9 @@ public class S3Client {
       // Swap the references
       this.referenceCounter = new AtomicInteger(1);
       this.awsCredentials = awsCredentials;
+      this.v2Credentials = v2Credentials;
       this.s3Client = s3Client;
+      this.asyncClient = s3AsyncClient;
       LOGGER.debug("S3 Client replaced");
       // At the end of the try, the reference counter will be decremented again and shutdown will
       // be called
