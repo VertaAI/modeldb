@@ -29,7 +29,7 @@
         <grpc.version>1.62.2</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.25.2</protobuf.version>
-        <aws.version>1.12.656</aws.version>
+        <aws.version>1.12.672</aws.version>
         <aws.java.sdk.v2.version>2.25.1</aws.java.sdk.v2.version>
         <jackson.version>2.16.1</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
