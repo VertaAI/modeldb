@@ -44,7 +44,6 @@ import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
 import ai.verta.uac.Workspace;
-import com.google.api.client.util.IOUtils;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.Context;
 import io.grpc.ManagedChannel;
@@ -331,7 +330,7 @@ public class NFSArtifactStoreTest {
       httpClient.setDoOutput(true);
       httpClient.setRequestProperty("Content-Type", "application/json");
       try (OutputStream out = httpClient.getOutputStream()) {
-        IOUtils.copy(inputStream, out);
+        inputStream.transferTo(out);
         out.flush();
       }
 
@@ -367,7 +366,7 @@ public class NFSArtifactStoreTest {
       httpClient.setDoOutput(true);
       httpClient.setRequestProperty("Content-Type", "application/json");
       try (OutputStream out = httpClient.getOutputStream()) {
-        IOUtils.copy(inputStream, out);
+        inputStream.transferTo(out);
         out.flush();
       }
 
@@ -400,7 +399,7 @@ public class NFSArtifactStoreTest {
     String rootPath = System.getProperty("user.dir");
     FileOutputStream fileOutputStream =
         new FileOutputStream(rootPath + File.separator + artifactKey);
-    IOUtils.copy(inputStream, fileOutputStream);
+    inputStream.transferTo(fileOutputStream);
     fileOutputStream.close();
     inputStream.close();
 
@@ -437,7 +436,7 @@ public class NFSArtifactStoreTest {
     String rootPath = System.getProperty("user.dir");
     FileOutputStream fileOutputStream =
         new FileOutputStream(rootPath + File.separator + artifactKey);
-    IOUtils.copy(inputStream, fileOutputStream);
+    inputStream.transferTo(fileOutputStream);
     fileOutputStream.close();
     inputStream.close();
 

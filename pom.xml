@@ -267,25 +267,6 @@
                 <scope>import</scope>
             </dependency>
 
-
-            <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage -->
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-storage</artifactId>
-                <version>2.35.0</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.grpc</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!-- pin this dependency of ^^^ to upgrade for a CVE (https://snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808) -->
-            <dependency>
-                <groupId>com.google.oauth-client</groupId>
-                <artifactId>google-oauth-client</artifactId>
-                <version>1.35.0</version>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
             <dependency>
                 <groupId>io.prometheus</groupId>

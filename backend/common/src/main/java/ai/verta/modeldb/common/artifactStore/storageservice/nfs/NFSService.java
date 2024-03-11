@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
-import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -106,7 +105,7 @@ public class NFSService implements ArtifactStoreService {
       }
       LOGGER.trace("NFSService - storeFile -  file found : {}", foldersExists.getAbsolutePath());
       var fileOutputStream = new FileOutputStream(destinationFile);
-      IOUtils.copy(uploadedFileInputStream, fileOutputStream);
+      uploadedFileInputStream.transferTo(fileOutputStream);
       fileOutputStream.close();
       uploadedFileInputStream.close();
       LOGGER.trace(
