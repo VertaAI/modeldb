@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.CollectTelemetry;
-import com.google.api.client.http.HttpMethods;
 import com.google.protobuf.Value;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -58,7 +57,7 @@ public class TelemetryCron extends TimerTask {
 
         HttpURLConnection httpClient =
             (HttpURLConnection) new URL(telemetryUtils.getConsumer()).openConnection();
-        httpClient.setRequestMethod(HttpMethods.POST);
+        httpClient.setRequestMethod("POST");
         httpClient.setDoOutput(true);
         httpClient.setRequestProperty("Content-Type", "application/json");
         httpClient.setRequestProperty("Accept", "application/json");

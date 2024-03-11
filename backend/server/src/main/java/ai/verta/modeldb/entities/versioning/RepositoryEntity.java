@@ -18,7 +18,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
-import com.google.api.client.util.Objects;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
@@ -350,6 +349,6 @@ public class RepositoryEntity implements Serializable {
   }
 
   public boolean isProtected() {
-    return Objects.equal(repositoryAccessModifier, RepositoryModifierEnum.PROTECTED.ordinal());
+    return Objects.equals(repositoryAccessModifier, RepositoryModifierEnum.PROTECTED.ordinal());
   }
 }

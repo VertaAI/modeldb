@@ -101,11 +101,6 @@
             <scope>TEST</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-storage</artifactId>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
