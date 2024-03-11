@@ -31,7 +31,7 @@
         <protobuf.version>3.25.2</protobuf.version>
         <aws.version>1.12.656</aws.version>
         <aws.java.sdk.v2.version>2.25.2</aws.java.sdk.v2.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.16.2</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.32.0</otel.core.version>
         <otel.semconv.version>1.23.1-alpha</otel.semconv.version>
