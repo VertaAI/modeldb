@@ -28,7 +28,7 @@
         <log4j.version>2.23.1</log4j.version>
         <grpc.version>1.62.2</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
-        <protobuf.version>3.25.2</protobuf.version>
+        <protobuf.version>4.26.0</protobuf.version>
         <aws.version>1.12.656</aws.version>
         <aws.java.sdk.v2.version>2.25.2</aws.java.sdk.v2.version>
         <jackson.version>2.16.2</jackson.version>

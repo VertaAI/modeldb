@@ -205,7 +205,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
-            <version>3.25.1</version>
+            <version>4.26.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
         <dependency>
