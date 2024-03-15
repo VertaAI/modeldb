@@ -7,6 +7,8 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 import org.jdbi.v3.core.Jdbi;
 
@@ -16,6 +18,15 @@ public class JdbiUtils {
     final var jdbi = new InternalJdbi(Jdbi.create(dataSource));
     final var dbExecutor =
         FutureExecutor.initializeExecutor(databaseConfig.getThreadCount(), "jdbi");
+    return new FutureJdbi(jdbi, dbExecutor);
+  }
+
+  public static FutureJdbi initializeFutureJdbiWithFixedThreadpool(
+      DataSource dataSource, int poolSize) {
+    var jdbi = new InternalJdbi(Jdbi.create(dataSource));
+
+    ExecutorService executor = Executors.newFixedThreadPool(poolSize);
+    var dbExecutor = FutureExecutor.makeCompatibleExecutor(executor, "jdbi");
     return new FutureJdbi(jdbi, dbExecutor);
   }
 
