@@ -1268,10 +1268,10 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-jose-jwe-jws@^0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/jose-jwe-jws/-/jose-jwe-jws-0.1.7.tgz#cdf3029ecc728bead33f97969c02c7e9da59c203"
-  integrity sha512-R2Kppec2vbCcGblCAbshca3Ib0W+x2ZmRppD/IgjcAMEkuBJif2by8oTSFz5GZXp+fWAQ3l9AGMFGmMMR4ff1w==
+jose-jwe-jws@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/jose-jwe-jws/-/jose-jwe-jws-0.2.2.tgz#c68b99cdacb7bffa774a6672c720243606e53ded"
+  integrity sha512-z3AkKwzGYRaAiroC1ozylHD/J0bsyrL7WZuUIZvbO8gPKYT+MQ+mvZYiiLFIglEWHE07EIA7yjYI6TUdN9YHJw==
 
 jsbn@~0.1.0:
   version "0.1.1"
