@@ -22,7 +22,7 @@
     "jwt-decode": "^2.2.0",
     "nodemon": "^2.0.3",
     "passport": "^0.4.0",
-    "passport-auth0": "^1.1.0",
+    "passport-auth0": "^1.4.4",
     "set-value": "2.0.1"
   },
   "devDependencies": {
