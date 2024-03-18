@@ -244,7 +244,7 @@
             <dependency>
                 <groupId>org.jdbi</groupId>
                 <artifactId>jdbi3-core</artifactId>
-                <version>3.45.0</version>
+                <version>3.45.1</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
