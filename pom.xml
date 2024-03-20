@@ -40,7 +40,7 @@
         <springframework.version>6.1.1</springframework.version>
         <!-- Note: downgraded from the latest version of mockito because of a conflict with spring's bytebuddy version -->
         <mockito.version>5.11.0</mockito.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.32</lombok.version>
 
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
         <jacoco.version>0.8.11</jacoco.version>
