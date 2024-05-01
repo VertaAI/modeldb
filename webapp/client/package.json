@@ -138,7 +138,7 @@
     "prettier": "^2.0.5",
     "redux-devtools-extension": "^2.13.8",
     "redux-logger": "^3.0.6",
-    "source-map-explorer": "^1.7.0",
+    "source-map-explorer": "^2.5.3",
     "ts-graphql-plugin": "^1.11.0",
     "tslint": "^5.12.1",
     "tslint-config-airbnb": "^5.11.1",
