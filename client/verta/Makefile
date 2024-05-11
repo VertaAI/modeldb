@@ -2,7 +2,7 @@ VERSION:=$$(python3 -c 'import verta; print(verta.__version__)')
 
 # build wheel and source distributions
 build: clean
-	python3 setup.py sdist bdist_wheel --universal
+	python setup.py sdist bdist_wheel --universal
 
 # clean previously-created builds
 clean:
@@ -11,7 +11,7 @@ clean:
 # upload distributions to PyPI
 upload:
 	# checking TWINE_USERNAME and TWINE_PASSWORD env vars
-	python3 -m twine upload --non-interactive dist/*
+	python -m twine upload --non-interactive dist/*
 
 # tag the current commit using the client's version number
 tag:
