@@ -293,7 +293,7 @@
             <dependency>
                 <groupId>io.prometheus.jmx</groupId>
                 <artifactId>collector</artifactId>
-                <version>0.20.0</version>
+                <version>1.0.1</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
             <dependency>
