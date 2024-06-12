@@ -128,5 +128,12 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.artifactStore.storage }}"
+    {{- if .Values.artifactStore.storageClass }}
+    {{- if (eq "-" .Values.artifactStore.storageClass) }}
+      storageClassName: ""
+    {{- else }}
+      storageClassName: "{{ .Values.artifactStore.storageClass }}"
+    {{- end }}
+    {{- end }}
 {{- end }}
 {{- end -}}
