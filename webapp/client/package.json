@@ -28,7 +28,7 @@
     "connected-react-router": "^6.6.1",
     "copy-to-clipboard": "^3.0.8",
     "cross-env": "^7.0.0",
-    "d3": "^5.9.2",
+    "d3": "^7.6.1",
     "d3-tip": "^0.9.1",
     "decko": "^1.2.0",
     "formik": "^2.0.8",
