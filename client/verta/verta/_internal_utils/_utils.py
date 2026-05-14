@@ -1297,6 +1297,7 @@ def get_notebook_filepath():
             response = requests.get(
                 urljoin(server["url"], "api/sessions"),
                 params={"token": server.get("token", "")},
+                timeout=5,
             )
             if response.ok:
                 for session in body_to_json(response):
